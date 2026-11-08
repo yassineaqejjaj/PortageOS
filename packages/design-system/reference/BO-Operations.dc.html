@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Operations Center</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po app" data-theme="{{theme}}">
+  <div class="app-nav"><dc-import name="Sidebar" portal="bo" active="ops" hint-size="100%,900px"></dc-import></div>
+  <div class="app-main">
+    <dc-import name="Topbar" portal="bo" tenant="{{tenantName}}" period="Octobre 2026" hint-size="100%,64px"></dc-import>
+    <main class="content">
+      <div class="row between" style="align-items: flex-end">
+        <div class="stack" style="gap: 4px">
+          <span class="eyebrow">Operations Center · {{tenantName}}</span>
+          <h1>Bonjour Léa, {{headline}}</h1>
+          <p class="muted">Données au 08/11/2026 09:15 · <a href="#">Sources et fraîcheur</a></p>
+        </div>
+        <div class="row" style="gap: 8px">
+          <div class="row" role="group" aria-label="Société active" style="gap: 0; border: 1px solid var(--color-border-strong); border-radius: 8px; overflow: hidden">
+            <button class="btn btn-sm" style="border-radius: 0; height: 32px; background: {{alBg}}; color: {{alFg}}" aria-pressed="{{alOn}}" onClick="{{pickAL}}">Altitude Portage</button>
+            <button class="btn btn-sm" style="border-radius: 0; height: 32px; background: {{nxBg}}; color: {{nxFg}}" aria-pressed="{{nxOn}}" onClick="{{pickNX}}">Nexa Portage</button>
+          </div>
+          <a class="btn btn-ai" href="BO-Agents.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path></svg>Prépare la clôture d'octobre</a>
+        </div>
+      </div>
+
+      <div class="split">
+        <section class="card main" aria-labelledby="blk">
+          <div class="card-h">
+            <div class="row" style="gap: 10px"><h2 id="blk">Ce qui bloque la clôture</h2><span class="badge b-danger">{{blockCount}} bloquants</span></div>
+            <div class="row" style="gap: 8px"><span class="small muted">Clôture octobre</span><div class="bar" style="width: 140px"><i style="width: {{closePct}}"></i></div><b class="num">{{closePct}}</b></div>
+          </div>
+          <div class="list">
+            <sc-for list="{{blockers}}" as="b" hint-placeholder-count="7">
+              <div class="row" style="flex-wrap: nowrap; gap: 14px">
+                <span class="badge {{b.cls}}" style="flex: none; width: 92px; justify-content: flex-start">{{b.sev}}</span>
+                <div style="flex: 1; min-width: 0"><b>{{b.t}}</b><div class="small muted">{{b.d}}</div></div>
+                <span class="tag" style="flex: none">{{b.mod}}</span>
+                <sc-if value="{{b.ai}}" hint-placeholder-val="{{ false }}"><span class="badge b-ai" style="flex: none">Agent prêt</span></sc-if>
+                <a href="{{b.href}}" class="btn btn-secondary btn-sm" style="flex: none">{{b.cta}}</a>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <aside class="side stack" style="gap: 16px">
+          <section class="card" aria-labelledby="val">
+            <div class="card-h"><h3 id="val">Validations en attente</h3><a href="BO-Agents.dc.html" class="small">Tout voir ({{valCount}})</a></div>
+            <div class="list small">
+              <sc-for list="{{validations}}" as="v" hint-placeholder-count="4">
+                <div class="row" style="flex-wrap: nowrap; gap: 10px"><span class="av ai">{{v.ag}}</span><div style="flex: 1; min-width: 0"><b>{{v.t}}</b><div class="muted">{{v.m}}</div></div><span class="badge {{v.cls}}">{{v.r}}</span></div>
+              </sc-for>
+            </div>
+          </section>
+          <section class="card" aria-labelledby="cf">
+            <div class="card-h"><h3 id="cf">Conformité</h3><span class="spec">moteur de règles v2026.4</span></div>
+            <div class="list small">
+              <sc-for list="{{compliance}}" as="c" hint-placeholder-count="3">
+                <div class="row" style="flex-wrap: nowrap; gap: 10px"><span class="badge {{c.cls}}">{{c.s}}</span><span style="flex: 1">{{c.t}}</span></div>
+              </sc-for>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <section class="grid-4" aria-label="Indicateurs clés">
+        <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+          <div class="card kpi">
+            <span class="eyebrow">{{k.l}}</span>
+            <span class="v">{{k.v}}</span>
+            <span class="d"><span class="{{k.dc}}">{{k.delta}}</span><span class="muted">{{k.ctx}}</span></span>
+            <span class="src">Source : {{k.src}}</span>
+          </div>
+        </sc-for>
+      </section>
+
+      <div class="split">
+        <section class="card main" aria-labelledby="cl">
+          <div class="card-h"><h3 id="cl">Checklist de clôture — octobre 2026</h3><span class="small muted">Échéance interne : 12/11/2026</span></div>
+          <div class="tbl-wrap"><table class="tbl compact">
+            <thead><tr><th>Étape</th><th>Avancement</th><th class="r">Fait</th><th>Responsable</th><th>Statut</th></tr></thead>
+            <tbody>
+              <sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
+                <tr><td><b>{{s.t}}</b></td><td style="width: 200px"><div class="bar {{s.bc}}"><i style="width: {{s.pct}}"></i></div></td><td class="r num">{{s.n}}</td><td class="small">{{s.who}}</td><td><span class="badge {{s.cls}}">{{s.st}}</span></td></tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </section>
+        <section class="card side" aria-labelledby="ag">
+          <div class="card-h"><h3 id="ag">Agents au travail</h3><a href="BO-Agents.dc.html" class="small">Workspace</a></div>
+          <div class="list small">
+            <sc-for list="{{agents}}" as="a" hint-placeholder-count="4">
+              <div class="row" style="flex-wrap: nowrap; gap: 10px"><span class="av ai">{{a.i}}</span><div style="flex: 1; min-width: 0"><b>{{a.n}}</b><div class="muted">{{a.t}}</div></div><span class="badge {{a.cls}}">{{a.s}}</span></div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { t: 'AL' }; }
+  renderVals() {
+    const al = this.state.t === 'AL';
+    const on = { bg: '#4F46E5', fg: '#FFFFFF' }, off = { bg: 'transparent', fg: 'inherit' };
+    const B = (sev, cls, t, d, mod, cta, ai, href) => ({ sev, cls, t, d, mod, cta, ai: !!ai, href: href || '#' });
+    const S = (t, pct, n, who, st, cls, bc) => ({ t, pct, n, who, st, cls, bc });
+    const AL = {
+      headline: '7 points bloquent la clôture d’octobre', closePct: '68%', blockCount: 7, valCount: 12,
+      blockers: [
+        B('Bloquant','b-danger','CRA de Karim Benali : 23 jours déclarés pour 22 jours ouvrés','Mission M-2026-009 · Orbe Logistique · facture et paie suspendues','CRA','Corriger', true),
+        B('Bloquant','b-danger','3 CRA en attente de validation client','Banque Méridienne (Julien Bernard, Sofia Haddad) · Atlas Mobilités (Hugo Lambert)','CRA','Relancer', true),
+        B('Bloquant','b-danger','2 anomalies de paie','Inès Garnier : contrôle minimum de rémunération · Pierre Martin : sortie au 31/10','Paie','Examiner', true, 'BO-Paie.dc.html'),
+        B('Bloquant','b-danger','Synchronisation bancaire Qonto en erreur','Depuis 08/11 06:02 · 3 encaissements non importés','Trésorerie','Voir l’incident'),
+        B('À traiter','b-warning','3 notes de frais à contrôler','Dont 1 pièce illisible (Thomas Lefèvre, 94,20 €)','Frais','Contrôler', true),
+        B('À traiter','b-warning','3 rapprochements à revoir','Proposés par Finance Agent · confiance < 90 %','Trésorerie','Rapprocher', true),
+        B('À traiter','b-warning','Clause hors grille dans CP-2026-022','Pénalités de retard 15 %/jour · Groupe Valdor Retail','Contrats','Revoir', true)
+      ],
+      validations: [
+        { ag:'OA', t:'3 e-mails de relance CRA', m:'Operations Agent · brouillons', r:'Faible', cls:'b-success' },
+        { ag:'FA', t:'35 rapprochements automatiques', m:'Finance Agent · 41 340,00 € dont 3 lignes', r:'Faible', cls:'b-success' },
+        { ag:'CA', t:'Avenant AV-2026-031 (M-2026-014)', m:'Contract Agent · TJM 650 → 690 €', r:'Moyen', cls:'b-warning' },
+        { ag:'PA', t:'Correction jours Karim Benali', m:'Payroll Agent · −580,00 € HT', r:'Élevé', cls:'b-danger' }
+      ],
+      compliance: [
+        { s:'Échéance', cls:'b-warning', t:'Attestation de garantie financière : renouvellement avant le 31/12/2026' },
+        { s:'À planifier', cls:'b-warning', t:'2 visites d’information et de prévention à programmer' },
+        { s:'OK', cls:'b-success', t:'DSN de septembre déposée et acceptée (retour 12/10/2026)' }
+      ],
+      kpis: [
+        { l:'CA facturé · octobre', v:'248 600 € HT', delta:'+4,2 %', dc:'up', ctx:'vs septembre (238 580 €)', src:'Facturation, 11 factures émises + 4 brouillons' },
+        { l:'Frais de gestion', v:'19 888 €', delta:'8,0 %', dc:'muted', ctx:'taux moyen pondéré', src:'Comptes d’activité, octobre' },
+        { l:'Impayés échus', v:'41 280 € TTC', delta:'3 factures', dc:'down', ctx:'retard moyen 24 j', src:'Trésorerie au 07/11 18:00 (Qonto en erreur)' },
+        { l:'Consultants actifs', v:'15', delta:'+2', dc:'up', ctx:'en onboarding', src:'RH, contrats en cours au 08/11' }
+      ],
+      steps: [
+        S('CRA collectés','93%','14/15','Operations Agent','En cours','b-info',''), S('CRA validés client','73%','11/15','Clients','En retard','b-danger','warn'),
+        S('Factures émises','73%','11/15','Léa Fontaine','En cours','b-info',''), S('Notes de frais contrôlées','88%','22/25','Finance','En cours','b-info',''),
+        S('Variables de paie','87%','13/15','Payroll Agent','Anomalies','b-warning','warn'), S('Rapprochements bancaires','93%','38/41','Finance Agent','En cours','b-info',''),
+        S('DSN octobre','0%','0/1','Paie','À venir · 15/11','b-neutral','')
+      ],
+      agents: [
+        { i:'OA', n:'Operations Agent', t:'Clôture octobre · étape 4/7', s:'En cours', cls:'b-info' },
+        { i:'FA', n:'Finance Agent', t:'Source Qonto indisponible', s:'Dégradé', cls:'b-warning' },
+        { i:'PA', n:'Payroll Agent', t:'2 anomalies signalées', s:'Attend', cls:'b-ai' },
+        { i:'CA', n:'Contract Agent', t:'Avenant M-2026-014 prêt', s:'Attend', cls:'b-ai' }
+      ]
+    };
+    const NX = {
+      headline: '1 point bloque la clôture d’octobre', closePct: '92%', blockCount: 1, valCount: 2,
+      blockers: [ B('À traiter','b-warning','1 CRA en attente de validation client','Clinéa Santé Numérique (Antoine Rey)','CRA','Relancer', true) ],
+      validations: [ { ag:'OA', t:'1 e-mail de relance CRA', m:'Operations Agent · brouillon', r:'Faible', cls:'b-success' }, { ag:'FA', t:'6 rapprochements automatiques', m:'Finance Agent · 52 080,00 €', r:'Faible', cls:'b-success' } ],
+      compliance: [ { s:'OK', cls:'b-success', t:'Garantie financière valide jusqu’au 30/06/2027' }, { s:'OK', cls:'b-success', t:'DSN de septembre acceptée' } ],
+      kpis: [
+        { l:'CA facturé · octobre', v:'96 300 € HT', delta:'−1,1 %', dc:'down', ctx:'vs septembre (97 370 €)', src:'Facturation, 5 factures émises' },
+        { l:'Frais de gestion', v:'8 667 €', delta:'9,0 %', dc:'muted', ctx:'taux moyen pondéré', src:'Comptes d’activité, octobre' },
+        { l:'Impayés échus', v:'0 €', delta:'aucun', dc:'up', ctx:'', src:'Trésorerie au 08/11 08:00' },
+        { l:'Consultants actifs', v:'6', delta:'0', dc:'muted', ctx:'en onboarding', src:'RH, contrats en cours' }
+      ],
+      steps: [ S('CRA collectés','100%','6/6','Operations Agent','Terminé','b-success','ok'), S('CRA validés client','83%','5/6','Clients','En cours','b-info',''), S('Factures émises','83%','5/6','Marc Dubois','En cours','b-info',''), S('Variables de paie','100%','6/6','Payroll Agent','Terminé','b-success','ok'), S('DSN octobre','0%','0/1','Paie','À venir · 15/11','b-neutral','') ],
+      agents: [ { i:'OA', n:'Operations Agent', t:'Relance prête', s:'Attend', cls:'b-ai' }, { i:'FA', n:'Finance Agent', t:'6 rapprochements', s:'Attend', cls:'b-ai' } ]
+    };
+    const d = al ? AL : NX;
+    return {
+      ...d, theme: this.props.theme ?? 'light',
+      tenantName: al ? 'Altitude Portage' : 'Nexa Portage',
+      alBg: al ? on.bg : off.bg, alFg: al ? on.fg : off.fg, nxBg: !al ? on.bg : off.bg, nxFg: !al ? on.fg : off.fg,
+      alOn: al ? 'true' : 'false', nxOn: !al ? 'true' : 'false',
+      pickAL: () => this.setState({ t: 'AL' }), pickNX: () => this.setState({ t: 'NX' })
+    };
+  }
+}
+</script>
+</body>
+</html>

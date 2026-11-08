@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Accueil consultant</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po app" data-theme="{{theme}}">
+  <div class="app-nav"><dc-import name="Sidebar" portal="consultant" active="home" hint-size="100%,900px"></dc-import></div>
+  <div class="app-main">
+    <dc-import name="Topbar" portal="consultant" period="Novembre 2026" hint-size="100%,64px"></dc-import>
+    <main class="content">
+      <div class="stack" style="gap: 4px"><span class="eyebrow">Altitude Portage · CDI depuis le 02/03/2025</span><h1>Bonjour Camille</h1><p class="muted">2 actions vous attendent. Tout le reste est à jour.</p></div>
+
+      <section class="grid-3" aria-label="Synthèse financière">
+        <a href="CO-Compte.dc.html" class="card kpi" style="text-decoration: none; color: inherit"><span class="eyebrow">Solde du compte d'activité</span><span class="v">5 631,60 €</span><span class="d"><span class="up">+2 211,60 €</span><span class="muted">en octobre</span></span><span class="src">Au 05/11/2026 · voir le détail →</span></a>
+        <div class="card kpi"><span class="eyebrow">Chiffre d'affaires · octobre</span><span class="v">13 000 € HT</span><span class="d"><span class="muted">20 j × 650,00 € · Helioris Énergie</span></span><span class="src">Facture F-2026-0412 · payée le 05/11</span></div>
+        <div class="card kpi"><span class="eyebrow">Prochain salaire</span><span class="v">4 772,00 €</span><span class="d"><span class="muted">net avant impôt · versement le 10/11/2026</span></span><span class="src">Bulletin d'octobre disponible</span></div>
+      </section>
+
+      <div class="split">
+        <div class="main stack" style="gap: 16px">
+          <section class="card" aria-labelledby="todo">
+            <div class="card-h"><h2 id="todo">À faire</h2><span class="badge b-warning">2</span></div>
+            <div class="list">
+              <div class="row" style="flex-wrap: nowrap; gap: 14px"><span class="badge b-warning">Signature</span><div style="flex: 1"><b>Avenant AV-2026-031 — prolongation Helioris Énergie</b><div class="small muted">Fin de mission repoussée au 31/05/2027 · TJM 650 → 690 € HT · validé par votre gestionnaire</div></div><button class="btn btn-primary btn-sm">Relire et signer</button></div>
+              <div class="row" style="flex-wrap: nowrap; gap: 14px"><span class="badge b-info">CRA</span><div style="flex: 1"><b>CRA de novembre</b><div class="small muted">6 jours saisis sur 20 jours ouvrés (11/11 férié) · à soumettre avant le 30/11</div><div class="bar" style="margin-top: 6px; max-width: 320px"><i style="width: 30%"></i></div></div><button class="btn btn-secondary btn-sm">Continuer</button></div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="mis">
+            <div class="card-h"><h3 id="mis">Ma mission en cours</h3><span class="mono muted">M-2026-014</span></div>
+            <div class="card-b grid-4 small">
+              <div><span class="muted">Client</span><br><b>Helioris Énergie</b></div>
+              <div><span class="muted">Période</span><br><span class="num">01/06/2026 → 30/11/2026</span></div>
+              <div><span class="muted">TJM contractuel</span><br><b class="amt">650,00 € HT</b></div>
+              <div><span class="muted">Jours consommés</span><br><b class="num">98 / 125</b></div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <div class="card"><div class="card-h"><h3>Derniers documents</h3><a href="#" class="small">Tous</a></div>
+              <div class="list small">
+                <div class="row between"><span>Bulletin de paie · octobre 2026</span><span class="muted num">07/11/2026</span></div>
+                <div class="row between"><span>Relevé compte d'activité · octobre</span><span class="muted num">06/11/2026</span></div>
+                <div class="row between"><span>Note de frais NDF-2026-0187 remboursée</span><span class="muted num">31/10/2026</span></div>
+              </div></div>
+            <div class="card"><div class="card-h"><h3>Simulateur</h3><span class="badge b-ai">Simulation</span></div>
+              <div class="card-b stack small" style="gap: 8px"><p>Avec le TJM de l'avenant (690 €) et 20 jours/mois, salaire net mensuel estimé :</p><b class="amt" style="font-size: 22px">≈ 5 060 €</b><p class="src">Hypothèses : frais de gestion 8 %, aucune note de frais, barème cotisations v2026.4. Estimation, non contractuelle.</p><button class="btn btn-secondary btn-sm" style="align-self: flex-start">Ajuster la simulation</button></div></div>
+          </section>
+        </div>
+
+        <aside class="side panel-ai" style="padding: 16px; display: flex; flex-direction: column; gap: 12px" aria-labelledby="as">
+          <div class="row between"><h3 id="as">Assistant</h3><span class="small muted">accès : votre dossier uniquement</span></div>
+          <div class="row" style="gap: 6px"><span class="chip">Pourquoi mon solde a augmenté ?</span><span class="chip">Quand serai-je payée ?</span><span class="chip">Poser des congés</span></div>
+          <div style="align-self: flex-end; background: var(--color-bg-surface); border: 1px solid var(--color-border-default); padding: 10px 12px; border-radius: 12px 12px 4px 12px; max-width: 90%" class="small">Pourquoi mon solde a augmenté de 2 211,60 € ?</div>
+          <div style="background: var(--color-bg-surface); border: 1px solid var(--color-border-default); padding: 12px; border-radius: 12px 12px 12px 4px" class="small stack">
+            <p>En octobre, votre facture de <b>13 000,00 € HT</b> a été encaissée. Ont été déduits : frais de gestion (1 040,00 €), votre note de frais remboursée (186,40 €), le coût employeur de votre salaire (8 950,00 €) et la réserve financière (612,00 €).</p>
+            <p class="src">Sources : relevé d'octobre [1] · facture F-2026-0412 [2]</p>
+            <div class="row" style="gap: 6px"><a href="CO-Compte.dc.html" class="btn btn-secondary btn-sm">Voir le calcul</a><button class="btn btn-ghost btn-sm" aria-label="Réponse utile">Utile</button><button class="btn btn-ghost btn-sm">Parler à ma gestionnaire</button></div>
+          </div>
+          <label class="field" style="margin-top: auto"><span class="label">Votre question</span><input class="input" value="" placeholder="Ex. combien de jours de congés me reste-t-il ?"></label>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1250}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.theme ?? 'light' }; }
+}
+</script>
+</body>
+</html>

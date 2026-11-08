@@ -11,7 +11,7 @@ SaaS multi-tenant pour sociétés de portage salarial françaises. Périmètre c
 - Intégration externe : statut « non connecté » tant que credentials officiels et tests réels absents. Faux fournisseur = local uniquement.
 - Une fonction n'est « terminée » que si UI + API + persistance + droits + validations + erreurs + audit + tests + doc existent. Mettre à jour la matrice avec preuve.
 - Pas de données clients réelles dans exemples/tests. Seeds démo séparés de la prod.
-- Design : Claude Design est la source de vérité visuelle (non importé à ce jour, voir `docs/DESIGN_HANDOFF.md`).
+- Design : Claude Design est la source de vérité visuelle : tokens/CSS dans `packages/design-system`, état et écarts dans `docs/DESIGN_HANDOFF.md`. Tokens sémantiques uniquement, pas d'hex en dur.
 
 ## Commandes
 `pnpm setup | dev | test | lint | build | typecheck | migrate | seed`

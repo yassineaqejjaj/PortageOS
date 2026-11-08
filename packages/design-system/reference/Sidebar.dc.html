@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Navigation latérale</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<nav aria-label="Navigation principale" style="background: #15243B; color: #C9D3E3; min-height: 100%; height: 100%; width: 100%; display: flex; flex-direction: column; font-family: Inter, system-ui, sans-serif; font-size: 13px">
+  <div style="display: flex; align-items: center; gap: 10px; padding: 18px 18px 14px">
+    <svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#4F46E5"></rect><path d="M11 24l9-6 9 6" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path><path d="M11 17l9-6 9 6" stroke="#5EEAD4" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: .04em; color: #fff">PORTAGE<span style="color: #5EEAD4"> OS</span></span>
+    <span style="margin-left: auto; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #2A3F61; color: #C9D3E3">{{portalLabel}}</span>
+  </div>
+  <div style="flex: 1; overflow-y: auto; padding: 4px 10px 12px; display: flex; flex-direction: column; gap: 1px">
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="12">
+      <sc-if value="{{it.isGroup}}" hint-placeholder-val="{{ false }}">
+        <div style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: #8C9AB3; padding: 14px 10px 6px; font-weight: 600">{{it.label}}</div>
+      </sc-if>
+      <sc-if value="{{it.isLink}}" hint-placeholder-val="{{ true }}">
+        <a href="{{it.href}}" aria-current="{{it.current}}" style="display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: 8px; text-decoration: none; color: {{it.color}}; background: {{it.bg}}; font-weight: {{it.weight}}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{it.d}}"></path></svg>
+          <span style="flex: 1">{{it.label}}</span>
+          <sc-if value="{{it.badge}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: {{it.badgeBg}}; color: #fff; display: inline-flex; align-items: center; justify-content: center">{{it.badge}}</span></sc-if>
+        </a>
+      </sc-if>
+    </sc-for>
+  </div>
+  <div style="border-top: 1px solid #2A3F61; padding: 12px 14px; display: flex; align-items: center; gap: 10px">
+    <span style="width: 32px; height: 32px; border-radius: 50%; background: #2A3F61; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px">{{userIni}}</span>
+    <div style="flex: 1; min-width: 0"><div style="color: #fff; font-weight: 600">{{userName}}</div><div style="font-size: 11.5px; color: #8C9AB3">{{userRole}}</div></div>
+    <button aria-label="Réduire la navigation" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #2A3F61; background: transparent; color: #C9D3E3; cursor: pointer">«</button>
+  </div>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"portal":{"editor":"enum","options":["bo","consultant","client"],"default":"bo"},"active":{"editor":"text","default":"ops"},"$preview":{"width":248,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const portal = this.props.portal ?? 'bo';
+    const active = this.props.active ?? (portal === 'bo' ? 'ops' : 'home');
+    const I = {
+      home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', ai:'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6',
+      users:'M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-1a4 4 0 0 0-3-3.9M16 4.1a3.5 3.5 0 0 1 0 6.8',
+      bld:'M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3', crm:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+      doc:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6', bag:'M4 7h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zM9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18',
+      cal:'M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM16 3v4M8 3v4M4 10h16', rec:'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3',
+      eur:'M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9', bank:'M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18', pay:'M4 7h15a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 7l12-3v3M16 13.5h.01',
+      led:'M4 19V5M4 19h16M8 15l4-4 3 3 5-6', rh:'M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z', sh:'M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4',
+      book:'M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11', chart:'M4 20V10M10 20V4M16 20v-7M2 20h20', chat:'M4 5h16v11H8l-4 4z',
+      gear:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'
+    };
+    const G = (label) => ({ isGroup: true, label });
+    const L = (key, label, d, href, badge, tone) => ({ key, label, d, href: href || '#', badge: badge || '', badgeBg: tone === 'ai' ? '#6D4AE0' : '#C43C45' });
+    const sets = {
+      bo: [G('Pilotage'), L('ops','Operations Center',I.home,'BO-Operations.dc.html','7'), L('agents','Agents IA',I.ai,'BO-Agents.dc.html','5','ai'), L('pil','Pilotage',I.chart),
+           G('Relation'), L('crmc','CRM consultants',I.crm), L('crme','CRM entreprises',I.bld), L('cons','Consultants',I.users), L('ctr','Contrats',I.doc,'#','2'), L('mis','Missions',I.bag),
+           G('Opérations'), L('cra','Activité / CRA',I.cal,'#','4'), L('ndf','Notes de frais',I.rec,'#','3'), L('fac','Facturation',I.eur,'BO-Facturation.dc.html','3'), L('tre','Trésorerie',I.bank), L('paie','Paie',I.pay,'BO-Paie.dc.html','2'), L('cpt','Comptes d’activité',I.led),
+           G('Gouvernance'), L('rh','RH',I.rh), L('conf','Conformité',I.sh,'#','1'), L('compta','Comptabilité',I.book), L('sup','Support',I.chat), L('cfg','Configuration',I.gear)],
+      consultant: [L('home','Accueil',I.home,'CO-Accueil.dc.html'), L('mis','Mes missions',I.bag), L('cra','CRA & absences',I.cal,'#','1'), L('ndf','Notes de frais',I.rec), L('cpt','Compte d’activité',I.led,'CO-Compte.dc.html'), L('sim','Simulateur de salaire',I.chart), L('fac','Factures liées',I.eur), L('docs','Bulletins & documents',I.doc), L('ctr','Contrats & signatures',I.sh,'#','1'), L('rh','Services RH',I.rh), L('sup','Demandes & support',I.chat), L('ai','Assistant',I.ai), L('cfg','Préférences',I.gear)],
+      client: [L('home','Accueil',I.home), L('cons','Consultants & prestations',I.users), L('cra','CRA à valider',I.cal,'CL-CRA.dc.html','2'), L('bc','Bons de commande',I.rec), L('ctr','Contrats',I.doc), L('fac','Factures & avoirs',I.eur), L('lit','Litiges',I.sh), L('ai','Assistant',I.ai), L('cfg','Paramètres',I.gear)]
+    };
+    const items = (sets[portal] || sets.bo).map((it) => it.isGroup ? { ...it, isLink: false } : ({
+      ...it, isGroup: false, isLink: true,
+      current: it.key === active ? 'page' : 'false',
+      bg: it.key === active ? '#2A3F61' : 'transparent', color: it.key === active ? '#FFFFFF' : '#C9D3E3', weight: it.key === active ? 600 : 500
+    }));
+    const users = { bo: ['LF','Léa Fontaine','Gestionnaire opérations'], consultant: ['CM','Camille Moreau','Consultante portée'], client: ['SL','Sophie Lemaire','Approbatrice · Banque Méridienne'] };
+    const u = users[portal] || users.bo;
+    return { items, portalLabel: { bo:'Gestion', consultant:'Consultant', client:'Client' }[portal] || 'Gestion', userIni: u[0], userName: u[1], userRole: u[2] };
+  }
+}
+</script>
+</body>
+</html>

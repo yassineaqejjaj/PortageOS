@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Compte d'activité</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po app" data-theme="{{theme}}">
+  <div class="app-nav"><dc-import name="Sidebar" portal="consultant" active="cpt" hint-size="100%,900px"></dc-import></div>
+  <div class="app-main">
+    <dc-import name="Topbar" portal="consultant" period="Octobre 2026" hint-size="100%,64px"></dc-import>
+    <main class="content">
+      <div class="row between">
+        <div class="stack" style="gap: 4px"><nav class="small muted" aria-label="Fil d'Ariane"><a href="CO-Accueil.dc.html">Accueil</a> / Compte d'activité</nav><h1>Compte d'activité</h1><p class="small muted">Relevé de l'activité d'octobre 2026 · arrêté au 05/11/2026</p></div>
+        <div class="row" style="gap: 8px"><button class="btn btn-secondary">‹ Septembre</button><button class="btn btn-secondary" disabled>Novembre ›</button><button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>Relevé PDF</button></div>
+      </div>
+
+      <section class="grid-4">
+        <div class="card kpi"><span class="eyebrow">Solde au 01/10</span><span class="v">3 420,00 €</span></div>
+        <div class="card kpi"><span class="eyebrow">Crédits</span><span class="v" style="color: var(--color-status-success)">+13 000,00 €</span><span class="src">1 encaissement</span></div>
+        <div class="card kpi"><span class="eyebrow">Débits</span><span class="v" style="color: var(--color-status-danger)">−10 788,40 €</span><span class="src">4 mouvements</span></div>
+        <div class="card kpi" style="border-color: var(--color-action-primary)"><span class="eyebrow">Solde au 05/11</span><span class="v">5 631,60 €</span><span class="src">disponible pour vos prochains salaires</span></div>
+      </section>
+
+      <div class="split">
+        <section class="card main">
+          <div class="card-h"><h3>Mouvements</h3><span class="small muted">Sélectionnez une ligne pour voir son calcul</span></div>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Date</th><th>Mouvement</th><th>Référence</th><th class="r">Débit</th><th class="r">Crédit</th><th class="r">Solde</th></tr></thead>
+            <tbody>
+              <tr><td class="num">01/10/2026</td><td class="muted">Solde reporté</td><td></td><td></td><td></td><td class="r amt">3 420,00 €</td></tr>
+              <tr><td class="num">05/11/2026</td><td><b>Encaissement facture</b><div class="small muted">Helioris Énergie · 20 j × 650,00 € HT</div></td><td class="mono">F-2026-0412</td><td></td><td class="r amt pos">13 000,00 €</td><td class="r amt">16 420,00 €</td></tr>
+              <tr><td class="num">05/11/2026</td><td><b>Frais de gestion</b><div class="small muted">8,00 % du CA encaissé, selon votre contrat</div></td><td class="mono">FG-2026-10</td><td class="r amt neg">1 040,00 €</td><td></td><td class="r amt">15 380,00 €</td></tr>
+              <tr><td class="num">05/11/2026</td><td><b>Remboursement note de frais</b><div class="small muted">Déplacements Lyon ↔ Paris, 3 justificatifs</div></td><td class="mono">NDF-2026-0187</td><td class="r amt neg">186,40 €</td><td></td><td class="r amt">15 193,60 €</td></tr>
+              <tr class="sel"><td class="num">05/11/2026</td><td><b>Salaire d'octobre — coût employeur</b><div class="small muted">Versé le 10/11/2026 · détail ci-contre</div></td><td class="mono">BUL-2026-10-CM</td><td class="r amt neg">8 950,00 €</td><td></td><td class="r amt">6 243,60 €</td></tr>
+              <tr><td class="num">05/11/2026</td><td><b>Réserve financière</b><div class="small muted">Montant calculé par la règle RES-2026.3, restitué à la sortie</div></td><td class="mono">RES-2026-10</td><td class="r amt neg">612,00 €</td><td></td><td class="r amt">5 631,60 €</td></tr>
+            </tbody>
+          </table></div>
+        </section>
+
+        <aside class="side stack" style="gap: 16px">
+          <section class="card">
+            <div class="card-h"><h3>D'où viennent les 8 950,00 € ?</h3><span class="badge b-success">Calcul confirmé</span></div>
+            <div class="card-b calc">
+              <div><span>Salaire brut</span><span class="amt">6 120,00 €</span></div>
+              <div><span>Cotisations patronales</span><span class="amt">2 830,00 €</span></div>
+              <div class="total"><span>Coût employeur</span><span class="amt">8 950,00 €</span></div>
+              <div><span class="muted">dont net à payer avant impôt</span><span class="amt muted">4 772,00 €</span></div>
+            </div>
+            <div class="card-f" style="justify-content: space-between"><span class="src">Source : bulletin d'octobre (prestataire de paie, 07/11/2026)</span><a href="#" class="small">Ouvrir le bulletin</a></div>
+          </section>
+          <section class="card card-b stack" style="gap: 8px">
+            <div class="row between"><h4>Réserve financière cumulée</h4><span class="amt">3 672,00 €</span></div>
+            <p class="small muted">Somme mise de côté chaque mois et restituée selon les règles de votre contrat. Les taux appliqués sont versionnés (RES-2026.3).</p>
+          </section>
+          <section class="alert a-info small"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><div>Un montant vous semble incorrect ? <a href="#">Ouvrir une demande</a> : la ligne concernée sera jointe automatiquement.</div></section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.theme ?? 'light' }; }
+}
+</script>
+</body>
+</html>

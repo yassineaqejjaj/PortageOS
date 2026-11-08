@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Agent Workspace</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po app" data-theme="{{theme}}">
+  <div class="app-nav"><dc-import name="Sidebar" portal="bo" active="agents" hint-size="100%,900px"></dc-import></div>
+  <div class="app-main">
+    <dc-import name="Topbar" portal="bo" tenant="Altitude Portage" period="Octobre 2026" hint-size="100%,64px"></dc-import>
+    <main class="content">
+      <section class="panel-ai" style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <label for="goal" class="eyebrow" style="color: var(--color-ai)">Quel objectif souhaitez-vous atteindre ?</label>
+        <div class="row" style="flex-wrap: nowrap; gap: 10px">
+          <input id="goal" class="input" style="height: 48px; font-size: 16px; flex: 1" value="Prépare la clôture d'octobre pour Altitude Portage">
+          <button class="btn btn-ai btn-lg">Planifier</button>
+        </div>
+        <div class="row small" style="gap: 8px"><span class="muted">Objectifs récurrents :</span><span class="chip">Relancer les factures échues</span><span class="chip">Préparer la paie de novembre</span><span class="chip">Pourquoi les revenus baissent ?</span><span class="chip">Missions finissant sous 30 jours</span></div>
+      </section>
+
+      <div class="row between">
+        <div class="stack" style="gap: 4px">
+          <div class="row" style="gap: 8px"><h1>Clôture d'octobre 2026</h1><span class="badge {{runCls}}">{{runLabel}}</span></div>
+          <p class="muted small">Lancé par Léa Fontaine le 08/11/2026 09:00 · Orchestrateur + 4 agents · droits : Gestionnaire opérations (aucun virement, aucune validation de paie)</p>
+        </div>
+        <div class="row" style="gap: 8px">
+          <button class="btn btn-secondary" onClick="{{togglePause}}">{{pauseLabel}}</button>
+          <button class="btn btn-ghost" style="color: var(--color-status-danger)">Arrêter l'exécution</button>
+          <button class="btn btn-ghost">Escalader à un humain</button>
+        </div>
+      </div>
+
+      <div class="grid-4">
+        <div class="card kpi"><span class="eyebrow">Étapes</span><span class="v">{{doneCount}}/7</span><span class="src">terminées ou approuvées</span></div>
+        <div class="card kpi"><span class="eyebrow">À valider</span><span class="v">{{pendingCount}}</span><span class="src">décisions humaines requises</span></div>
+        <div class="card kpi"><span class="eyebrow">Anomalies</span><span class="v">6</span><span class="src">dont 4 bloquantes</span></div>
+        <div class="card kpi"><span class="eyebrow">Coût agents</span><span class="v">1,84 €</span><span class="src">quota mensuel : 12 % utilisé</span></div>
+      </div>
+
+      <div class="split">
+        <section class="card main" aria-labelledby="plan">
+          <div class="card-h"><h2 id="plan">Plan d'exécution</h2><span class="small muted">Cliquez une étape pour voir l'action et ses sources</span></div>
+          <div class="list">
+            <sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
+              <button onClick="{{s.pick}}" style="all: unset; box-sizing: border-box; display: flex; gap: 14px; align-items: center; width: 100%; cursor: pointer; padding: 14px 16px; border-bottom: 1px solid var(--color-border-default); background: {{s.bg}}; border-left: 3px solid {{s.edge}}">
+                <span class="mono muted" style="width: 22px">{{s.n}}</span>
+                <span style="flex: 1; min-width: 0"><b style="display: block">{{s.t}}</b><span class="small muted">{{s.agent}} · {{s.d}}</span></span>
+                <span class="badge {{s.cls}}">{{s.st}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </section>
+
+        <aside class="side card" style="border-color: color-mix(in srgb, var(--color-ai) 40%, transparent)" aria-labelledby="act">
+          <div class="card-h"><div class="stack" style="gap: 4px"><div class="row" style="gap: 6px"><span class="badge {{sel.cls}}">{{sel.st}}</span><span class="badge {{sel.riskCls}}">Risque {{sel.risk}}</span></div><h3 id="act">{{sel.action}}</h3></div></div>
+          <div class="card-b stack" style="gap: 14px">
+            <div class="small"><b>Responsable :</b> {{sel.agent}}</div>
+            <div class="small"><b>Objets touchés :</b> {{sel.objects}}</div>
+            <div class="grid-2" style="gap: 8px">
+              <div style="padding: 10px; border-radius: 8px; background: var(--color-bg-subtle)" class="small"><span class="eyebrow">Avant</span><p style="margin-top: 4px; white-space: pre-line">{{sel.before}}</p></div>
+              <div style="padding: 10px; border-radius: 8px; background: var(--color-status-success-bg)" class="small"><span class="eyebrow">Après</span><p style="margin-top: 4px; white-space: pre-line">{{sel.after}}</p></div>
+            </div>
+            <div class="panel-ai small" style="padding: 10px 12px"><span class="eyebrow" style="color: var(--color-ai)">Résumé du raisonnement</span><p style="margin-top: 4px">{{sel.why}}</p></div>
+            <div class="stack small" style="gap: 6px"><span class="eyebrow">Sources consultées</span>
+              <sc-for list="{{sel.sources}}" as="src" hint-placeholder-count="2"><div class="row" style="gap: 8px; flex-wrap: nowrap"><span class="tag mono">{{src.k}}</span><span>{{src.t}}</span></div></sc-for>
+            </div>
+            <sc-if value="{{sel.missing}}" hint-placeholder-val="{{ false }}"><div class="alert a-warning small"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l9 16H3zM12 10v4M12 17h.01"></path></svg><div><b>Donnée manquante :</b> {{sel.missing}}</div></div></sc-if>
+            <div class="small muted"><b>Validation exigée :</b> {{sel.approval}} · <b>Annulable :</b> {{sel.undo}}</div>
+          </div>
+          <div class="card-f">
+            <sc-if value="{{sel.canAct}}" hint-placeholder-val="{{ true }}">
+              <button class="btn btn-ghost btn-sm">Modifier</button><button class="btn btn-secondary btn-sm" onClick="{{reject}}">Rejeter…</button><button class="btn btn-primary btn-sm" onClick="{{approve}}">Approuver</button>
+            </sc-if>
+            <sc-if value="{{sel.noRight}}" hint-placeholder-val="{{ false }}"><span class="small muted">Action réservée au rôle Gestionnaire paie</span><button class="btn btn-secondary btn-sm">Transmettre à la paie</button></sc-if>
+            <sc-if value="{{sel.isFail}}" hint-placeholder-val="{{ false }}">
+              <button class="btn btn-secondary btn-sm">Escalader</button><button class="btn btn-primary btn-sm" onClick="{{retry}}">Réessayer</button>
+            </sc-if>
+            <sc-if value="{{sel.isDone}}" hint-placeholder-val="{{ false }}"><span class="small muted">Journalisé · <span class="mono">{{sel.audit}}</span></span><button class="btn btn-ghost btn-sm">Voir le journal</button></sc-if>
+          </div>
+        </aside>
+      </div>
+
+      <section class="card" aria-labelledby="fb">
+        <div class="card-h"><h3 id="fb">Résultat attendu &amp; retour</h3><div class="row" style="gap: 6px"><button class="btn btn-ghost btn-sm" aria-label="Plan utile">Utile</button><button class="btn btn-ghost btn-sm" aria-label="Plan à améliorer">À améliorer</button></div></div>
+        <div class="card-b small">Une fois toutes les étapes approuvées : 15 factures émises via la plateforme agréée, variables de paie transmises au prestataire, rapport de clôture PDF. Les virements de salaires et le dépôt DSN restent des actions séparées réservées aux rôles Paie et Finance.</div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1600}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { sel: 3, paused: false, over: {} }; }
+  renderVals() {
+    const ST = {
+      done: ['Exécuté','b-success'], ready: ['Prêt à valider','b-warning'], draft: ['Brouillon préparé','b-ai'], run: ['En cours','b-info'],
+      fail: ['Échec','b-danger'], wait: ['En attente','b-neutral'], appr: ['Approuvé','b-info'], rej: ['Rejeté','b-neutral'], paused: ['En pause','b-neutral']
+    };
+    const base = [
+      { n:1, t:'Collecter les CRA d’octobre', agent:'Operations Agent', d:'14/15 reçus', s:'done', risk:'faible', action:'Collecte des CRA', objects:'15 CRA · période 01/10 → 31/10/2026', before:'14 CRA reçus\n1 manquant', after:'Relance automatique envoyée au consultant manquant (autorisée par règle)', why:'Les CRA reçus couvrent 14 missions actives sur 15.', sources:[{k:'[1]',t:'Module CRA · 08/11 09:02'}], missing:'', approval:'aucune (lecture seule)', undo:'—', audit:'act_7A10' },
+      { n:2, t:'Contrôler les jours déclarés', agent:'Operations Agent', d:'1 anomalie', s:'done', risk:'faible', action:'Contrôle de cohérence des CRA', objects:'14 CRA', before:'—', after:'1 anomalie : Karim Benali 23 j / 22 ouvrés', why:'Comparaison des jours saisis au calendrier des jours ouvrés d’octobre 2026 (22 jours).', sources:[{k:'[1]',t:'Calendrier ouvré FR 2026 · moteur de règles CAL v2026.1'}], missing:'', approval:'aucune', undo:'—', audit:'act_7A14' },
+      { n:3, t:'Relancer les validations client', agent:'Operations Agent', d:'3 e-mails prêts', s:'ready', risk:'faible', action:'Envoyer 3 relances de validation CRA', objects:'CRA Julien Bernard, Sofia Haddad (Banque Méridienne) · Hugo Lambert (Atlas Mobilités)', before:'3 CRA en attente\ndepuis 4 à 6 jours', after:'3 e-mails envoyés\naux approbateurs désignés\nrappel auto à J+2', why:'Les CRA sont soumis depuis plus de 3 jours ouvrés (seuil société). Les approbateurs sont ceux du contrat de prestation.', sources:[{k:'[1]',t:'CRA-2026-10-021 / -027 / -033'},{k:'[2]',t:'Contrats CP-2026-021, CP-2026-027 · circuit d’approbation'}], missing:'', approval:'gestionnaire opérations', undo:'oui, 10 min après envoi', audit:'' },
+      { n:4, t:'Préparer les brouillons de factures', agent:'Finance Agent', d:'11/15 générés', s:'run', risk:'moyen', action:'Générer 15 brouillons de facture', objects:'15 factures · 248 600,00 € HT', before:'11 brouillons', after:'15 brouillons\n(4 dépendent des CRA en attente)', why:'Montant = jours validés × TJM du contrat. Aucune facture n’est émise sans validation.', sources:[{k:'[1]',t:'CRA validés'},{k:'[2]',t:'Barème TJM des missions'}], missing:'CRA validés pour 4 missions', approval:'finance avant émission', undo:'oui (brouillons)', audit:'' },
+      { n:5, t:'Lire le relevé bancaire Qonto', agent:'Finance Agent', d:'erreur 503', s:'fail', risk:'faible', action:'Importer les mouvements bancaires', objects:'Compte Qonto ••• 214', before:'Dernier import 07/11 18:00', after:'—', why:'Le service bancaire a répondu 503 à trois reprises (06:02, 06:17, 06:47).', sources:[{k:'[1]',t:'Intégration Qonto · incident INT-7F21'}], missing:'Mouvements du 07/11 18:00 au 08/11', approval:'—', undo:'—', audit:'' },
+      { n:6, t:'Rapprocher les encaissements', agent:'Finance Agent', d:'38 proposés', s:'draft', risk:'faible', action:'Rapprocher 38 encaissements', objects:'38 lignes bancaires ↔ 38 factures', before:'38 encaissements non lettrés', after:'35 lettrés automatiquement\n3 à revoir manuellement', why:'Correspondance par montant, référence et payeur. Les 3 lignes à revoir ont une confiance < 90 %.', sources:[{k:'[1]',t:'Relevé au 07/11 18:00'},{k:'[2]',t:'Factures émises sept.–oct.'}], missing:'Mouvements récents (étape 5 en échec)', approval:'finance', undo:'oui', audit:'' },
+      { n:7, t:'Contrôler les variables de paie', agent:'Payroll Agent', d:'2 anomalies', s:'ready', risk:'élevé', action:'Corriger la variable « jours travaillés » de Karim Benali', objects:'Variables de paie oct. · Karim Benali · CRA-2026-10-009', before:'23 jours\nCA 13 340,00 € HT', after:'22 jours (à confirmer)\nCA 12 760,00 € HT', why:'Le CRA déclare un jour de plus que les jours ouvrés. Le 1er jour supplémentaire peut être un samedi travaillé : à confirmer avec le consultant.', sources:[{k:'[1]',t:'CRA-2026-10-009'},{k:'[2]',t:'Moteur de règles PAIE v2026.4 · contrôle JOURS-01'}], missing:'Confirmation du consultant ou du client', approval:'gestionnaire paie (votre rôle ne peut pas approuver)', undo:'oui, avant calcul', audit:'' }
+    ];
+    const over = this.state.over;
+    const steps = base.map((b, i) => {
+      let s = over[i] || b.s;
+      if (this.state.paused && (s === 'run')) s = 'paused';
+      const [st, cls] = ST[s];
+      const on = this.state.sel === i;
+      return { ...b, key: s, st, cls, bg: on ? 'var(--color-action-primary-soft)' : 'transparent', edge: on ? 'var(--color-action-primary)' : 'transparent', pick: () => this.setState({ sel: i }) };
+    });
+    const sel0 = steps[this.state.sel];
+    const riskCls = sel0.risk === 'élevé' ? 'b-danger' : sel0.risk === 'moyen' ? 'b-warning' : 'b-success';
+    const sel = { ...sel0, riskCls, canAct: (sel0.key === 'ready' || sel0.key === 'draft') && !sel0.approval.includes('ne peut pas'), noRight: (sel0.key === 'ready') && sel0.approval.includes('ne peut pas'), isFail: sel0.key === 'fail', isDone: ['done','appr'].includes(sel0.key), audit: sel0.audit || 'act_pending' };
+    const setS = (v) => this.setState({ over: { ...this.state.over, [this.state.sel]: v } });
+    const doneCount = steps.filter((s) => ['done','appr'].includes(s.key)).length;
+    const pendingCount = steps.filter((s) => ['ready','draft'].includes(s.key)).length;
+    return {
+      theme: this.props.theme ?? 'light', steps, sel, doneCount, pendingCount,
+      runLabel: this.state.paused ? 'En pause' : 'En cours', runCls: this.state.paused ? 'b-neutral' : 'b-info',
+      pauseLabel: this.state.paused ? 'Reprendre' : 'Mettre en pause',
+      togglePause: () => this.setState({ paused: !this.state.paused }),
+      approve: () => setS('appr'), reject: () => setS('rej'), retry: () => setS('run')
+    };
+  }
+}
+</script>
+</body>
+</html>

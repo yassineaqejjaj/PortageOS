@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>00.1 Foundations et tokens</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po" data-theme="{{theme}}" style="min-height: 100vh; width: 100%">
+<div style="max-width: 1344px; margin: 0 auto; padding: 48px; display: flex; flex-direction: column; gap: 48px">
+  <div class="stack" style="gap: 8px">
+    <span class="eyebrow">00 · Design System · v0.1</span>
+    <h1 style="font-size: 40px; line-height: 48px">Foundations &amp; tokens</h1>
+    <p class="muted" style="max-width: 760px; font-size: 15px">Primitives → sémantiques → composants. Les écrans n'utilisent que les tokens sémantiques (<span class="mono">color.bg.*</span>, <span class="mono">color.text.*</span>…), ce qui rend le mode sombre et la marque blanche triviaux. Basculer « theme » dans Tweaks pour voir la variante sombre.</p>
+  </div>
+
+  <section class="doc-sec">
+    <header><h2>Couleurs primitives</h2><span class="spec">color.primitive.*</span></header>
+    <div class="grid-4" style="grid-template-columns: repeat(8, minmax(0, 1fr))">
+      <sc-for list="{{prims}}" as="c" hint-placeholder-count="16">
+        <div class="sw"><i style="background: {{c.hex}}"></i><div><b class="small">{{c.n}}</b><span class="spec">{{c.hex}}</span></div></div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Couleurs sémantiques</h2><span class="spec">light / dark · contraste mesuré sur color.bg.surface</span></header>
+    <div class="card tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Usage</th><th>Contraste (light)</th></tr></thead>
+        <tbody>
+          <sc-for list="{{sems}}" as="s" hint-placeholder-count="12">
+            <tr>
+              <td class="mono">{{s.t}}</td>
+              <td><span class="row" style="gap: 8px"><i style="width: 20px; height: 20px; border-radius: 4px; border: 1px solid #DFE5EE; background: {{s.l}}"></i><span class="spec">{{s.l}}</span></span></td>
+              <td><span class="row" style="gap: 8px"><i style="width: 20px; height: 20px; border-radius: 4px; border: 1px solid #26334D; background: {{s.d}}"></i><span class="spec">{{s.d}}</span></span></td>
+              <td class="muted">{{s.u}}</td>
+              <td class="mono">{{s.c}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert a-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><div><b>Règle :</b> aucune information portée par la couleur seule. Chaque statut combine forme d'icône (rond = succès, triangle = attention, losange = danger), libellé et couleur. L'accent teal <span class="mono">#0F9D92</span> (3,3:1) est réservé aux surfaces et graphiques ; en texte on utilise <span class="mono">color.action.accent-text #0B7A72</span> (5,2:1).</div></div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Typographie</h2><span class="spec">Plus Jakarta Sans (titres) · Inter (UI, tableaux) · JetBrains Mono (identifiants) — OFL 1.1, auto-hébergées en prod</span></header>
+    <div class="card">
+      <sc-for list="{{types}}" as="t" hint-placeholder-count="10">
+        <div class="row" style="padding: 14px 20px; border-bottom: 1px solid var(--color-border-default); flex-wrap: nowrap; gap: 24px">
+          <span class="mono muted" style="width: 180px; flex: none">{{t.tok}}</span>
+          <span style="flex: 1; min-width: 0; font-family: {{t.f}}; font-size: {{t.s}}; line-height: {{t.lh}}; font-weight: {{t.w}}">{{t.ex}}</span>
+          <span class="spec" style="width: 200px; flex: none; text-align: right">{{t.spec}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div class="grid-3">
+      <div class="card card-b stack"><h4>Montants</h4><span class="amt" style="font-size: 20px">13 000,00 €</span><span class="amt neg">−1 040,00 €</span><p class="muted small">Chiffres tabulaires, espace fine insécable comme séparateur de milliers, virgule décimale, symbole après le montant. Négatif : signe « − » + couleur + libellé de colonne.</p></div>
+      <div class="card card-b stack"><h4>Dates &amp; périodes</h4><span class="num">08/11/2026</span><span class="num">Octobre 2026 · 01/10 → 31/10/2026</span><p class="muted small">JJ/MM/AAAA partout. Relatif (« il y a 2 h ») uniquement dans les journaux, avec date exacte au survol.</p></div>
+      <div class="card card-b stack"><h4>Identifiants</h4><span class="mono">F-2026-0412 · M-2026-014 · CRA-2026-10-014</span><span class="mono">FR76 •••• •••• •••• •••• •••• 214</span><p class="muted small">Mono pour références, IBAN masqué (4 derniers caractères), SIREN, codes DSN.</p></div>
+    </div>
+  </section>
+
+  <section class="grid-2" style="gap: 32px">
+    <div class="doc-sec">
+      <header><h2>Espacement</h2><span class="spec">space.* · base 8 px</span></header>
+      <div class="card card-b stack">
+        <sc-for list="{{spaces}}" as="s" hint-placeholder-count="10">
+          <div class="row" style="gap: 16px; flex-wrap: nowrap"><span class="mono" style="width: 80px">{{s.t}}</span><i style="height: 12px; width: {{s.v}}; background: #4F46E5; border-radius: 2px"></i><span class="spec">{{s.v}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+    <div class="doc-sec">
+      <header><h2>Rayons &amp; élévation</h2><span class="spec">radius.* · shadow.*</span></header>
+      <div class="grid-3">
+        <div class="card card-b stack" style="border-radius: 4px"><b>radius.xs</b><span class="spec">4px · tags</span></div>
+        <div class="card card-b stack" style="border-radius: 8px"><b>radius.md</b><span class="spec">8px · inputs, boutons</span></div>
+        <div class="card card-b stack" style="border-radius: 12px"><b>radius.lg</b><span class="spec">12px · cartes</span></div>
+        <div class="card-b stack" style="background: var(--color-bg-surface); border-radius: 12px; box-shadow: var(--shadow-1)"><b>shadow.1</b><span class="spec">cartes au repos</span></div>
+        <div class="card-b stack" style="background: var(--color-bg-surface); border-radius: 12px; box-shadow: var(--shadow-2)"><b>shadow.2</b><span class="spec">popover, menus</span></div>
+        <div class="card-b stack" style="background: var(--color-bg-surface); border-radius: 12px; box-shadow: var(--shadow-3)"><b>shadow.3</b><span class="spec">drawer, modale, palette</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-3" style="gap: 24px">
+    <div class="doc-sec">
+      <header><h2>Motion</h2></header>
+      <div class="card"><table class="tbl compact"><tbody>
+        <tr><td class="mono">motion.fast</td><td>120 ms</td><td class="muted">hover, focus</td></tr>
+        <tr><td class="mono">motion.base</td><td>160 ms</td><td class="muted">popover, tabs</td></tr>
+        <tr><td class="mono">motion.slow</td><td>220 ms</td><td class="muted">drawer, modale</td></tr>
+        <tr><td class="mono">motion.ease</td><td colspan="2" class="spec">cubic-bezier(.2,.8,.2,1)</td></tr>
+      </tbody></table></div>
+      <p class="muted small">prefers-reduced-motion : transitions désactivées, les changements d'état restent annoncés (aria-live).</p>
+    </div>
+    <div class="doc-sec">
+      <header><h2>Breakpoints &amp; grille</h2></header>
+      <div class="card"><table class="tbl compact"><tbody>
+        <tr><td class="mono">bp.mobile</td><td>≤ 599</td><td class="muted">4 col · 16 gouttière</td></tr>
+        <tr><td class="mono">bp.tablet</td><td>600–1279</td><td class="muted">8 col · sidebar 72</td></tr>
+        <tr><td class="mono">bp.desktop</td><td>≥ 1280</td><td class="muted">12 col · 24 · sidebar 248</td></tr>
+        <tr><td class="mono">layout.max</td><td>1600</td><td class="muted">contenu centré</td></tr>
+        <tr><td class="mono">layout.drawer</td><td>480</td><td class="muted">volet droit</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="doc-sec">
+      <header><h2>Z-index &amp; densité</h2></header>
+      <div class="card"><table class="tbl compact"><tbody>
+        <tr><td class="mono">z.dropdown</td><td>1000</td></tr>
+        <tr><td class="mono">z.sticky</td><td>1100</td></tr>
+        <tr><td class="mono">z.drawer</td><td>1200</td></tr>
+        <tr><td class="mono">z.modal</td><td>1300</td></tr>
+        <tr><td class="mono">z.toast</td><td>1400</td></tr>
+        <tr><td class="mono">z.palette</td><td>1500</td></tr>
+      </tbody></table></div>
+      <p class="muted small">Densité « confort » (lignes 44 px) par défaut portails ; « compacte » (36 px) back-office. Zones cliquables ≥ 24 px (WCAG 2.5.8), 44 px sur mobile.</p>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Iconographie</h2><span class="spec">trait 2 px · grille 24 · coins arrondis · aria-hidden si décoratif, aria-label si seul</span></header>
+    <div class="card card-b" style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 16px">
+      <sc-for list="{{icons}}" as="i" hint-placeholder-count="20">
+        <div class="stack" style="align-items: center; gap: 6px; padding: 8px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{i.d}}"></path></svg><span class="spec">{{i.n}}</span></div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":2300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = (n, hex) => ({ n, hex });
+    return {
+      theme: this.props.theme ?? 'light',
+      prims: [P('ink.950','#0B1220'),P('navy.900','#15243B'),P('navy.700','#2A3F61'),P('indigo.600','#4F46E5'),P('indigo.700','#4338CA'),P('indigo.50','#EEF2FF'),P('teal.500','#0F9D92'),P('teal.50','#E7F7F4'),
+              P('gray.0','#FFFFFF'),P('gray.25','#F6F8FC'),P('gray.50','#EEF2F7'),P('gray.200','#DFE5EE'),P('gray.500','#637086'),P('gray.900','#172033'),P('ai.600','#6D4AE0'),P('ai.50','#F2EEFD'),
+              P('green.600','#17835C'),P('green.50','#E8F5EE'),P('amber.600','#B96B13'),P('amber.50','#FDF3E6'),P('red.600','#C43C45'),P('red.50','#FCECED'),P('blue.600','#2878C8'),P('blue.50','#EAF2FB')],
+      sems: [
+        { t:'color.bg.canvas', l:'#F6F8FC', d:'#0B1220', u:'Fond d’application', c:'—' },
+        { t:'color.bg.surface', l:'#FFFFFF', d:'#111A2C', u:'Cartes, tableaux, drawers', c:'—' },
+        { t:'color.bg.subtle', l:'#EEF2F7', d:'#17223A', u:'En-têtes de tableau, champs lecture seule', c:'—' },
+        { t:'color.bg.nav', l:'#15243B', d:'#080D18', u:'Sidebar', c:'texte nav 10,1:1' },
+        { t:'color.text.primary', l:'#172033', d:'#E6EBF4', u:'Texte courant', c:'16,1:1' },
+        { t:'color.text.secondary', l:'#637086', d:'#9AA7BD', u:'Métadonnées, aides', c:'5,0:1' },
+        { t:'color.border.default', l:'#DFE5EE', d:'#26334D', u:'Séparateurs', c:'décoratif' },
+        { t:'color.border.focus', l:'#4F46E5', d:'#A5B4FC', u:'Anneau de focus 2 px', c:'6,3:1' },
+        { t:'color.action.primary', l:'#4F46E5', d:'#4F46E5', u:'Bouton principal (texte blanc)', c:'6,3:1' },
+        { t:'color.action.accent-text', l:'#0B7A72', d:'#4FD1C5', u:'Liens opérationnels, montants positifs IA', c:'5,2:1' },
+        { t:'color.status.success', l:'#17835C', d:'#4ADE9B', u:'Payé, validé, conforme', c:'4,9:1' },
+        { t:'color.status.warning', l:'#B96B13', d:'#F5B45A', u:'À vérifier, échéance proche', c:'5,3:1' },
+        { t:'color.status.danger', l:'#C43C45', d:'#F2858C', u:'Bloquant, retard, erreur', c:'5,2:1' },
+        { t:'color.status.info', l:'#2878C8', d:'#7DB8F0', u:'Information, en cours', c:'4,6:1' },
+        { t:'color.ai.default', l:'#6D4AE0', d:'#B8A4FA', u:'Tout ce qui est produit par un agent', c:'5,9:1' }
+      ],
+      types: [
+        { tok:'type.display.xl', f:"'Plus Jakarta Sans'", s:'40px', lh:'48px', w:800, ex:'Clôture d’octobre 2026', spec:'40/48 · 800' },
+        { tok:'type.display.lg', f:"'Plus Jakarta Sans'", s:'28px', lh:'36px', w:700, ex:'Operations Center', spec:'28/36 · 700' },
+        { tok:'type.heading.md', f:"'Plus Jakarta Sans'", s:'20px', lh:'28px', w:700, ex:'Factures en retard', spec:'20/28 · 700' },
+        { tok:'type.heading.sm', f:"'Plus Jakarta Sans'", s:'16px', lh:'24px', w:650, ex:'Compte d’activité — Camille Moreau', spec:'16/24 · 650' },
+        { tok:'type.kpi', f:"'Plus Jakarta Sans'", s:'26px', lh:'32px', w:700, ex:'248 600 € HT', spec:'26/32 · 700 · tabular' },
+        { tok:'type.body.md', f:"'Inter'", s:'14px', lh:'20px', w:400, ex:'Le CRA de Karim Benali déclare 23 jours pour 22 jours ouvrés.', spec:'14/20 · 400' },
+        { tok:'type.body.sm', f:"'Inter'", s:'13px', lh:'18px', w:400, ex:'Cellule de tableau dense — Helioris Énergie', spec:'13/18 · 400' },
+        { tok:'type.label', f:"'Inter'", s:'12.5px', lh:'16px', w:600, ex:'Taux journalier (TJM)', spec:'12.5/16 · 600' },
+        { tok:'type.overline', f:"'Inter'", s:'11px', lh:'16px', w:600, ex:'PÉRIODE · OCTOBRE 2026', spec:'11/16 · 600 · +8 %' },
+        { tok:'type.mono', f:"'JetBrains Mono'", s:'12.5px', lh:'18px', w:400, ex:'F-2026-0412 · SIREN 912 345 678', spec:'12.5/18 · 400' }
+      ],
+      spaces: [['space.1','4px'],['space.2','8px'],['space.3','12px'],['space.4','16px'],['space.5','20px'],['space.6','24px'],['space.8','32px'],['space.10','40px'],['space.12','48px'],['space.16','64px']].map(([t,v])=>({t,v})),
+      icons: [
+        ['accueil','M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],['agents','M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6'],
+        ['consultants','M16 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-1a4 4 0 0 0-3-3.9M16 4.1a3.5 3.5 0 0 1 0 6.8'],
+        ['entreprise','M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3'],
+        ['contrat','M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6'],
+        ['mission','M4 7h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zM9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18'],
+        ['cra','M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM16 3v4M8 3v4M4 10h16'],
+        ['frais','M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3'],['facture','M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9'],
+        ['trésorerie','M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18'],['paie','M4 7h15a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM4 7l12-3v3M16 13.5h.01'],
+        ['compte','M4 19V5M4 19h16M8 15l4-4 3 3 5-6'],['rh','M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z'],
+        ['conformité','M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4'],['comptabilité','M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11'],
+        ['pilotage','M4 20V10M10 20V4M16 20v-7M2 20h20'],['support','M4 5h16v11H8l-4 4z'],
+        ['recherche','M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5'],['notifications','M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0'],['crm','M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z']
+      ].map(([n,d])=>({n,d}))
+    };
+  }
+}
+</script>
+</body>
+</html>

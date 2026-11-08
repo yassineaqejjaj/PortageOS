@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>PORTAGE OS — Plan des artboards</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4F46E5}a:hover{color:#4338CA}
+</style>
+</helmet>
+<div class="po" data-theme="{{theme}}" style="min-height: 100vh; width: 100%">
+  <header style="background: #0B1220; color: #fff; padding: 56px 48px 48px">
+    <div style="max-width: 1344px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px">
+      <div class="row" style="gap: 14px">
+        <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#4F46E5"></rect><path d="M11 24l9-6 9 6" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path><path d="M11 17l9-6 9 6" stroke="#5EEAD4" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path><rect x="11" y="28" width="18" height="3" rx="1.5" fill="#fff" opacity=".5"></rect></svg>
+        <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: .04em">PORTAGE<span style="color: #5EEAD4"> OS</span></span>
+        <span class="mono" style="color: #9AA7BD; margin-left: 8px">nom de travail · token brand.name</span>
+      </div>
+      <h1 style="color: #fff; font-size: 48px; line-height: 56px; max-width: 900px; font-weight: 800">Le poste de gestion complet du portage salarial — ERP métier, agents IA et pilotage.</h1>
+      <p style="color: #C9D3E3; font-size: 17px; max-width: 820px; line-height: 1.55">Projet Claude Design organisé en un design system partagé et six espaces fonctionnels. Données 100 % fictives et cohérentes entre écrans (2 sociétés de portage, 21 consultants dont 15 chez Altitude Portage, 6 clients). Période de référence : clôture d'octobre 2026, aujourd'hui 08/11/2026.</p>
+      <div class="row" style="gap: 10px">
+        <span class="tag" style="background: #15243B; border-color: #2A3F61; color: #C9D3E3">Desktop 1440</span>
+        <span class="tag" style="background: #15243B; border-color: #2A3F61; color: #C9D3E3">Tablet 1024</span>
+        <span class="tag" style="background: #15243B; border-color: #2A3F61; color: #C9D3E3">Mobile 390</span>
+        <span class="tag" style="background: #15243B; border-color: #2A3F61; color: #C9D3E3">Light + Dark</span>
+        <span class="tag" style="background: #15243B; border-color: #2A3F61; color: #C9D3E3">WCAG 2.2 AA visé</span>
+        <span class="tag" style="background: #15243B; border-color: #2A3F61; color: #C9D3E3">FR · EUR · JJ/MM/AAAA</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width: 1344px; margin: 0 auto; padding: 40px 48px 64px; display: flex; flex-direction: column; gap: 40px">
+    <section class="stack" style="gap: 16px">
+      <div class="row between"><h2>Artboards produits (lot 1)</h2><span class="muted small">Cliquez pour ouvrir en mode Play</span></div>
+      <div class="grid-3">
+        <sc-for list="{{boards}}" as="b" hint-placeholder-count="9">
+          <a href="{{b.href}}" class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit">
+            <div class="row between"><span class="mono muted">{{b.code}}</span><span class="badge {{b.cls}}">{{b.status}}</span></div>
+            <h3>{{b.name}}</h3>
+            <p class="muted small">{{b.desc}}</p>
+          </a>
+        </sc-for>
+      </div>
+    </section>
+
+    <section class="stack" style="gap: 16px">
+      <div class="row between"><h2>Sitemap complet &amp; état de conception</h2>
+        <div class="row" style="gap: 8px"><span class="badge b-success">Conçu</span><span class="badge b-info">Spécifié (routes, états)</span><span class="badge b-neutral">Lot suivant</span></div>
+      </div>
+      <div class="grid-3">
+        <sc-for list="{{areas}}" as="a" hint-placeholder-count="6">
+          <div class="card">
+            <div class="card-h"><h3>{{a.title}}</h3><span class="mono muted">{{a.prefix}}</span></div>
+            <div class="list">
+              <sc-for list="{{a.items}}" as="it" hint-placeholder-count="5">
+                <div class="row between" style="padding: 8px 16px; gap: 8px; flex-wrap: nowrap"><span style="font-size: 13px">{{it.n}}</span><span class="badge {{it.cls}}">{{it.s}}</span></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section class="grid-3">
+      <div class="card card-b stack"><span class="eyebrow">Principe 1</span><h3>Le blocage d'abord</h3><p class="muted">Chaque écran de gestion commence par ce qui empêche d'avancer, avec l'action directe à côté.</p></div>
+      <div class="card card-b stack"><span class="eyebrow">Principe 2</span><h3>IA traçable, humain décideur</h3><p class="muted">Sources, dates et hypothèses visibles ; paie, virements, contrats, DSN et factures envoyées exigent une validation humaine.</p></div>
+      <div class="card card-b stack"><span class="eyebrow">Principe 3</span><h3>Règles versionnées</h3><p class="muted">Seuils et délais légaux viennent du moteur de règles (version affichée), jamais de textes figés dans l'UI.</p></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const done = { s: 'Conçu', cls: 'b-success' }, spec = { s: 'Spécifié', cls: 'b-info' }, next = { s: 'Lot suivant', cls: 'b-neutral' };
+    const mk = (arr) => arr.map(([n, st]) => ({ n, ...st }));
+    return {
+      theme: this.props.theme ?? 'light',
+      boards: [
+        { code: '00.1', name: 'Foundations & tokens', desc: 'Couleurs primitives/sémantiques light + dark, typographie, espacements, rayons, ombres, motion, z-index, breakpoints.', href: 'DS-Foundations.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '00.2', name: 'Composants & états', desc: 'Navigation, inputs (IBAN masqué, devise, date), affichage, tableaux denses, composants financiers, 11 états.', href: 'DS-Components.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '00.3', name: 'Composants IA agentique', desc: 'Agent Card, plan d’exécution, Approval Queue, Tool Action Preview, sources, Pause/Stop, audit.', href: 'DS-AI.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '02.01', name: 'Operations Center', desc: 'Bloqueurs de clôture, KPI sourcés, file de validations, tâches agents, sélecteur de tenant.', href: 'BO-Operations.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '02.18', name: 'Agent Workspace', desc: '« Prépare la clôture d’octobre » : plan, sous-tâches, anomalies, validations avant/après.', href: 'BO-Agents.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '02.09', name: 'Facturation', desc: 'Liste dense, statut e-invoicing, paiements partiels, drawer de détail et relance IA.', href: 'BO-Facturation.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '02.11', name: 'Paie — octobre', desc: 'Variables, contrôles du moteur de règles, anomalies, validation, DSN, virements.', href: 'BO-Paie.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '03.01', name: 'Accueil consultant', desc: 'CA, solde, prochain salaire, démarches, assistant centré sur son seul dossier.', href: 'CO-Accueil.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '03.06', name: 'Compte d’activité', desc: 'Mouvements expliqués, calcul détaillé, relevé mensuel téléchargeable.', href: 'CO-Compte.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '03.M', name: 'Mobile consultant', desc: 'Accueil + saisie CRA à 390 px, navigation basse.', href: 'CO-Mobile.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: '04.03', name: 'Client — CRA à valider', desc: 'Validation multi-approbateurs, refus motivé, aucune donnée salariale.', href: 'CL-CRA.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: 'P3', name: 'Parcours CRA → paiement', desc: 'Prototype cliquable 7 étapes avec chemins d’erreur (refus client, rejet plateforme, paiement partiel).', href: 'Flow-CRA-Facture.dc.html', status: 'Conçu', cls: 'b-success' },
+        { code: 'F/G', name: 'Handoff & couverture', desc: 'Routes, entités, API, tokens, conventions, matrice de couverture module → état.', href: 'Handoff.dc.html', status: 'Conçu', cls: 'b-success' }
+      ],
+      areas: [
+        { title: '01 · Authentification', prefix: '/auth', items: mk([['Connexion, SSO / MFA', spec], ['Mot de passe oublié, invitation', spec], ['Choix rôle / société', spec], ['Compte, consentements, premier démarrage', next]]) },
+        { title: '02 · Back-office (1/2)', prefix: '/bo', items: mk([['Operations Center', done], ['CRM consultants / entreprises', spec], ['Consultants — fiche 360', spec], ['Contrats & avenants', spec], ['Missions', spec], ['Activité / CRA', spec], ['Notes de frais', spec], ['Facturation', done], ['Trésorerie & recouvrement', spec]]) },
+        { title: '02 · Back-office (2/2)', prefix: '/bo', items: mk([['Paie', done], ['Comptes d’activité', spec], ['RH', spec], ['Conformité', spec], ['Comptabilité', spec], ['Pilotage', spec], ['Support & communication', next], ['Agents IA (workspace)', done], ['Configuration', next]]) },
+        { title: '03 · Portail consultant', prefix: '/me', items: mk([['Accueil', done], ['Compte d’activité', done], ['Mobile Accueil + CRA', done], ['Missions, CRA, frais', spec], ['Simulateur salaire', spec], ['Bulletins, contrats, signatures', spec], ['Services RH, support, préférences', next]]) },
+        { title: '04 · Portail client', prefix: '/client', items: mk([['CRA à valider', done], ['Mobile validation', done], ['Consultants & prestations', spec], ['Bons de commande, contrats', spec], ['Factures, avoirs, litiges', spec], ['Paramètres & approbateurs', next]]) },
+        { title: '05–06 · Partenaires & SaaS', prefix: '/partner · /saas', items: mk([['Portail expert-comptable', spec], ['Apporteurs & commissions', next], ['Tenants, offres, abonnements', spec], ['Quotas agents, accès support temporaire', next], ['Santé intégrations, logs', next]]) }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

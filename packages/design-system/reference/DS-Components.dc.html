@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>00.2 Composants et états</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po" data-theme="{{theme}}" style="min-height: 100vh; width: 100%">
+<div style="max-width: 1344px; margin: 0 auto; padding: 48px; display: flex; flex-direction: column; gap: 48px">
+  <div class="stack" style="gap: 8px">
+    <span class="eyebrow">00 · Design System</span>
+    <h1 style="font-size: 40px; line-height: 48px">Composants &amp; états</h1>
+    <p class="muted" style="max-width: 760px; font-size: 15px">Noms stables <span class="mono">Domaine/Composant/Variante</span> repris tels quels dans le code (voir Handoff). États couverts : normal, hover, focus visible, actif, chargement, désactivé, succès, erreur, attention, vide, lecture seule.</p>
+  </div>
+
+  <section class="doc-sec">
+    <header><h2>Button</h2><span class="spec">action/Button · primary | secondary | ghost | danger | ai · sm 28 | md 36 | lg 44</span></header>
+    <div class="card tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Variante</th><th>Normal</th><th>Hover</th><th>Focus</th><th>Chargement</th><th>Désactivé</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">primary</td><td><button class="btn btn-primary">Valider</button></td><td><button class="btn btn-primary" style="background: #4338CA">Valider</button></td><td><button class="btn btn-primary focus">Valider</button></td><td><button class="btn btn-primary" aria-busy="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.6"></path></svg>Validation…</button></td><td><button class="btn btn-primary" disabled>Valider</button></td></tr>
+          <tr><td class="mono">secondary</td><td><button class="btn btn-secondary">Exporter</button></td><td><button class="btn btn-secondary" style="background: var(--color-bg-subtle)">Exporter</button></td><td><button class="btn btn-secondary focus">Exporter</button></td><td><button class="btn btn-secondary" aria-busy="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.6"></path></svg>Export…</button></td><td><button class="btn btn-secondary" disabled>Exporter</button></td></tr>
+          <tr><td class="mono">ghost</td><td><button class="btn btn-ghost">Annuler</button></td><td><button class="btn btn-ghost" style="background: var(--color-bg-subtle)">Annuler</button></td><td><button class="btn btn-ghost focus">Annuler</button></td><td>—</td><td><button class="btn btn-ghost" disabled>Annuler</button></td></tr>
+          <tr><td class="mono">danger</td><td><button class="btn btn-danger">Supprimer</button></td><td><button class="btn btn-danger" style="filter: brightness(.92)">Supprimer</button></td><td><button class="btn btn-danger focus">Supprimer</button></td><td>—</td><td><button class="btn btn-danger" disabled>Supprimer</button></td></tr>
+          <tr><td class="mono">ai</td><td><button class="btn btn-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path></svg>Préparer avec l'agent</button></td><td colspan="4" class="muted small">Réservé au lancement d'un agent. Ne déclenche jamais d'action irréversible : ouvre un plan à valider.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Inputs</h2><span class="spec">form/* · libellé toujours visible · aide sous le champ · erreur = icône + texte</span></header>
+    <div class="grid-4">
+      <div class="field"><label class="label" for="i1">Raison sociale</label><input id="i1" class="input" value="Helioris Énergie SAS"><span class="hint">Normal</span></div>
+      <div class="field"><label class="label" for="i2">E-mail du contact</label><input id="i2" class="input is-focus" value="s.lemaire@banque-meridienne.fr"><span class="hint">Focus visible</span></div>
+      <div class="field"><label class="label" for="i3">SIREN</label><input id="i3" class="input is-error mono" value="91234567"><span class="err">⚠ Le SIREN comporte 9 chiffres (8 saisis).</span></div>
+      <div class="field"><label class="label" for="i4">Référence mission</label><input id="i4" class="input is-readonly mono" value="M-2026-014" readonly><span class="hint">Lecture seule — générée</span></div>
+      <div class="field"><label class="label" for="i5">Taux journalier (TJM)</label><div class="affix"><input id="i5" class="input num" value="650,00" style="text-align: right"><span>€ HT / j</span></div><span class="hint">Devise</span></div>
+      <div class="field"><label class="label" for="i6">Frais de gestion</label><div class="affix"><input id="i6" class="input num" value="8,00" style="text-align: right"><span>%</span></div><span class="hint">Pourcentage · plage du barème société</span></div>
+      <div class="field"><label class="label" for="i7">Date de début</label><div class="affix"><input id="i7" class="input num" value="01/12/2026"><span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 5h14v15H5zM16 3v4M8 3v4M4 10h16"></path></svg></span></div><span class="hint">JJ/MM/AAAA</span></div>
+      <div class="field"><label class="label" for="i8">Période</label><div class="affix"><input id="i8" class="input num" value="01/10/2026 → 31/10/2026"><span>22 j ouvrés</span></div><span class="hint">Date-range</span></div>
+      <div class="field"><label class="label" for="i9">IBAN</label><div class="affix"><input id="i9" class="input mono" value="FR76 •••• •••• •••• •••• •••• 214" readonly><span>Afficher</span></div><span class="hint">Masqué · révélation journalisée</span></div>
+      <div class="field"><label class="label" for="i10">Client</label><div class="affix"><input id="i10" class="input" value="Banq"><span>▾</span></div>
+        <div class="card" style="box-shadow: var(--shadow-2)"><div class="list"><div class="row" style="padding: 8px 12px; background: var(--color-action-primary-soft)"><b>Banq</b>ue Méridienne<span class="spec" style="margin-left: auto">SIREN 552 …</span></div><div style="padding: 8px 12px" class="muted small">+ Créer « Banq… » comme prospect</div></div></div>
+      </div>
+      <div class="field"><label class="label" for="i11">Téléphone</label><div class="affix"><span>+33</span><input id="i11" class="input num" value="6 12 34 56 78"></div><span class="hint">Indicatif séparé</span></div>
+      <div class="field"><span class="label">Justificatif</span><div style="border: 1.5px dashed var(--color-border-strong); border-radius: 8px; padding: 16px; text-align: center; background: var(--color-bg-subtle)" class="small"><b>Déposer un fichier</b> ou <a href="#">parcourir</a><br><span class="muted">PDF, JPG, PNG · 10 Mo max</span></div></div>
+      <div class="field"><span class="label">Options</span>
+        <label class="check"><input type="checkbox" checked> Refacturer au client</label>
+        <label class="check"><input type="radio" name="r" checked> CDI</label>
+        <label class="check"><input type="radio" name="r"> CDD</label>
+        <div class="row" style="gap: 8px"><button class="toggle on" aria-label="Relances automatiques activées" aria-pressed="true"></button><span class="small">Relances auto</span></div>
+      </div>
+      <div class="field"><span class="label">Stepper</span><div class="row" style="gap: 6px; flex-wrap: nowrap"><span class="badge b-success">1 Identité</span><span class="badge b-info">2 Pièces</span><span class="badge b-neutral">3 Contrat</span></div></div>
+      <div class="field"><span class="label">Recherche</span><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"></path></svg><span>Rechercher ou demander…</span><span class="kbd" style="margin-left: auto">⌘K</span></div></div>
+      <div class="field"><span class="label">Filtres actifs</span><div class="row" style="gap: 6px"><span class="chip on">Statut : En retard ✕</span><span class="chip on">Client : 2 ✕</span><span class="chip">+ Filtre</span></div></div>
+    </div>
+  </section>
+
+  <section class="grid-2" style="gap: 32px">
+    <div class="doc-sec">
+      <header><h2>Badges de statut</h2><span class="spec">feedback/StatusBadge</span></header>
+      <div class="card card-b stack">
+        <div class="row" style="gap: 8px"><span class="badge b-success">Payée</span><span class="badge b-success">Validé</span><span class="badge b-success">Conforme</span></div>
+        <div class="row" style="gap: 8px"><span class="badge b-warning">En attente client</span><span class="badge b-warning">Échéance J-5</span><span class="badge b-warning">Paiement partiel</span></div>
+        <div class="row" style="gap: 8px"><span class="badge b-danger">En retard · 24 j</span><span class="badge b-danger">Rejet plateforme</span><span class="badge b-danger">Bloquant</span></div>
+        <div class="row" style="gap: 8px"><span class="badge b-info">Émise</span><span class="badge b-info">Déposée PA</span><span class="badge b-neutral">Brouillon</span><span class="badge b-neutral">Archivé</span></div>
+        <div class="row" style="gap: 8px"><span class="badge b-ai">Suggestion IA</span><span class="badge b-ai">Brouillon préparé</span><span class="badge b-ai">Prêt à valider</span></div>
+      </div>
+    </div>
+    <div class="doc-sec">
+      <header><h2>Navigation</h2><span class="spec">nav/Breadcrumbs · Tabs · Pagination · CommandPalette</span></header>
+      <div class="card card-b stack" style="gap: 16px">
+        <nav aria-label="Fil d'Ariane" class="small muted">Facturation <span aria-hidden="true">/</span> Factures <span aria-hidden="true">/</span> <b style="color: var(--color-text-primary)">F-2026-0412</b></nav>
+        <div class="tabs" role="tablist"><button class="tab on" role="tab" aria-selected="true">Toutes<span class="count">48</span></button><button class="tab" role="tab">Brouillons<span class="count">4</span></button><button class="tab" role="tab">Émises<span class="count">33</span></button><button class="tab" role="tab">En retard<span class="count">3</span></button></div>
+        <div class="row between small"><span class="muted">1–25 sur 48</span><div class="row" style="gap: 4px"><button class="btn btn-ghost btn-sm" aria-label="Page précédente">‹</button><button class="btn btn-secondary btn-sm">1</button><button class="btn btn-ghost btn-sm">2</button><button class="btn btn-ghost btn-sm" aria-label="Page suivante">›</button></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Command palette &amp; recherche globale</h2><span class="spec">nav/CommandPalette · ⌘K · commandes en langage naturel → plan d'agent, jamais exécution directe</span></header>
+    <div class="scrim">
+      <div class="modal" style="width: 640px; max-width: 100%" role="dialog" aria-label="Palette de commandes">
+        <div class="row" style="padding: 14px 16px; border-bottom: 1px solid var(--color-border-default); flex-wrap: nowrap"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"></path></svg><span style="font-size: 15px">factures en retard banque</span><span class="kbd" style="margin-left: auto">Échap</span></div>
+        <div style="padding: 8px">
+          <div class="eyebrow" style="padding: 8px">Objectif (agent)</div>
+          <div class="row" style="padding: 10px; border-radius: 8px; background: var(--color-ai-bg); flex-wrap: nowrap"><span class="av ai">IA</span><div style="flex: 1">Préparer les relances des factures en retard pour Banque Méridienne<div class="small muted">Operations Agent · aucun envoi sans votre validation</div></div><span class="kbd">↵</span></div>
+          <div class="eyebrow" style="padding: 8px">Résultats</div>
+          <div class="row" style="padding: 8px 10px; flex-wrap: nowrap"><span class="mono">F-2026-0371</span><span>Groupe Valdor Retail</span><span class="badge b-danger" style="margin-left: auto">En retard · 24 j</span></div>
+          <div class="row" style="padding: 8px 10px; flex-wrap: nowrap"><span class="av">BM</span><span>Banque Méridienne — compte client</span><span class="spec" style="margin-left: auto">Entreprise</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Tableau dense</h2><span class="spec">data/DataTable · colonnes configurables · tri · sélection · ligne sélectionnée → drawer</span></header>
+    <div class="card">
+      <div class="card-h"><div class="row" style="gap: 8px"><span class="chip on">Octobre 2026 ✕</span><span class="chip">+ Filtre</span></div><div class="row" style="gap: 8px"><span class="small muted">2 sélectionnées</span><button class="btn btn-secondary btn-sm">Colonnes (7/11)</button><button class="btn btn-secondary btn-sm">Exporter CSV</button></div></div>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th><input type="checkbox" aria-label="Tout sélectionner"></th><th>Consultant</th><th>Mission</th><th>Client</th><th class="r">Jours</th><th class="r">TJM</th><th class="r">Montant HT ↓</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr class="sel"><td><input type="checkbox" checked aria-label="Sélectionner"></td><td>Camille Moreau</td><td class="mono">M-2026-014</td><td>Helioris Énergie</td><td class="r num">20</td><td class="r num">650,00 €</td><td class="r amt">13 000,00 €</td><td><span class="badge b-success">Validé</span></td></tr>
+          <tr class="sel"><td><input type="checkbox" checked aria-label="Sélectionner"></td><td>Julien Bernard</td><td class="mono">M-2026-021</td><td>Banque Méridienne</td><td class="r num">19</td><td class="r num">720,00 €</td><td class="r amt">13 680,00 €</td><td><span class="badge b-warning">En attente client</span></td></tr>
+          <tr><td><input type="checkbox" aria-label="Sélectionner"></td><td>Karim Benali</td><td class="mono">M-2026-009</td><td>Orbe Logistique</td><td class="r num">23</td><td class="r num">580,00 €</td><td class="r amt">13 340,00 €</td><td><span class="badge b-danger">Anomalie</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Composants financiers</h2><span class="spec">finance/*</span></header>
+    <div class="grid-3">
+      <div class="card"><div class="card-h"><h4>CalculationBreakdown</h4><span class="badge b-success">Calcul confirmé</span></div><div class="card-b calc">
+        <div><span>Facture F-2026-0412 (HT)</span><span class="amt">13 000,00 €</span></div>
+        <div><span>Frais de gestion 8 %</span><span class="amt neg">−1 040,00 €</span></div>
+        <div><span>Note de frais remboursée</span><span class="amt neg">−186,40 €</span></div>
+        <div><span>Coût employeur salaire oct.</span><span class="amt neg">−8 950,00 €</span></div>
+        <div><span>Réserve financière <span class="spec">règle RES-2026.3</span></span><span class="amt neg">−612,00 €</span></div>
+        <div class="total"><span>Variation du mois</span><span class="amt">+2 211,60 €</span></div>
+      </div></div>
+      <div class="stack">
+        <div class="card card-b stack" style="gap: 8px"><div class="row between"><h4>InvoiceStatus</h4><span class="mono muted">F-2026-0365</span></div>
+          <div class="row" style="gap: 6px"><span class="badge b-info">Déposée PA</span><span class="badge b-warning">Paiement partiel</span></div>
+          <div class="bar warn"><i style="width: 42%"></i></div><div class="row between small"><span>6 000,00 € reçus</span><span class="muted">reste 8 400,00 €</span></div></div>
+        <div class="card card-b stack" style="gap: 8px"><div class="row between"><h4>ReconciliationItem</h4><span class="badge b-ai">Correspondance 96 %</span></div>
+          <div class="grid-2" style="gap: 8px"><div class="small"><span class="muted">Banque · 05/11/2026</span><br>VIR HELIORIS ENERGIE<br><b class="amt">15 600,00 €</b></div><div class="small"><span class="muted">Facture</span><br><span class="mono">F-2026-0412</span><br><b class="amt">15 600,00 € TTC</b></div></div>
+          <div class="row" style="gap: 8px"><button class="btn btn-primary btn-sm">Rapprocher</button><button class="btn btn-ghost btn-sm">Autre facture…</button></div></div>
+      </div>
+      <div class="stack">
+        <div class="card card-b stack" style="gap: 6px"><div class="row between"><h4>PayslipCard</h4><span class="badge b-success">Disponible</span></div><span class="muted small">Bulletin octobre 2026 · Camille Moreau</span><div class="row between"><span>Brut</span><span class="amt">6 120,00 €</span></div><div class="row between"><span>Net à payer avant impôt</span><span class="amt">4 772,00 €</span></div><div class="row between small muted"><span>Versement</span><span class="num">10/11/2026</span></div></div>
+        <div class="card card-b stack" style="gap: 6px"><div class="row between"><h4>ExpenseReceipt</h4><span class="badge b-warning">Pièce illisible</span></div><div class="row" style="flex-wrap: nowrap"><div style="width: 56px; height: 72px; border-radius: 6px; background: repeating-linear-gradient(45deg, var(--color-bg-subtle), var(--color-bg-subtle) 4px, var(--color-border-default) 4px, var(--color-border-default) 8px)" role="img" aria-label="Aperçu du reçu, flou"></div><div class="small">Train Lyon → Paris · 12/10/2026<br><b class="amt">94,20 €</b> · TVA non lisible<br><a href="#">Redemander la pièce</a></div></div></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-h"><h4>CashForecast</h4><span class="badge b-ai">Prévision · hypothèses visibles</span></div><div class="card-b stack">
+        <div style="display: flex; align-items: flex-end; gap: 10px; height: 120px" role="img" aria-label="Prévision de trésorerie sur 6 semaines, de 412 k€ à 368 k€">
+          <div style="flex: 1; height: 92%; background: #4F46E5; border-radius: 4px 4px 0 0"></div><div style="flex: 1; height: 86%; background: #4F46E5; border-radius: 4px 4px 0 0"></div><div style="flex: 1; height: 80%; background: #A5B4FC; border-radius: 4px 4px 0 0"></div><div style="flex: 1; height: 84%; background: #A5B4FC; border-radius: 4px 4px 0 0"></div><div style="flex: 1; height: 78%; background: #A5B4FC; border-radius: 4px 4px 0 0"></div><div style="flex: 1; height: 82%; background: #A5B4FC; border-radius: 4px 4px 0 0"></div>
+        </div>
+        <div class="row between small muted"><span>S45 réel</span><span>S46</span><span>S47 prévu</span><span>S48</span><span>S49</span><span>S50</span></div>
+        <p class="src">Plein = réalisé (banque, 08/11/2026 06:00) · clair = prévu. Hypothèses : délai moyen client 38 j, paie au 10, aucune nouvelle mission. Ceci n'est pas un engagement.</p>
+      </div></div>
+      <div class="card"><div class="card-h"><h4>TransactionTimeline</h4><span class="spec">compte d'activité</span></div><div class="card-b tl">
+        <div class="tl-i"><span class="dot done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span><div class="row between"><span>05/11 · Encaissement F-2026-0412</span><span class="amt pos">+13 000,00 €</span></div></div>
+        <div class="tl-i"><span class="dot done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span><div class="row between"><span>05/11 · Frais de gestion</span><span class="amt neg">−1 040,00 €</span></div></div>
+        <div class="tl-i"><span class="dot"></span><div class="row between"><span class="muted">10/11 · Salaire octobre (prévu)</span><span class="amt muted">−8 950,00 €</span></div></div>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Feedback, états vides &amp; erreurs</h2><span class="spec">feedback/Alert · Toast · EmptyState · ErrorState · ConfirmDialog</span></header>
+    <div class="grid-3">
+      <div class="card card-b stack" style="align-items: center; text-align: center; padding: 32px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#637086" stroke-width="1.5" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5M8 11h6"></path></svg><h4>Aucun résultat pour « Valdorr »</h4><p class="muted small">Vérifiez l'orthographe ou retirez le filtre « Statut : Payée ».</p><button class="btn btn-secondary btn-sm">Effacer les filtres</button></div>
+      <div class="card card-b stack" style="align-items: center; text-align: center; padding: 32px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C43C45" stroke-width="1.5" aria-hidden="true"><path d="M12 3l9 16H3zM12 10v4M12 17h.01"></path></svg><h4>La banque ne répond pas</h4><p class="muted small">Synchronisation Qonto interrompue à 06:02 (erreur 503). Vos données affichées datent du 07/11/2026 18:00. Code incident <span class="mono">INT-7F21</span>.</p><div class="row" style="gap: 8px"><button class="btn btn-primary btn-sm">Réessayer</button><button class="btn btn-ghost btn-sm">Voir le statut</button></div></div>
+      <div class="card card-b stack" style="align-items: center; text-align: center; padding: 32px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#637086" stroke-width="1.5" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg><h4>Accès restreint</h4><p class="muted small">Le rôle « Commercial » ne permet pas de consulter les bulletins de paie. Demandez l'accès à un administrateur.</p><button class="btn btn-secondary btn-sm">Demander l'accès</button></div>
+    </div>
+    <div class="grid-2">
+      <div class="stack">
+        <div class="alert a-warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l9 16H3zM12 10v4M12 17h.01"></path></svg><div><b>Conflit de version.</b> Léa Fontaine a modifié cet avenant à 10:42. <a href="#">Comparer les versions</a> avant d'enregistrer.</div></div>
+        <div class="alert a-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M15 9l-6 6M9 9l6 6"></path></svg><div><b>Échec de signature.</b> Le signataire client n'a pas pu valider son code SMS (3 essais). <a href="#">Renvoyer l'invitation</a></div></div>
+        <div class="alert a-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><div><b>Session bientôt expirée.</b> Vous serez déconnecté dans 2 min ; votre brouillon est enregistré. <a href="#">Rester connecté</a></div></div>
+        <div class="toast"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#4ADE9B" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg><span>3 relances envoyées · journalisé</span><a href="#" style="color: #A5B4FC; margin-left: auto">Annuler (8 s)</a></div>
+      </div>
+      <div class="scrim">
+        <div class="modal" style="width: 460px; max-width: 100%" role="alertdialog" aria-labelledby="cd-t">
+          <div style="padding: 20px 20px 8px" class="stack"><h3 id="cd-t">Valider le virement des salaires ?</h3><p class="muted">15 virements · <b class="amt" style="color: var(--color-text-primary)">68 412,30 €</b> · date de valeur 10/11/2026. Cette action est irréversible une fois transmise à la banque.</p>
+            <label class="field"><span class="label">Tapez VALIDER pour confirmer</span><input class="input" value="VALI"></label></div>
+          <div class="card-f"><button class="btn btn-ghost">Annuler</button><button class="btn btn-primary" disabled>Valider 15 virements</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":2700}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.theme ?? 'light' }; }
+}
+</script>
+</body>
+</html>

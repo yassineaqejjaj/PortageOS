@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Paie octobre 2026</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po app" data-theme="{{theme}}">
+  <div class="app-nav"><dc-import name="Sidebar" portal="bo" active="paie" hint-size="100%,900px"></dc-import></div>
+  <div class="app-main">
+    <dc-import name="Topbar" portal="bo" tenant="Altitude Portage" period="Octobre 2026" hint-size="100%,64px"></dc-import>
+    <main class="content" style="gap: 20px">
+      <div class="row between">
+        <div class="stack" style="gap: 4px"><nav class="small muted" aria-label="Fil d'Ariane">Paie / Périodes</nav><div class="row" style="gap: 10px"><h1>Paie · octobre 2026</h1><span class="badge b-warning">Contrôles · 2 anomalies</span></div><p class="small muted">Calcul délégué au prestataire de paie (connecteur Silae · dernière synchro 08/11 08:40) · moteur de règles PAIE v2026.4</p></div>
+        <div class="row" style="gap: 8px"><button class="btn btn-secondary">Importer variables</button><button class="btn btn-secondary">Envoyer au prestataire</button><button class="btn btn-primary" disabled title="2 anomalies à résoudre">Valider la période</button></div>
+      </div>
+
+      <ol class="card" style="list-style: none; margin: 0; padding: 14px 16px; display: flex; gap: 8px; flex-wrap: wrap" aria-label="Étapes de la période">
+        <sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
+          <li class="row" style="gap: 8px; flex: 1 1 140px; flex-wrap: nowrap"><span class="dot {{s.c}}" aria-hidden="true"></span><span class="small" style="font-weight: {{s.w}}">{{s.n}}<br><span class="muted">{{s.d}}</span></span></li>
+        </sc-for>
+      </ol>
+
+      <div class="grid-4">
+        <div class="card kpi"><span class="eyebrow">Bulletins</span><span class="v">15</span><span class="src">13 sans anomalie (dont 4 à confirmer) · 2 anomalies</span></div>
+        <div class="card kpi"><span class="eyebrow">Masse brute</span><span class="v">92 640 €</span><span class="src">estimée · prestataire, 08/11 08:40</span></div>
+        <div class="card kpi"><span class="eyebrow">Nets à verser</span><span class="v">68 412,30 €</span><span class="src">15 virements · valeur 10/11/2026</span></div>
+        <div class="card kpi"><span class="eyebrow">DSN octobre</span><span class="v">À déposer</span><span class="src">échéance calculée par règle DSN v2026.2 : 15/11/2026</span></div>
+      </div>
+
+      <div class="split">
+        <section class="card main">
+          <div class="card-h"><h3>Variables &amp; contrôles</h3><div class="row" style="gap: 6px"><span class="chip on">Anomalies (2) ✕</span><span class="chip">Tous (15)</span></div></div>
+          <div class="tbl-wrap"><table class="tbl compact">
+            <thead><tr><th>Consultant</th><th>Contrat</th><th class="r">Jours</th><th class="r">Disponible compte</th><th class="r">Brut</th><th class="r">Net estimé</th><th>Contrôle</th></tr></thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+                <tr class="{{r.sel}}"><td><b>{{r.n}}</b></td><td><span class="tag">{{r.ct}}</span></td><td class="r num">{{r.j}}</td><td class="r num">{{r.disp}}</td><td class="r amt">{{r.brut}}</td><td class="r amt">{{r.net}}</td><td><span class="badge {{r.cc}}">{{r.ctl}}</span></td></tr>
+              </sc-for>
+              <tr><td colspan="4" class="muted small">+ 6 autres conformes</td><td class="r amt">92 640,00 €</td><td class="r amt">68 412,30 €</td><td></td></tr>
+            </tbody>
+          </table></div>
+        </section>
+
+        <aside class="side stack" style="gap: 16px">
+          <section class="card" style="border-color: color-mix(in srgb, var(--color-status-danger) 40%, transparent)">
+            <div class="card-h"><div class="stack" style="gap: 2px"><span class="badge b-danger">Anomalie 1/2 · bloquante</span><h3>Inès Garnier — contrôle de rémunération minimale</h3></div></div>
+            <div class="card-b stack small" style="gap: 10px">
+              <p>Le brut proposé (<b class="amt">3 060,00 €</b>) est inférieur au plancher calculé par le moteur de règles pour sa classification et son temps de travail.</p>
+              <div class="calc"><div><span>Plancher calculé <span class="spec">PAIE-MIN v2026.4</span></span><span class="amt">3 274,00 €</span></div><div><span>Brut proposé</span><span class="amt">3 060,00 €</span></div><div class="total"><span>Écart</span><span class="amt neg">−214,00 €</span></div></div>
+              <p class="muted">Cause probable : 9 jours facturés en octobre (mission M-2026-018 démarrée le 20/10). Le paramétrage du plancher relève de la convention IDCC 3219 telle que versionnée par votre responsable conformité.</p>
+              <div class="stack" style="gap: 6px"><span class="eyebrow">Options (aucune appliquée)</span>
+                <label class="check"><input type="radio" name="o1"> Compléter depuis la réserve du compte d'activité (solde 1 820,00 €)</label>
+                <label class="check"><input type="radio" name="o1"> Ajuster le temps de travail déclaré (avenant requis)</label>
+                <label class="check"><input type="radio" name="o1"> Escalader au responsable conformité</label>
+              </div>
+              <p class="src">Sources : contrat CDI CT-2026-033 · CRA-2026-10-018 · <a href="https://www.legifrance.gouv.fr/conv_coll/id/KALICONT000035326397">IDCC 3219 (Légifrance)</a></p>
+            </div>
+            <div class="card-f"><button class="btn btn-ghost btn-sm">Commenter</button><button class="btn btn-primary btn-sm">Appliquer l'option</button></div>
+          </section>
+          <section class="card">
+            <div class="card-h"><div class="stack" style="gap: 2px"><span class="badge b-warning">Anomalie 2/2</span><h3>Pierre Martin — sortie au 31/10/2026</h3></div></div>
+            <div class="card-b small stack" style="gap: 8px"><p>Solde de tout compte à intégrer : réserve restante, congés payés, indemnités calculées par le prestataire. Checklist RH à 4/6.</p><div class="bar warn"><i style="width: 66%"></i></div></div>
+            <div class="card-f"><button class="btn btn-secondary btn-sm">Ouvrir la checklist de sortie</button></div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S = (n, d, c, w) => ({ n, d, c, w: w || 500 });
+    const R = (n, ct, j, disp, brut, net, ctl, cc, sel) => ({ n, ct, j, disp, brut, net, ctl, cc, sel: sel ? 'sel' : '' });
+    return {
+      theme: this.props.theme ?? 'light',
+      steps: [S('Collecte variables','15/15 · 07/11','done'), S('Contrôles','2 anomalies','block',700), S('Corrections','à faire',''), S('Validation','gestionnaire paie',''), S('Bulletins','prestataire',''), S('DSN','avant 15/11',''), S('Versement','10/11/2026','')],
+      rows: [
+        R('Inès Garnier','CDI','9','1 820,00 €','3 060,00 €','2 386,80 €','Sous le plancher','b-danger', true),
+        R('Pierre Martin','CDD · sortie','22','4 105,20 €','5 940,00 €','4 633,20 €','Solde à intégrer','b-warning'),
+        R('Camille Moreau','CDI','20','11 960,00 €','6 120,00 €','4 772,00 €','Conforme','b-success'),
+        R('Julien Bernard','CDI','19','12 585,60 €','6 480,00 €','5 054,40 €','CRA en attente','b-info'),
+        R('Sofia Haddad','CDI','18,5','11 914,00 €','6 210,00 €','4 843,80 €','CRA en attente','b-info'),
+        R('Karim Benali','CDI','23 → 22 ?','11 739,20 €','5 880,00 €','4 586,40 €','Jours à confirmer','b-warning'),
+        R('Thomas Lefèvre','CDI','21','12 558,00 €','6 300,00 €','4 914,00 €','Conforme','b-success'),
+        R('Nicolas Petit','CDD','22','11 334,40 €','5 760,00 €','4 492,80 €','Conforme','b-success'),
+        R('Hugo Lambert','CDI','20','11 040,00 €','5 520,00 €','4 305,60 €','CRA en attente','b-info')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

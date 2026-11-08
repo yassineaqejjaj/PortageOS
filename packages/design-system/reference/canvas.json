@@ -1,0 +1,55 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-11-08T10:00:00Z"},
+  "title": "PORTAGE OS — Produit & Design System 2027",
+  "launch": {"view": "canvas", "page": "plan"},
+  "pages": [
+    {"id": "plan", "name": "Plan & Handoff"},
+    {"id": "ds", "name": "00 · Design System"},
+    {"id": "bo", "name": "02 · Back-office"},
+    {"id": "co", "name": "03 · Portail consultant"},
+    {"id": "cl", "name": "04 · Portail client"},
+    {"id": "flows", "name": "Parcours"}
+  ],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 1500, "title": "Plan des artboards & sitemap", "expand": "fill", "page": "plan"},
+    "Handoff.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 2200, "title": "F/G · Handoff Claude Code & matrice de couverture", "expand": "fill", "page": "plan"},
+    "DS-Foundations.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 2300, "title": "00.1 · Foundations & tokens", "expand": "fill", "page": "ds"},
+    "DS-Components.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 2700, "title": "00.2 · Composants & états", "expand": "fill", "page": "ds"},
+    "DS-AI.dc.html": {"x": 3040, "y": 0, "w": 1440, "h": 2100, "title": "00.3 · Composants IA agentique", "expand": "fill", "page": "ds"},
+    "Sidebar.dc.html": {"x": 4560, "y": 0, "w": 248, "h": 900, "title": "nav/Sidebar", "page": "ds"},
+    "Topbar.dc.html": {"x": 4888, "y": 0, "w": 1192, "h": 64, "title": "nav/Topbar", "page": "ds"},
+    "BO-Operations.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 1500, "title": "02.01 · Operations Center", "expand": "fill", "is_interactive": true, "page": "bo"},
+    "BO-Agents.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 1600, "title": "02.18 · Agent Workspace — clôture d'octobre", "expand": "fill", "is_interactive": true, "page": "bo"},
+    "BO-Facturation.dc.html": {"x": 3040, "y": 0, "w": 1440, "h": 1250, "title": "02.09 · Facturation — liste + détail", "expand": "fill", "page": "bo"},
+    "BO-Paie.dc.html": {"x": 4560, "y": 0, "w": 1440, "h": 1300, "title": "02.11 · Paie — période d'octobre", "expand": "fill", "page": "bo"},
+    "CO-Accueil.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 1250, "title": "03.01 · Accueil consultant", "expand": "fill", "page": "co"},
+    "CO-Compte.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 1400, "title": "03.06 · Compte d'activité détaillé", "expand": "fill", "page": "co"},
+    "CO-Mobile.dc.html": {"x": 3040, "y": 0, "w": 390, "h": 844, "title": "03.M · Mobile consultant (Accueil / CRA)", "is_interactive": true, "page": "co"},
+    "CL-CRA.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 1150, "title": "04.03 · CRA à valider (multi-approbateurs)", "expand": "fill", "is_interactive": true, "page": "cl"},
+    "CL-Mobile.dc.html": {"x": 1520, "y": 0, "w": 390, "h": 844, "title": "04.M · Mobile client — validation CRA", "page": "cl"},
+    "Flow-CRA-Facture.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 1150, "title": "Parcours 3 · CRA → facture → paiement → rapprochement", "expand": "fill", "is_interactive": true, "page": "flows"}
+  },
+  "order": [
+    "Main.dc.html", "Handoff.dc.html",
+    "DS-Foundations.dc.html", "DS-Components.dc.html", "DS-AI.dc.html", "Sidebar.dc.html", "Topbar.dc.html",
+    "BO-Operations.dc.html", "BO-Agents.dc.html", "BO-Facturation.dc.html", "BO-Paie.dc.html",
+    "CO-Accueil.dc.html", "CO-Compte.dc.html", "CO-Mobile.dc.html",
+    "CL-CRA.dc.html", "CL-Mobile.dc.html",
+    "Flow-CRA-Facture.dc.html"
+  ],
+  "notes": {
+    "t-plan": {"x": 0, "y": -300, "text": "PORTAGE OS — Plan, sitemap & handoff", "kind": "title1", "maxW": 2960, "page": "plan"},
+    "t-ds": {"x": 0, "y": -300, "text": "00 · Design System partagé", "kind": "title1", "maxW": 6080, "page": "ds"},
+    "t-bo": {"x": 0, "y": -300, "text": "02 · Back-office société de portage", "kind": "title1", "maxW": 6000, "page": "bo"},
+    "t-co": {"x": 0, "y": -300, "text": "03 · Portail consultant porté", "kind": "title1", "maxW": 3430, "page": "co"},
+    "t-cl": {"x": 0, "y": -300, "text": "04 · Portail entreprise cliente", "kind": "title1", "maxW": 1910, "page": "cl"},
+    "t-fl": {"x": 0, "y": -300, "text": "Parcours transversaux prototypés", "kind": "title1", "maxW": 1440, "page": "flows"},
+    "n-ops": {"x": 0, "y": 1620, "w": 440, "fill": "blue", "page": "bo", "text": "Décision UX — Operations Center\nLa page s'ouvre sur « Ce qui bloque la clôture » plutôt que sur des KPI : critère de succès n°1. Chaque bloqueur porte son action directe (Relancer, Corriger, Valider) et le nombre d'objets concernés. Les KPI sont en second rang, toujours avec période et source."},
+    "n-agents": {"x": 1520, "y": 1720, "w": 440, "fill": "purple", "page": "bo", "text": "Décision UX — Agent Workspace\nL'objectif est saisi en langage naturel, mais le résultat est un plan d'exécution structuré, pas une conversation. Six statuts distincts (suggestion → brouillon → prêt à valider → approuvé → exécuté → échec). Toute action sensible (virement, envoi facture, DSN) exige une validation humaine explicite ; Pause/Stop toujours visibles."},
+    "n-fact": {"x": 3040, "y": 1370, "w": 440, "fill": "green", "page": "bo", "text": "Décision UX — Facturation\nSplit-view liste + drawer : le gestionnaire traite les factures sans perdre son contexte. Statut e-invoicing (plateforme agréée) distinct du statut de paiement, car les deux cycles évoluent séparément."},
+    "n-co": {"x": 0, "y": 1370, "w": 440, "fill": "teal", "page": "co", "text": "Décision UX — Portail consultant\nLe solde du compte d'activité est expliqué ligne par ligne (« d'où vient ce montant ? »). La simulation de salaire est toujours étiquetée Simulation avec ses hypothèses et la version du barème : jamais présentée comme un fait."},
+    "n-cl": {"x": 0, "y": 1270, "w": 440, "fill": "orange", "page": "cl", "text": "Décision UX — Portail client\nAucune donnée salariale : le client voit jours, TJM contractuel et montants HT facturés uniquement. Validation multi-approbateurs avec circuit visible ; refus = motif obligatoire."}
+  },
+  "designSystems": []
+}

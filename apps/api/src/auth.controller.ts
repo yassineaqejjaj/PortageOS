@@ -41,7 +41,14 @@ export class AuthController {
   }
 
   @Get("me")
-  me(@Req() req: { ctx: RequestContext }) { return req.ctx; }
+  async me(@Req() req: { ctx: RequestContext }) {
+    const { userId, tenantId, roles } = req.ctx;
+    const [user, tenant] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } }),
+      this.prisma.tenant.findUnique({ where: { id: tenantId }, select: { slug: true, name: true } }),
+    ]);
+    return { userId, tenantId, roles, email: user?.email, tenant };
+  }
 
   @Public() @Get("health")
   health() { return { status: "ok" }; }

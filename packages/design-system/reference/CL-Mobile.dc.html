@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mobile client validation CRA</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po" style="width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden; background: var(--color-bg-canvas)">
+  <header style="background: #15243B; color: #fff; padding: 20px 16px 16px; display: flex; flex-direction: column; gap: 6px">
+    <div class="row between" style="flex-wrap: nowrap"><a href="#" style="color: #C9D3E3; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center" aria-label="Retour à la liste">‹ CRA à valider (2)</a><span style="font-size: 12px; color: #8C9AB3">Banque Méridienne</span></div>
+    <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700">Julien Bernard</span>
+    <span class="mono" style="color: #9AA7BD">CRA-2026-10-021 · octobre 2026</span>
+  </header>
+  <div style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+    <div class="card card-b stack" style="gap: 10px">
+      <div class="row between"><span class="muted">Jours déclarés</span><b class="num" style="font-size: 20px">19 / 22</b></div>
+      <div class="row between"><span class="muted">TJM contractuel</span><b class="amt">720,00 € HT</b></div>
+      <div class="row between"><span class="muted">Montant à facturer</span><b class="amt" style="font-size: 18px">13 680,00 € HT</b></div>
+    </div>
+    <div class="card card-b stack small" style="gap: 6px"><span class="eyebrow">Jours non travaillés</span><span>22/10, 23/10, 30/10 · congés</span><span class="muted">« Absent les 22, 23 et 30/10 (congés validés). »</span></div>
+    <div class="card card-b stack small" style="gap: 8px"><span class="eyebrow">Circuit</span>
+      <div class="row" style="gap: 8px; flex-wrap: nowrap"><span class="dot done" aria-hidden="true"></span><span>Soumis par le consultant · 02/11</span></div>
+      <div class="row" style="gap: 8px; flex-wrap: nowrap"><span class="dot run" aria-hidden="true"></span><b>Vous · niveau 1</b></div>
+      <div class="row" style="gap: 8px; flex-wrap: nowrap"><span class="dot" aria-hidden="true"></span><span class="muted">Achats · niveau 2 (montant &gt; 12 000 € HT)</span></div>
+    </div>
+    <p class="src">Aucune donnée salariale n'est visible depuis l'espace client.</p>
+  </div>
+  <div style="padding: 12px 16px 24px; background: var(--color-bg-surface); border-top: 1px solid var(--color-border-default); display: grid; grid-template-columns: 1fr 2fr; gap: 10px">
+    <button class="btn btn-secondary" style="height: 48px">Refuser…</button>
+    <button class="btn btn-primary" style="height: 48px">Valider 19 jours</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

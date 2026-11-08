@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Handoff Claude Code et couverture</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po" style="min-height: 100vh; width: 100%">
+<div style="max-width: 1344px; margin: 0 auto; padding: 48px; display: flex; flex-direction: column; gap: 40px">
+  <div class="stack" style="gap: 8px">
+    <span class="eyebrow">F · G · E — destiné à Claude Code</span>
+    <h1 style="font-size: 40px; line-height: 48px">Handoff &amp; matrice de couverture</h1>
+    <p class="muted" style="max-width: 860px; font-size: 15px">Stack cible suggérée : Next.js (App Router) + TypeScript + Tailwind mappé sur les CSS variables de <span class="mono">portage.css</span> + Radix/shadcn pour l'accessibilité des primitives. Les fichiers <span class="mono">tokens.json</span>, <span class="mono">tokens.css</span> et <span class="mono">HANDOFF.md</span> sont fournis dans le dossier PortageOS.</p>
+  </div>
+
+  <section class="doc-sec">
+    <header><h2>Matrice de couverture</h2><span class="spec">module → pages → composants → parcours → état</span></header>
+    <div class="row small" style="gap: 8px"><span class="badge b-success">Conçu : artboard haute fidélité</span><span class="badge b-info">Spécifié : routes, états, composants définis, écran à produire</span><span class="badge b-neutral">Lot suivant</span></div>
+    <div class="card tbl-wrap"><table class="tbl compact">
+      <thead><tr><th>Module</th><th>Pages / routes</th><th>Composants clés</th><th>Parcours</th><th>État</th></tr></thead>
+      <tbody>
+        <sc-for list="{{matrix}}" as="m" hint-placeholder-count="20">
+          <tr><td><b>{{m.mod}}</b></td><td class="mono small">{{m.routes}}</td><td class="small">{{m.comp}}</td><td class="small">{{m.flows}}</td><td><span class="badge {{m.cls}}">{{m.st}}</span></td></tr>
+        </sc-for>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Mapping écran → entités → actions → API</h2><span class="spec">artboards conçus</span></header>
+    <div class="card tbl-wrap"><table class="tbl compact">
+      <thead><tr><th>Artboard</th><th>Route</th><th>Entités</th><th>Actions</th><th>API (REST, indicatif)</th><th>Permission</th></tr></thead>
+      <tbody>
+        <sc-for list="{{maps}}" as="m" hint-placeholder-count="10">
+          <tr><td class="mono small">{{m.ab}}</td><td class="mono small">{{m.r}}</td><td class="small">{{m.e}}</td><td class="small">{{m.a}}</td><td class="mono small">{{m.api}}</td><td class="small">{{m.p}}</td></tr>
+        </sc-for>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="grid-3" style="gap: 24px; align-items: start">
+    <div class="doc-sec">
+      <header><h2>Responsive</h2></header>
+      <div class="card card-b stack small" style="gap: 8px">
+        <p><b>≥ 1280</b> sidebar 248 + topbar + contenu ; drawer droit 480 en split.</p>
+        <p><b>600–1279</b> sidebar réduite 72 (icônes + tooltip) ; drawer en superposition ; tableaux : colonnes secondaires masquées, menu « Colonnes ».</p>
+        <p><b>≤ 599</b> portails consultant/client uniquement + Operations essentielles ; navigation basse 4 entrées ; tableaux → listes de cartes ; actions en barre basse collante, cibles 44 px.</p>
+        <p>Composants : <span class="mono">.app</span> flex-wrap (sidebar empilée), <span class="mono">.split</span> 999/1, grilles 4→2→1.</p>
+      </div>
+    </div>
+    <div class="doc-sec">
+      <header><h2>Accessibilité (WCAG 2.2 AA)</h2></header>
+      <div class="card card-b stack small" style="gap: 8px">
+        <p>Focus visible 2 px <span class="mono">color.border.focus</span>, offset 2.</p>
+        <p>Statut = icône de forme + texte + couleur ; jamais couleur seule.</p>
+        <p>Tableaux : <span class="mono">th scope</span>, tri annoncé, sélection au clavier (Espace), drawer piège le focus et rend le focus à la ligne.</p>
+        <p>Agents : changements de statut via <span class="mono">aria-live="polite"</span> ; Pause/Stop atteignables au clavier en permanence.</p>
+        <p>Cibles ≥ 24 px desktop, 44 px mobile ; pas de délai imposé sauf session (préavis 2 min).</p>
+      </div>
+    </div>
+    <div class="doc-sec">
+      <header><h2>Ton &amp; formats</h2></header>
+      <div class="card card-b stack small" style="gap: 8px">
+        <p>Vouvoiement ; verbes d'action dans les boutons (« Valider 19 jours », pas « OK »).</p>
+        <p>Erreurs : ce qui s'est passé + pourquoi + quoi faire, avec code incident.</p>
+        <p>IA : « préparé par », « suggestion », « estimation » ; jamais « l'IA a décidé ».</p>
+        <p>Montants <span class="mono">Intl.NumberFormat('fr-FR', {style:'currency', currency:'EUR'})</span> ; dates <span class="mono">dd/MM/yyyy</span> ; HT/TTC toujours précisés.</p>
+        <p>Seuils légaux : toujours depuis <span class="mono">RuleEngine</span> avec version affichée.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Inventaire composants (noms stables)</h2></header>
+    <div class="card card-b" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 24px">
+      <sc-for list="{{comps}}" as="c" hint-placeholder-count="40"><span class="mono small">{{c}}</span></sc-for>
+    </div>
+  </section>
+
+  <section class="doc-sec">
+    <header><h2>Checklist de conformité visuelle</h2></header>
+    <div class="card card-b grid-2 small" style="gap: 8px 24px">
+      <label class="check"><input type="checkbox"> Aucun hex en dur dans les composants : tokens sémantiques uniquement</label>
+      <label class="check"><input type="checkbox"> Chaque chiffre a une unité et une source/date</label>
+      <label class="check"><input type="checkbox"> Chaque graphique a légende ou libellé accessible</label>
+      <label class="check"><input type="checkbox"> Chaque action IA sensible passe par ApprovalQueue</label>
+      <label class="check"><input type="checkbox"> États vide / erreur / chargement / interdit implémentés</label>
+      <label class="check"><input type="checkbox"> Rôle actif filtre la navigation et les données (pas seulement masquage UI)</label>
+      <label class="check"><input type="checkbox"> Mode sombre vérifié 4,5:1 sur tous les textes</label>
+      <label class="check"><input type="checkbox"> Portail client : aucune donnée salariale dans les payloads API</label>
+    </div>
+  </section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const D = ['Conçu','b-success'], S = ['Spécifié','b-info'], N = ['Lot suivant','b-neutral'];
+    const M = (mod, routes, comp, flows, s) => ({ mod, routes, comp, flows, st: s[0], cls: s[1] });
+    return {
+      matrix: [
+        M('00 Design System','—','Foundations, 60+ composants, IA','—',D),
+        M('01 Authentification','/auth/login · /auth/mfa · /auth/reset · /auth/invite · /select-tenant','AuthCard, MfaInput, TenantPicker','13',S),
+        M('Operations Center','/bo','BlockerList, KpiCard, ClosingChecklist, ApprovalQueue','12, 13',D),
+        M('CRM consultants','/bo/crm/consultants · /:id · /pipeline','Kanban, LeadCard, SalarySimulator','1',S),
+        M('CRM entreprises','/bo/crm/entreprises · /:id','AccountCard, SolvencyBadge','2',S),
+        M('Consultants','/bo/consultants · /:id (360)','ProfileHeader, DocChecklist, Timeline','1, 10',S),
+        M('Contrats','/bo/contrats · /:id · /:id/diff','DocumentViewer, VersionDiff, SignatureStatus','2, 8, 9',S),
+        M('Missions','/bo/missions · /:id','MissionCard, RateHistory','8',S),
+        M('Activité / CRA','/bo/activite · /cra/:id','CraCalendar, AnomalyFlag','3',S),
+        M('Notes de frais','/bo/frais · /:id','ExpenseReceipt, RuleCheck','4',S),
+        M('Facturation','/bo/facturation · /:id','DataTable, InvoiceStatus, Drawer, AiDraft','3, 7',D),
+        M('Trésorerie','/bo/tresorerie · /rapprochements · /recouvrement','ReconciliationItem, CashForecast','3, 7, 14',S),
+        M('Paie','/bo/paie/:periode','PeriodStepper, AnomalyCard, ConfirmDialog','5',D),
+        M('Comptes d’activité','/bo/comptes · /:consultant','CalculationBreakdown, TransactionTimeline','6',S),
+        M('RH','/bo/rh/*','Checklist, Calendar','10',S),
+        M('Conformité','/bo/conformite/*','RuleVersion, RiskFlag, SourceCitation','9',S),
+        M('Comptabilité','/bo/compta/*','JournalTable, ExportCard','—',S),
+        M('Pilotage','/bo/pilotage/*','Charts, CohortTable, AiAnalysis','11',S),
+        M('Support & communication','/bo/support/*','Inbox, TemplateEditor','—',N),
+        M('Agents IA','/bo/agents · /runs/:id · /catalogue','AgentCard, ExecutionTimeline, ToolActionPreview','11, 12',D),
+        M('Configuration','/bo/config/*','RoleMatrix, IntegrationCard, WebhookTable','14',N),
+        M('Portail consultant','/me · /me/compte · /me/cra · /me/simulateur …','KpiCard, AssistantPanel, MobileTabBar','1, 3, 4, 6, 8',D),
+        M('Portail client','/client · /client/cra/:id · /client/factures …','ApprovalCircuit, CraCalendar','3',D),
+        M('05 Partenaires','/partner/*','ScopedExport, CommissionTable','—',S),
+        M('06 SaaS multi-tenant','/saas/*','TenantTable, QuotaMeter, TempAccessGrant','13, 14',N)
+      ],
+      maps: [
+        { ab:'BO-Operations', r:'/bo', e:'Closing, Blocker, Approval, AgentRun, Kpi', a:'filtrer tenant, ouvrir bloqueur, lancer objectif', api:'GET /closings/{period} · GET /approvals?status=pending', p:'ops.read' },
+        { ab:'BO-Agents', r:'/bo/agents/runs/:id', e:'AgentRun, AgentStep, ProposedAction, Source', a:'pause, stop, approuver, rejeter, retry, escalader', api:'POST /agent-runs · PATCH /agent-runs/{id} · POST /actions/{id}/approve', p:'agents.run + permission métier de l’action' },
+        { ab:'BO-Facturation', r:'/bo/facturation/:id', e:'Invoice, EInvoiceEvent, Payment, Reminder', a:'émettre, avoir, saisir paiement, relancer, litige', api:'GET /invoices · POST /invoices/{id}/issue · POST /reminders', p:'billing.write' },
+        { ab:'BO-Paie', r:'/bo/paie/2026-10', e:'PayrollPeriod, PayrollVariable, Anomaly, Rule', a:'importer, corriger, valider période, DSN', api:'GET /payroll/periods/{p} · POST /payroll/periods/{p}/validate', p:'payroll.validate' },
+        { ab:'CO-Accueil', r:'/me', e:'Consultant, ActivityAccount, Payslip, Task', a:'signer, saisir CRA, poser question', api:'GET /me/summary · POST /me/assistant', p:'self' },
+        { ab:'CO-Compte', r:'/me/compte/2026-10', e:'ActivityAccountEntry, Statement', a:'voir calcul, télécharger relevé, contester', api:'GET /me/account/entries?period= · GET /me/statements/{p}.pdf', p:'self' },
+        { ab:'CO-Mobile', r:'/me · /me/cra', e:'Cra, CraDay', a:'cocher jours, soumettre', api:'PUT /me/cra/{p} · POST /me/cra/{p}/submit', p:'self' },
+        { ab:'CL-CRA', r:'/client/cra/:id', e:'Cra (sans salaire), ApprovalStep', a:'valider, refuser avec motif, annuler 10 min', api:'POST /client/cra/{id}/approve · /reject', p:'client.approver' },
+        { ab:'Flow-CRA-Facture', r:'transversal', e:'Cra → Invoice → EInvoiceEvent → Payment → Reconciliation', a:'7 étapes + 4 variantes d’erreur', api:'voir étapes', p:'multi-rôles' }
+      ],
+      comps: ['nav/Sidebar','nav/Topbar','nav/TenantSwitcher','nav/PeriodPicker','nav/CommandPalette','nav/Breadcrumbs','nav/Tabs','nav/Pagination','nav/MobileTabBar','action/Button','form/TextInput','form/CurrencyInput','form/PercentInput','form/DateInput','form/DateRange','form/IbanMasked','form/Combobox','form/PhoneInput','form/Upload','form/Toggle','form/Checkbox','form/Radio','form/Stepper','form/FilterChips','data/DataTable','data/Drawer','data/KpiCard','data/Timeline','data/VersionDiff','feedback/StatusBadge','feedback/Alert','feedback/Toast','feedback/EmptyState','feedback/ErrorState','feedback/ConfirmDialog','finance/CalculationBreakdown','finance/InvoiceStatus','finance/ReconciliationItem','finance/PayslipCard','finance/ExpenseReceipt','finance/CashForecast','finance/TransactionTimeline','ai/AgentCard','ai/ActionStatus','ai/ExecutionTimeline','ai/ToolActionPreview','ai/ApprovalQueue','ai/SourceCitation','ai/AiDraft','ai/RiskFlag','ai/SuggestedAction','ai/ReasoningSummary','ai/AuditLog','ai/AssistantPanel']
+    };
+  }
+}
+</script>
+</body>
+</html>

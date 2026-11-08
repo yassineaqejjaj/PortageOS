@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Parcours CRA vers paiement</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po" data-theme="{{theme}}" style="min-height: 100vh; width: 100%">
+<div style="max-width: 1344px; margin: 0 auto; padding: 40px 48px; display: flex; flex-direction: column; gap: 24px">
+  <div class="row between">
+    <div class="stack" style="gap: 4px"><span class="eyebrow">Parcours transversal 3 · prototype cliquable</span><h1>CRA → validation → facture → e-invoicing → paiement → rapprochement</h1><p class="muted small">Cas : Julien Bernard · mission M-2026-021 · Banque Méridienne · octobre 2026</p></div>
+    <div class="row" style="gap: 8px"><button class="btn btn-secondary" onClick="{{prev}}" disabled="{{isFirst}}">‹ Étape précédente</button><button class="btn btn-primary" onClick="{{next}}" disabled="{{isLast}}">Étape suivante ›</button></div>
+  </div>
+
+  <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px">
+    <sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
+      <li><button onClick="{{s.go}}" aria-current="{{s.cur}}" style="all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 10px; border: 1px solid {{s.bd}}; background: {{s.bg}}">
+        <span class="row" style="gap: 6px; flex-wrap: nowrap"><span class="dot {{s.dot}}" aria-hidden="true"></span><span class="mono small muted">0{{s.n}}</span></span>
+        <b class="small">{{s.t}}</b><span class="small muted">{{s.actor}}</span>
+      </button></li>
+    </sc-for>
+  </ol>
+
+  <div class="split">
+    <section class="card main" aria-live="polite">
+      <div class="card-h"><div class="stack" style="gap: 2px"><span class="small muted">Écran vu par : {{cur.actor}} · route <span class="mono">{{cur.route}}</span></span><h2>{{cur.t}}</h2></div><span class="badge {{view.cls}}">{{view.st}}</span></div>
+      <div class="card-b stack" style="gap: 14px">
+        <sc-if value="{{isErr}}" hint-placeholder-val="{{ false }}">
+          <div class="alert a-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l9 16H3zM12 10v4M12 17h.01"></path></svg><div><b>{{cur.errT}}</b><br><span class="small">{{cur.errD}}</span></div></div>
+        </sc-if>
+        <div class="calc">
+          <sc-for list="{{view.lines}}" as="l" hint-placeholder-count="4"><div><span>{{l.k}}</span><span class="{{l.c}}">{{l.v}}</span></div></sc-for>
+        </div>
+        <div class="panel-ai small" style="padding: 10px 12px"><span class="eyebrow" style="color: var(--color-ai)">Ce que fait la plateforme</span><p style="margin-top: 4px">{{view.auto}}</p></div>
+        <div class="small muted"><b>Validation humaine :</b> {{view.human}}</div>
+      </div>
+      <div class="card-f"><button class="btn btn-secondary btn-sm">{{view.cta2}}</button><button class="btn btn-primary btn-sm" onClick="{{next}}">{{view.cta}}</button></div>
+    </section>
+
+    <aside class="side stack" style="gap: 16px">
+      <section class="card">
+        <div class="card-h"><h3>Chemin d'erreur</h3></div>
+        <div class="card-b stack small" style="gap: 10px">
+          <sc-if value="{{hasErr}}" hint-placeholder-val="{{ true }}">
+            <p>{{cur.errLabel}}</p>
+            <button class="btn btn-secondary btn-sm" onClick="{{toggleErr}}" style="align-self: flex-start">{{errBtn}}</button>
+          </sc-if>
+          <sc-if value="{{noErr}}" hint-placeholder-val="{{ false }}"><p class="muted">Pas de variante d'erreur spécifique à cette étape ; erreurs génériques (API, session, droits) dans 00.2.</p></sc-if>
+        </div>
+      </section>
+      <section class="card">
+        <div class="card-h"><h3>Objets &amp; API</h3></div>
+        <div class="card-b stack small" style="gap: 6px"><span class="mono">{{cur.api}}</span><span class="muted">Entités : {{cur.ent}}</span></div>
+      </section>
+      <section class="card card-b small stack" style="gap: 6px"><h4>Message de fin</h4><p class="muted">« Facture F-2026-0413 payée et rapprochée le 18/11/2026. Le compte d'activité de Julien Bernard a été crédité de 13 680,00 €. »</p></section>
+    </aside>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1150}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { i: 0, err: false }; }
+  renderVals() {
+    const L = (k, v, c) => ({ k, v, c: c || 'amt' });
+    const data = [
+      { t:'CRA soumis', actor:'Consultant', route:'/me/cra/2026-10', api:'POST /cra/{id}/submit', ent:'Cra, Mission, Consultant',
+        ok:{ st:'Soumis', cls:'b-info', lines:[L('Jours déclarés','19 / 22','num'),L('TJM','720,00 € HT'),L('Montant prévisionnel','13 680,00 € HT')], auto:'Contrôle des jours ouvrés, des absences déclarées et des chevauchements de missions avant soumission.', human:'le consultant soumet.', cta:'Soumettre', cta2:'Enregistrer le brouillon' },
+        errLabel:'Variante : le consultant déclare plus de jours que de jours ouvrés.', errT:'23 jours déclarés pour 22 jours ouvrés', errD:'Soumission possible avec commentaire obligatoire ; le gestionnaire est alerté.',
+        er:{ st:'Anomalie', cls:'b-danger', lines:[L('Jours déclarés','23 / 22','num neg')], auto:'Blocage doux : commentaire requis, alerte gestionnaire.', human:'le consultant justifie.', cta:'Ajouter un commentaire', cta2:'Corriger' } },
+      { t:'Validation client', actor:'Approbateurs client', route:'/client/cra/CRA-2026-10-021', api:'POST /cra/{id}/approvals', ent:'Cra, ApprovalStep, ClientContact',
+        ok:{ st:'Validé niv. 1 + 2', cls:'b-success', lines:[L('Niveau 1 · Sophie Lemaire','Validé 09/11','num'),L('Niveau 2 · Achats','Validé 10/11','num')], auto:'Circuit d’approbation issu du contrat de prestation ; relance automatique à J+2 (Operations Agent).', human:'deux approbateurs client.', cta:'Passer au contrôle', cta2:'Voir le circuit' },
+        errLabel:'Variante : refus du client avec motif.', errT:'CRA refusé par Sophie Lemaire', errD:'Motif : « le 16/10 était un jour d’absence convenu ». Le consultant reçoit le motif et corrige.',
+        er:{ st:'Refusé', cls:'b-danger', lines:[L('Motif','Jour 16/10 contesté','')], auto:'Renvoi au consultant, nouvelle version CRA v2, historique conservé.', human:'le consultant corrige et resoumet.', cta:'Notifier le consultant', cta2:'Voir la version 1' } },
+      { t:'Contrôle gestionnaire', actor:'Gestionnaire opérations', route:'/bo/activite/cra/CRA-2026-10-021', api:'POST /cra/{id}/check', ent:'Cra, Mission, Rule',
+        ok:{ st:'Conforme', cls:'b-success', lines:[L('Durée de mission vs règles','OK · règle MIS-DUR v2026.1',''),L('TJM vs contrat','OK',''),L('Bon de commande','BC-BM-2026-077 · solde suffisant','')], auto:'Contrôles du moteur de règles versionné ; aucune valeur légale codée en dur.', human:'gestionnaire opérations.', cta:'Générer la facture', cta2:'Voir les règles appliquées' },
+        errLabel:'', er:null },
+      { t:'Facture générée', actor:'Finance', route:'/bo/facturation/F-2026-0413', api:'POST /invoices', ent:'Invoice, InvoiceLine, Client',
+        ok:{ st:'Brouillon prêt', cls:'b-ai', lines:[L('19 j × 720,00 €','13 680,00 €'),L('TVA 20 %','2 736,00 €'),L('Total TTC','16 416,00 €')], auto:'Finance Agent prépare le brouillon, mentions obligatoires et références (BC, mission) incluses.', human:'finance valide avant émission.', cta:'Émettre', cta2:'Modifier' },
+        errLabel:'', er:null },
+      { t:'Envoi électronique', actor:'Finance', route:'/bo/facturation/F-2026-0413#einvoicing', api:'POST /invoices/{id}/einvoice', ent:'Invoice, EInvoiceEvent',
+        ok:{ st:'Acceptée PA', cls:'b-success', lines:[L('Dépôt plateforme agréée','11/11 09:02','num'),L('Mise à disposition','11/11 09:05','num'),L('Statut destinataire','Acceptée 12/11','num')], auto:'Suivi des statuts du cycle de vie renvoyés par la plateforme agréée.', human:'aucune (envoi déjà validé).', cta:'Suivre le paiement', cta2:'Télécharger Factur-X' },
+        errLabel:'Variante : rejet par la plateforme agréée.', errT:'Rejet plateforme : identifiant destinataire invalide', errD:'Le SIRET de facturation de Banque Méridienne ne correspond pas à l’annuaire. Corrigez la fiche client puis redéposez.',
+        er:{ st:'Rejet PA', cls:'b-danger', lines:[L('Code retour','REJ-DEST-01','mono')], auto:'La facture reste émise mais non transmise ; une tâche de correction est créée.', human:'finance corrige et redépose.', cta:'Corriger la fiche client', cta2:'Voir le message brut' } },
+      { t:'Paiement', actor:'Client / Trésorerie', route:'/bo/tresorerie/encaissements', api:'GET /bank/transactions', ent:'BankTransaction, Payment',
+        ok:{ st:'Payée', cls:'b-success', lines:[L('Virement reçu 18/11','16 416,00 €'),L('Reste dû','0,00 €')], auto:'Import bancaire quotidien, détection de payeur et de référence.', human:'aucune à ce stade.', cta:'Rapprocher', cta2:'Voir la transaction' },
+        errLabel:'Variante : paiement partiel.', errT:'Paiement partiel de 10 000,00 €', errD:'Reste dû 6 416,00 €. Relance niveau 1 préparée par l’Operations Agent, non envoyée.',
+        er:{ st:'Partiel', cls:'b-warning', lines:[L('Reçu','10 000,00 €'),L('Reste dû','6 416,00 €','amt neg')], auto:'Lettrage partiel et brouillon de relance.', human:'gestionnaire valide la relance.', cta:'Relire la relance', cta2:'Ouvrir un litige' } },
+      { t:'Rapprochement', actor:'Finance', route:'/bo/tresorerie/rapprochements', api:'POST /reconciliations', ent:'Reconciliation, ActivityAccountEntry',
+        ok:{ st:'Rapprochée', cls:'b-success', lines:[L('Facture F-2026-0413','soldée',''),L('Compte d’activité J. Bernard','+13 680,00 €','amt pos'),L('Frais de gestion 8 %','−1 094,40 €','amt neg')], auto:'Écritures du compte d’activité générées et journalisées ; le consultant voit la ligne expliquée.', human:'finance (lot faible risque).', cta:'Terminer', cta2:'Voir les écritures' },
+        errLabel:'', er:null }
+    ];
+    const i = this.state.i; const cur = data[i];
+    const isErr = this.state.err && !!cur.er;
+    const steps = data.map((d, k) => ({ n: k + 1, t: d.t, actor: d.actor, cur: k === i ? 'step' : 'false', dot: k < i ? 'done' : k === i ? 'run' : '', bd: k === i ? 'var(--color-action-primary)' : 'var(--color-border-default)', bg: k === i ? 'var(--color-action-primary-soft)' : 'var(--color-bg-surface)', go: () => this.setState({ i: k, err: false }) }));
+    return {
+      theme: this.props.theme ?? 'light', steps, cur, view: isErr ? cur.er : cur.ok, isErr,
+      hasErr: !!cur.er, noErr: !cur.er, errBtn: this.state.err ? 'Revenir au cas nominal' : 'Afficher la variante',
+      toggleErr: () => this.setState({ err: !this.state.err }),
+      isFirst: i === 0, isLast: i === data.length - 1,
+      prev: () => this.setState({ i: Math.max(0, i - 1), err: false }), next: () => this.setState({ i: Math.min(data.length - 1, i + 1), err: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

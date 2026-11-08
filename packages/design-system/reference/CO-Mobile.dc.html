@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mobile consultant</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#4F46E5}a:hover{color:#4338CA}</style>
+</helmet>
+<div class="po" data-theme="{{theme}}" style="width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden; background: var(--color-bg-canvas)">
+  <header style="background: #15243B; color: #fff; padding: 20px 16px 16px; display: flex; flex-direction: column; gap: 4px">
+    <div class="row between" style="flex-wrap: nowrap"><span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: .04em; font-size: 14px">PORTAGE<span style="color: #5EEAD4"> OS</span></span><button aria-label="Notifications, 3 non lues" style="width: 44px; height: 44px; border: 0; background: transparent; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"></path></svg></button></div>
+    <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700">{{title}}</span>
+  </header>
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+    <sc-if value="{{isHome}}" hint-placeholder-val="{{ true }}">
+      <div class="card kpi"><span class="eyebrow">Solde compte d'activité</span><span class="v">5 631,60 €</span><span class="src">au 05/11/2026 · +2 211,60 € en octobre</span></div>
+      <div class="grid-2" style="gap: 12px">
+        <div class="card kpi" style="padding: 12px"><span class="eyebrow">Salaire</span><b class="amt" style="font-size: 17px">4 772,00 €</b><span class="src">le 10/11</span></div>
+        <div class="card kpi" style="padding: 12px"><span class="eyebrow">CA octobre</span><b class="amt" style="font-size: 17px">13 000 € HT</b><span class="src">payé</span></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>À faire</h3><span class="badge b-warning">2</span></div>
+        <div class="list small">
+          <div class="stack" style="gap: 8px"><b>Signer l'avenant AV-2026-031</b><span class="muted">Prolongation Helioris jusqu'au 31/05/2027</span><button class="btn btn-primary" style="height: 44px">Relire et signer</button></div>
+          <div class="stack" style="gap: 8px"><b>Compléter le CRA de novembre</b><span class="muted">{{count}} / 20 jours saisis</span><button class="btn btn-secondary" style="height: 44px" onClick="{{goCra}}">Ouvrir le CRA</button></div>
+        </div>
+      </div>
+      <div class="panel-ai" style="padding: 12px; display: flex; gap: 10px; align-items: center"><span class="av ai">IA</span><span class="small" style="flex: 1">Posez une question sur votre dossier</span><span class="muted">›</span></div>
+    </sc-if>
+
+    <sc-if value="{{isCra}}" hint-placeholder-val="{{ false }}">
+      <div class="row between" style="flex-wrap: nowrap"><button class="btn btn-ghost" aria-label="Mois précédent" style="width: 44px; height: 44px">‹</button><b>Novembre 2026</b><button class="btn btn-ghost" aria-label="Mois suivant" style="width: 44px; height: 44px">›</button></div>
+      <div class="small muted">Mission M-2026-014 · Helioris Énergie · touchez un jour pour le saisir</div>
+      <div class="card" style="padding: 10px">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center" class="small muted"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 6px">
+          <sc-for list="{{cells}}" as="c" hint-placeholder-count="35">
+            <button onClick="{{c.tap}}" aria-label="{{c.aria}}" aria-pressed="{{c.on}}" style="height: 44px; border-radius: 8px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font: 600 13px Inter, sans-serif; cursor: pointer; opacity: {{c.op}}">{{c.l}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div class="row small" style="gap: 12px"><span class="row" style="gap: 6px"><i style="width: 12px; height: 12px; border-radius: 3px; background: #4F46E5"></i>Travaillé</span><span class="row" style="gap: 6px"><i style="width: 12px; height: 12px; border-radius: 3px; border: 1px dashed #B96B13"></i>Férié</span></div>
+      <div class="card card-b row between" style="flex-wrap: nowrap"><span>Jours saisis</span><b class="num" style="font-size: 18px">{{count}} / 20</b></div>
+      <sc-if value="{{over}}" hint-placeholder-val="{{ false }}"><div class="alert a-warning small"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l9 16H3zM12 10v4M12 17h.01"></path></svg><div>Vous déclarez plus de jours que de jours ouvrés. Ajoutez un commentaire pour votre client.</div></div></sc-if>
+      <button class="btn btn-primary" style="height: 48px" disabled="{{notReady}}">Soumettre au client</button>
+      <span class="small muted" style="text-align: center">Brouillon enregistré automatiquement</span>
+    </sc-if>
+  </div>
+
+  <nav aria-label="Navigation principale" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--color-border-default); background: var(--color-bg-surface); padding: 4px 4px 20px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+      <button onClick="{{t.go}}" aria-current="{{t.cur}}" style="height: 52px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font: 600 11px Inter, sans-serif; color: {{t.fg}}; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg>{{t.l}}</button>
+    </sc-for>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'home', days: [2,3,4,5,6,9] }; }
+  renderVals() {
+    const days = this.state.days;
+    const cells = [];
+    for (let i = 0; i < 6; i++) cells.push({ l: '', aria: 'vide', on: 'false', bd: 'transparent', bg: 'transparent', fg: 'inherit', op: 1, tap: () => {} });
+    for (let d = 1; d <= 30; d++) {
+      const dow = (d + 5) % 7; // 0 = lundi
+      const we = dow >= 5, hol = d === 11, on = days.includes(d);
+      cells.push({
+        l: String(d), on: on ? 'true' : 'false',
+        aria: d + ' novembre' + (hol ? ', férié' : we ? ', week-end' : '') + (on ? ', travaillé' : ''),
+        bd: hol ? '#B96B13' : on ? '#4F46E5' : 'var(--color-border-default)',
+        bg: on ? '#4F46E5' : 'var(--color-bg-surface)', fg: on ? '#FFFFFF' : hol ? '#B96B13' : 'inherit', op: we && !on ? 0.5 : 1,
+        tap: () => this.setState({ days: on ? days.filter((x) => x !== d) : [...days, d] })
+      });
+    }
+    const I = { home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', cra:'M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM16 3v4M8 3v4M4 10h16', cpt:'M4 19V5M4 19h16M8 15l4-4 3 3 5-6', more:'M5 12h.01M12 12h.01M19 12h.01' };
+    const tabs = [['home','Accueil'],['cra','CRA'],['cpt','Compte'],['more','Plus']].map(([k,l]) => ({ l, d: I[k], cur: this.state.tab === k ? 'page' : 'false', fg: this.state.tab === k ? '#4F46E5' : '#637086', go: () => (k === 'home' || k === 'cra') && this.setState({ tab: k }) }));
+    return {
+      theme: this.props.theme ?? 'light', cells, tabs, count: days.length, over: days.length > 20, notReady: days.length < 1,
+      isHome: this.state.tab === 'home', isCra: this.state.tab === 'cra', title: this.state.tab === 'cra' ? 'Mon CRA' : 'Bonjour Camille',
+      goCra: () => this.setState({ tab: 'cra' })
+    };
+  }
+}
+</script>
+</body>
+</html>

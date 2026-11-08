@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Barre supérieure</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./portage.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<header class="po" style="width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 12px 24px; flex-wrap: wrap; background: var(--color-bg-surface); border-bottom: 1px solid var(--color-border-default); font-family: Inter, system-ui, sans-serif">
+  <sc-if value="{{showTenant}}" hint-placeholder-val="{{ true }}">
+    <button class="btn btn-secondary" aria-label="Changer de société" style="gap: 8px"><span style="width: 20px; height: 20px; border-radius: 5px; background: #0F9D92; color: #fff; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center">{{tenantIni}}</span>{{tenant}}<span class="muted">▾</span></button>
+  </sc-if>
+  <button class="btn btn-secondary" aria-label="Changer de période"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 5h14v15H5zM16 3v4M8 3v4M4 10h16"></path></svg>{{period}}<span class="muted">▾</span></button>
+  <div class="search" style="flex: 1 1 280px; max-width: 520px" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5"></path></svg><span>{{placeholder}}</span><span class="kbd" style="margin-left: auto">⌘K</span></div>
+  <div class="row" style="gap: 6px; margin-left: auto; flex-wrap: nowrap">
+    <button class="btn btn-ghost" aria-label="Notifications, {{notif}} non lues" style="position: relative; padding: 0 10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"></path></svg><span style="position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; border-radius: 8px; background: #C43C45; color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px">{{notif}}</span></button>
+    <button class="btn btn-ghost" aria-label="Aide" style="padding: 0 10px">?</button>
+    <span class="tag">{{role}}</span>
+  </div>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"portal":{"editor":"enum","options":["bo","consultant","client"],"default":"bo"},"tenant":{"editor":"enum","options":["Altitude Portage","Nexa Portage"],"default":"Altitude Portage"},"period":{"editor":"text","default":"Octobre 2026"},"$preview":{"width":1192,"height":64}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const portal = this.props.portal ?? 'bo';
+    const tenant = this.props.tenant ?? 'Altitude Portage';
+    return {
+      showTenant: portal === 'bo', tenant, tenantIni: tenant === 'Nexa Portage' ? 'NX' : 'AL',
+      period: this.props.period ?? 'Octobre 2026',
+      placeholder: portal === 'bo' ? 'Rechercher ou demander à un agent…' : portal === 'client' ? 'Rechercher une facture, un consultant…' : 'Poser une question sur mon dossier…',
+      notif: portal === 'bo' ? '9' : portal === 'client' ? '2' : '3',
+      role: portal === 'bo' ? 'Rôle : Gestionnaire opérations ▾' : portal === 'client' ? 'Banque Méridienne' : 'Altitude Portage'
+    };
+  }
+}
+</script>
+</body>
+</html>
