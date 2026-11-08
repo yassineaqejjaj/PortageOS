@@ -44,6 +44,6 @@ jobs:
         run: |
           pnpm -F @portage/web exec playwright install --with-deps chromium
           pnpm -F @portage/web test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with: { name: playwright-report, path: apps/web/playwright-report, retention-days: 7 }
