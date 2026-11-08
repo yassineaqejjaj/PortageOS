@@ -12,3 +12,4 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - `Membership` et `User` ne sont pas sous RLS (nécessaires au login avant résolution du tenant) : écritures uniquement via services qui forcent le tenant.
 - Limiteur de login en mémoire (mono-instance). Pas de MFA, SSO, refresh token, invitation par email, ni vérification de force des mots de passe au-delà de 12 caractères.
 - `JWT_SECRET` unique, sans rotation. Pas de journal d'accès (lectures).
+- Front : jeton jamais accessible au JS (cookie httpOnly), liste blanche du proxy, contrôle d'Origin sur login/logout/écritures (vérifié par curl), en-têtes X-Frame-Options/nosniff/Referrer-Policy. Pas de CSP ni de rate limiting côté BFF (à faire). Pas de renouvellement de session : expiration à 15 min = retour au login.

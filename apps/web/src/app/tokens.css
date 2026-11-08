@@ -1,0 +1,13 @@
+/* TOKENS PROVISOIRES — NON issus de Claude Design (artboard non fourni).
+   À remplacer par l'import du handoff (voir docs/DESIGN_HANDOFF.md). */
+:root {
+  --color-bg: #f7f7f8; --color-surface: #ffffff; --color-text: #16181d; --color-muted: #5b6270;
+  --color-border: #d9dce2; --color-primary: #1f4fd8; --color-primary-contrast: #ffffff;
+  --color-danger: #b42318; --color-focus: #1f4fd8;
+  --radius: 8px; --space-1: 4px; --space-2: 8px; --space-3: 16px; --space-4: 24px;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --color-bg: #0f1115; --color-surface: #171a21; --color-text: #eceef2; --color-muted: #9aa3b2;
+    --color-border: #2c313c; --color-primary: #6b8cff; --color-primary-contrast: #0b1020; --color-danger: #ff8a80; --color-focus: #8fa8ff; }
+}
