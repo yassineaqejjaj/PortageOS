@@ -21,9 +21,12 @@ export const TS_STATUS: Record<string, { label: string; cls: string }> = {
 };
 export const INV_STATUS: Record<string, { label: string; cls: string }> = {
   draft: { label: "Brouillon", cls: "b-neutral" }, issued: { label: "Émise", cls: "b-info" }, partially_paid: { label: "Partiellement payée", cls: "b-warning" },
-  paid: { label: "Payée", cls: "b-success" }, cancelled: { label: "Annulée", cls: "b-danger" },
+  paid: { label: "Payée", cls: "b-success" }, cancelled: { label: "Annulée", cls: "b-danger" }, credited: { label: "Avoir émis", cls: "b-danger" },
 };
 export function Badge({ map, value }: { map: Record<string, { label: string; cls: string }>; value: string }) {
   const s = map[value] ?? { label: value, cls: "b-neutral" };
   return <span className={`badge ${s.cls}`}>{s.label}</span>;
 }
+
+export type Claim = { id: string; title: string; status: string; total: string; rejectReason: string | null; lines: { id: string; date: string; category: string; description: string; amount: string; km: string | null; receiptRef: string | null; policyFlag: string | null }[] };
+export const EXP_STATUS: Record<string, { label: string; cls: string }> = { draft: { label: "Brouillon", cls: "b-neutral" }, submitted: { label: "À approuver", cls: "b-info" }, approved: { label: "Approuvée", cls: "b-warning" }, rejected: { label: "Refusée", cls: "b-danger" }, reimbursed: { label: "Remboursée", cls: "b-success" } };

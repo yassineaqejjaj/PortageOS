@@ -8,7 +8,7 @@
 |                     |                                                                                              |
 | ------------------- | -------------------------------------------------------------------------------------------- |
 | **Stack**           | TypeScript · Next.js 15 · NestJS · Prisma · PostgreSQL (RLS) · Playwright · Docker           |
-| **Qualité**         | 18 tests domaine · 34 tests API/intégration (base réelle) · 15 tests E2E · TypeScript strict · CI |
+| **Qualité**         | 22 tests domaine · 42 tests API/intégration (base réelle) · 18 tests E2E · TypeScript strict · CI |
 | **En ligne (test)** | Voir [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (Railway : API + PostgreSQL · Vercel : web)     |
 | **Design**          | Claude Design importé (`packages/design-system`), clair et sombre, WCAG 2.2 AA visé          |
 | **Données**         | 100 % fictives (jeux de démonstration isolés des workflows réels)                            |
@@ -31,11 +31,16 @@
 | Missions | Consultant actif × client, TJM, TVA saisie, dates | idem |
 | CRA | Saisie contrôlée (½/1 jour, période, dates), machine d'état, portails consultant et client cloisonnés (client sans donnée salariale), preuve en audit, verrouillage | idem + `e2e/chain.spec.ts` |
 | Facturation | Facture depuis CRA validé (Decimal), numérotation sans trou, émission, encaissements partiels, annulation par contrepassation. **Non connectée** à une plateforme agréée | idem |
+| Paramètres réglementaires | Catalogue daté, sourcé, approuvé à quatre yeux, immuable ; aucune valeur légale livrée | `modules2.test.ts` |
+| Notes de frais | Barème kilométrique paramétré (refus s'il manque), plafond repas signalé, justificatifs (référence), doublons, séparation des tâches, remboursement + journal | idem + E2E |
+| Avoirs | Avoir total numéroté (AV), contrepassation | idem |
+| Compte d'activité | Relevé mensuel **estimatif** détaillé, sourcé, jamais présenté comme un salaire | idem + E2E |
+| Contrats | Modèles versionnés immuables, variables strictes, signature **déclarée** (non qualifiée) | idem + E2E |
 | Registre financier | Journal append-only équilibré (trigger en base), balance, réconciliation créances ↔ factures | idem |
 | Front | Coque du design, login, prospects, clients, audit ; BFF avec cookie httpOnly ; clair/sombre ; mobile | `apps/web/e2e` |
 
 ## Ce qui n'existe pas encore
-Contrats et signatures, absences et congés, notes de frais, facturation électronique (PDF, avoirs, plateforme agréée), banque et recouvrement, **paie et DSN**, compte d'activité, RH, conformité (règles légales à saisir depuis des sources officielles), comptabilité, pilotage, portails consultant/client/partenaires, administration SaaS, agents IA et RAG, portails partenaire, MFA/SSO, invitations, workers durables, webhooks. Chaque ligne figure dans la [matrice d'implémentation](docs/IMPLEMENTATION_MATRIX.md) avec son statut.
+Signature électronique qualifiée, absences et congés, dépôt de justificatifs/OCR, facturation électronique (PDF, plateforme agréée), banque et recouvrement, **paie et DSN**, compte d'activité, RH, conformité (règles légales à saisir depuis des sources officielles), comptabilité, pilotage, portails consultant/client/partenaires, administration SaaS, agents IA et RAG, portails partenaire, MFA/SSO, invitations, workers durables, webhooks. Chaque ligne figure dans la [matrice d'implémentation](docs/IMPLEMENTATION_MATRIX.md) avec son statut.
 
 ## Architecture
 ```

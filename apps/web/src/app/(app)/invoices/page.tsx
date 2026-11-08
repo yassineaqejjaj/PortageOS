@@ -11,6 +11,7 @@ type T = { id: string; period: string; status: string; missionTitle: string; con
 export default function InvoicesPage() {
   const qc = useQueryClient();
   const [paying, setPaying] = useState<string | null>(null);
+  const [crediting, setCrediting] = useState<string | null>(null); const [reason, setReason] = useState("");
   const [amount, setAmount] = useState(""); const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const invs = useQuery({ queryKey: ["invoices"], queryFn: () => api<Inv[]>("invoices") });
   const ready = useQuery({ queryKey: ["timesheets", "validated"], queryFn: () => api<T[]>("timesheets?status=validated"), retry: false });
@@ -18,9 +19,10 @@ export default function InvoicesPage() {
   const create = useMutation({ mutationFn: (timesheetId: string) => api("invoices", { method: "POST", body: { timesheetId } }), onSuccess: refresh });
   const issue = useMutation({ mutationFn: (id: string) => api(`invoices/${id}/issue`, { method: "POST" }), onSuccess: refresh });
   const cancel = useMutation({ mutationFn: (id: string) => api(`invoices/${id}/cancel`, { method: "POST" }), onSuccess: refresh });
+  const credit = useMutation({ mutationFn: (a: { id: string; reason: string }) => api(`invoices/${a.id}/credit`, { method: "POST", body: { reason: a.reason } }), onSuccess: () => { setCrediting(null); setReason(""); refresh(); } });
   const pay = useMutation({ mutationFn: (id: string) => api(`invoices/${id}/payments`, { method: "POST", body: { amount: amount.replace(",", "."), receivedOn: date } }), onSuccess: () => { setPaying(null); setAmount(""); refresh(); } });
   if (isForbidden(invs.error)) return <><h1>Facturation</h1><Forbidden what="la facturation" /></>;
-  const err = invs.error ?? create.error ?? issue.error ?? cancel.error ?? pay.error;
+  const err = invs.error ?? create.error ?? issue.error ?? cancel.error ?? pay.error ?? credit.error;
   return (
     <>
       <h1>Facturation</h1>
@@ -45,7 +47,15 @@ export default function InvoicesPage() {
                   {i.status === "draft" && <button className="btn btn-primary btn-sm" disabled={issue.isPending} onClick={() => issue.mutate(i.id)}>Émettre</button>}
                   {(i.status === "issued" || i.status === "partially_paid") && <button className="btn btn-secondary btn-sm" onClick={() => { setPaying(i.id); setAmount((Number(i.gross) - Number(i.paid)).toFixed(2)); }}>Saisir un encaissement</button>}
                   {i.status === "issued" && <button className="btn btn-ghost btn-sm" disabled={cancel.isPending} onClick={() => cancel.mutate(i.id)}>Annuler</button>}
+                  {["issued", "partially_paid", "paid"].includes(i.status) && <button className="btn btn-ghost btn-sm" onClick={() => { setCrediting(i.id); setReason(""); }}>Émettre un avoir</button>}
                 </div>
+                {crediting === i.id && (
+                  <form className="row" style={{ marginTop: 8, gap: 6 }} onSubmit={e => { e.preventDefault(); credit.mutate({ id: i.id, reason }); }}>
+                    <label className="label" htmlFor={`c-${i.id}`} style={{ position: "absolute", left: -999 }}>Motif de l’avoir</label>
+                    <input id={`c-${i.id}`} className="input" style={{ width: 240 }} placeholder="Motif de l’avoir (obligatoire)" value={reason} onChange={e => setReason(e.target.value)} required minLength={5} />
+                    <button className="btn btn-danger btn-sm" disabled={credit.isPending || reason.trim().length < 5}>Émettre l’avoir total</button>
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCrediting(null)}>Annuler</button>
+                  </form>)}
                 {paying === i.id && (
                   <form className="row" style={{ marginTop: 8, gap: 6 }} onSubmit={e => { e.preventDefault(); pay.mutate(i.id); }}>
                     <label className="label" htmlFor={`a-${i.id}`} style={{ position: "absolute", left: -999 }}>Montant encaissé</label>

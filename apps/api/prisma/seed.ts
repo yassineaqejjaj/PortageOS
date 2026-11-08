@@ -22,7 +22,7 @@ async function main() {
   if (!hasMission) await db.mission.create({ data: { tenantId, consultantId: consultant.id, companyId: company.id, title: "Mission de démonstration", dailyRate: "650.00", vatRate: "20", startDate: new Date("2026-01-01") } });
 
   const users: [string, string[], { companyId?: string; consultantId?: string }][] = [
-    ["admin@demo.test", ["tenant_admin"], {}], ["commerce@demo.test", ["commerce"], {}], ["ops@demo.test", ["operations"], {}], ["finance@demo.test", ["finance"], {}],
+    ["admin@demo.test", ["tenant_admin"], {}], ["commerce@demo.test", ["commerce"], {}], ["ops@demo.test", ["operations"], {}], ["finance@demo.test", ["finance"], {}], ["hr@demo.test", ["hr"], {}], ["compliance@demo.test", ["compliance"], {}],
     ["consultant@demo.test", ["consultant"], { consultantId: consultant.id }], ["client@demo.test", ["client_user"], { companyId: company.id }],
   ];
   for (const [email, roles, link] of users) {

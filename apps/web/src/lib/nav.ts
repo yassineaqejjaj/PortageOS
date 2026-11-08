@@ -8,6 +8,8 @@ export const ICONS = {
   cal: "M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM16 3v4M8 3v4M4 10h16",
   eur: "M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9",
   led: "M4 19V5M4 19h16M8 15l4-4 3 3 5-6",
+  doc: "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6",
+  rec: "M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3",
   sh: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
 } as const;
 
@@ -25,7 +27,13 @@ export const NAV: NavItem[] = [
   { key: "timesheets", label: "Activité / CRA", href: "/timesheets", icon: "cal", permission: "timesheet.read", group: "Opérations" },
   { key: "invoices", label: "Facturation", href: "/invoices", icon: "eur", permission: "invoice.read", group: "Opérations" },
   { key: "ledger", label: "Registre financier", href: "/ledger", icon: "led", permission: "ledger.read", group: "Opérations" },
+  { key: "expenses", label: "Notes de frais", href: "/expenses", icon: "rec", permission: "expense.read", group: "Opérations" },
+  { key: "accounts", label: "Comptes d’activité", href: "/accounts", icon: "led", permission: "account.read", group: "Opérations" },
+  { key: "contracts", label: "Contrats", href: "/contracts", icon: "doc", permission: "contract.read", group: "Relation" },
+  { key: "rules", label: "Paramètres réglementaires", href: "/rules", icon: "sh", permission: "rules.read", group: "Gouvernance" },
   { key: "audit", label: "Journal d’audit", href: "/audit", icon: "sh", permission: "audit.read", group: "Gouvernance" },
   { key: "me", label: "Mes CRA", href: "/me/timesheets", icon: "cal", permission: "portal.self", group: "Mon espace" },
+  { key: "myexpenses", label: "Mes notes de frais", href: "/me/expenses", icon: "rec", permission: "portal.self", group: "Mon espace" },
+  { key: "myaccount", label: "Mon compte d’activité", href: "/me/account", icon: "led", permission: "portal.self", group: "Mon espace" },
   { key: "client", label: "CRA à valider", href: "/client/timesheets", icon: "cal", permission: "portal.client", group: "Mon espace" },
 ];

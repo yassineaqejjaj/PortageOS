@@ -13,6 +13,13 @@ const ALLOWED = [
   new RegExp(`^client/timesheets(/${U}/transition)?$`),
   new RegExp(`^invoices(/${U}(/issue|/payments|/cancel)?)?$`),
   /^ledger\/(entries|trial-balance|reconciliation)$/,
+  new RegExp(`^invoices/${U}/credit$`),
+  new RegExp(`^rules/parameters(/${U}/approve)?$`),
+  new RegExp(`^expenses(/${U}/transition)?$`),
+  /^me\/expenses$/, new RegExp(`^me/expenses/${U}/(lines|transition)$`),
+  /^me\/account$/, new RegExp(`^accounts/${U}$`),
+  /^contract-templates$/, new RegExp(`^contract-templates/${U}/publish$`),
+  new RegExp(`^contracts(/${U}(/transition)?)?$`),
 ];
 
 async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {

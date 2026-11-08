@@ -20,3 +20,10 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - Registre : append-only (journal, paiements), équilibre vérifié en base par contrainte différée, montants contraints (CHECK).
 - Limite : le rattachement d'un utilisateur à une entreprise/un consultant se fait par la base (aucune UI d'administration des membres) ; le contrôle d'objet des portails repose sur le code des contrôleurs (pas de RLS par entreprise).
 - Données personnelles : les dossiers consultants contiennent des données personnelles (nom, email) ; pas de pièces d'identité ni de RIB stockés à ce jour. Avant d'y ajouter des pièces d'identité, coordonnées bancaires ou données de paie (classification C2/C3 selon votre politique), chiffrement applicatif, journal d'accès et hébergement UE sont à mettre en place.
+
+## Séance 6
+- Paramètres réglementaires : quatre yeux appliqué par le code ET par contrainte SQL (`approvedBy <> createdBy`), versions approuvées immuables (trigger).
+- Contrats signés, modèles publiés, avoirs : immuables (triggers). La « signature » est une déclaration interne tracée ; elle n'a pas la valeur d'une signature électronique qualifiée.
+- Notes de frais : séparation des tâches (pas d'auto-approbation), remboursement réservé à la finance.
+- Compte d'activité : montant jamais calculé avec un paramètre manquant ; étiqueté estimation.
+- Limite : les justificatifs ne sont pas stockés (référence texte). Avant tout dépôt de fichiers : stockage privé, antivirus, URL temporaires, contrôle d'accès.
