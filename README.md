@@ -8,7 +8,7 @@
 |                     |                                                                                              |
 | ------------------- | -------------------------------------------------------------------------------------------- |
 | **Stack**           | TypeScript · Next.js 15 · NestJS · Prisma · PostgreSQL (RLS) · Playwright · Docker           |
-| **Qualité**         | 24 tests domaine · 63 tests API/intégration (base réelle) · 20 tests E2E · TypeScript strict · CI |
+| **Qualité**         | 25 tests domaine · 73 tests API/intégration (base réelle) · 22 tests E2E · TypeScript strict · CI |
 | **En ligne (test)** | Voir [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (Railway : API + PostgreSQL · Vercel : web)     |
 | **Design**          | Claude Design importé (`packages/design-system`), clair et sombre, WCAG 2.2 AA visé          |
 | **Données**         | 100 % fictives (jeux de démonstration isolés des workflows réels)                            |
@@ -38,6 +38,8 @@
 | Contrats | Modèles versionnés immuables, variables strictes, signature **déclarée** (non qualifiée) | idem + E2E |
 | Absences et congés | Décompte en jours ouvrés (fériés = paramètres approuvés), solde par ajustements RH motivés, approbation sans auto-validation, annulation, cohérence avec le CRA | `leaves.test.ts` + E2E |
 | Agents | 6 agents (Payroll indisponible), outils typés lecture/écriture, playbooks **déterministes**, propositions approuvées par des humains (1 ou 2 niveaux), budgets, coupe-circuit, journal d'appels. **Aucun LLM connecté** | `agents.test.ts` + E2E |
+| Notifications | In-app (CRA, frais, absences, support), destinataires cloisonnés, préférences par type. **E-mail non connecté** | `support-notifications.test.ts` + E2E |
+| Support | Tickets, réponses, notes internes invisibles du demandeur, workflow, assignation, recherche, modèles | idem + E2E |
 | Registre financier | Journal append-only équilibré (trigger en base), balance, réconciliation créances ↔ factures | idem |
 | Front | Coque du design, login, prospects, clients, audit ; BFF avec cookie httpOnly ; clair/sombre ; mobile | `apps/web/e2e` |
 

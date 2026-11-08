@@ -38,3 +38,8 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - Budgets et coupe-circuit par agent et par tenant (appels d'outils par exécution, exécutions par jour, désactivation immédiate), configurables par l'administrateur seul.
 - Isolation : RLS sur toutes les tables d'agents ; journal d'appels et approbations append-only.
 - **Non couvert** : aucun modèle de langage n'est connecté. Par conséquent, l'injection de prompt, l'exfiltration via un modèle, le RAG avec ACL, la minimisation des données envoyées à un fournisseur et les évaluations de modèles ne sont ni implémentés ni testés. Ils devront l'être AVANT toute connexion d'un LLM (analyse d'impact RGPD, validation juridique).
+
+## Séance 9 — notifications et support
+- Notifications : boîte strictement personnelle (filtrée par utilisateur authentifié, IDOR = 404), destinataires déterminés côté serveur (client = utilisateurs de l'entreprise de la mission uniquement), l'acteur n'est pas notifié de sa propre action, seule la date de lecture est modifiable (trigger), jamais supprimées.
+- Support : un demandeur ne voit que ses tickets (404 sinon), les notes internes sont filtrées côté serveur dans la requête, les messages sont append-only, le contenu est stocké en texte brut et affiché échappé (React), longueurs bornées.
+- Limites : pas de pièces jointes (pas d'antivirus à gérer), pas de limitation de débit propre à la création de tickets/messages (risque d'abus par un compte authentifié), pas d'e-mail (aucune fuite par e-mail, mais pas d'alerte hors application). Les tickets peuvent contenir des données personnelles saisies librement : durée de conservation à définir.

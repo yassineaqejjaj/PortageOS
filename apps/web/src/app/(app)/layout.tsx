@@ -13,6 +13,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const me = useQuery({ queryKey: ["me"], queryFn: () => api<Me>("me") });
   if (me.error instanceof ApiError && me.error.status === 401) { router.replace("/login"); return null; }
   async function logout() { await fetch("/api/session", { method: "DELETE" }); router.replace("/login"); router.refresh(); }
+  const unread = useQuery({ queryKey: ["unread"], queryFn: () => api<{ count: number }>("notifications/unread-count"), refetchInterval: 30_000, enabled: !!me.data });
   const roles = me.data?.roles ?? [];
   const items = NAV.filter(i => me.data?.permissions.includes(i.permission));
   const groups = [...new Set(items.map(i => i.group))];
@@ -55,6 +56,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {me.data?.tenant?.name ?? "…"}
           </span>
           <div style={{ marginLeft: "auto" }} className="row">
+            <Link href="/notifications" className="btn btn-ghost" aria-label={`Notifications, ${unread.data?.count ?? 0} non lue(s)`} style={{ position: "relative", padding: "0 10px" }}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0" /></svg>
+              {!!unread.data?.count && <span aria-hidden="true" style={{ position: "absolute", top: 2, right: 2, minWidth: 16, height: 16, borderRadius: 8, background: "var(--color-status-danger)", color: "#fff", fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{unread.data.count > 99 ? "99+" : unread.data.count}</span>}
+            </Link>
             <button className="btn btn-secondary btn-sm" onClick={logout}>Se déconnecter</button>
           </div>
         </header>

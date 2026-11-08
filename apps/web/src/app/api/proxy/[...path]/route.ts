@@ -23,6 +23,8 @@ const ALLOWED = [
   /^me\/leaves$/, new RegExp(`^me/leaves/${U}/cancel$`), /^me\/leave-balance$/,
   /^leaves$/, new RegExp(`^leaves/${U}/transition$`), new RegExp(`^leave-balances/${U}$`), /^leave-adjustments$/,
   /^agents$/, /^agents\/[a-z]{3,20}\/config$/, /^agent-runs$/, new RegExp(`^agent-runs/${U}(/cancel)?$`), new RegExp(`^agent-proposals/${U}/decision$`), /^me\/agent-runs$/,
+  /^notifications$/, /^notifications\/(unread-count|read-all)$/, new RegExp(`^notifications/${U}/read$`), /^notification-preferences$/,
+  /^support\/tickets$/, new RegExp(`^support/tickets/${U}(/messages|/transition|/assign)?$`), /^support\/(staff|templates)$/,
 ];
 
 async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {

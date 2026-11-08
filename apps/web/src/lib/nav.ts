@@ -11,6 +11,7 @@ export const ICONS = {
   doc: "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6",
   rec: "M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3",
   ai: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6",
+  chat: "M4 5h16v11H8l-4 4z",
   sh: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
 } as const;
 
@@ -36,6 +37,7 @@ export const NAV: NavItem[] = [
   { key: "rules", label: "Paramètres réglementaires", href: "/rules", icon: "sh", permission: "rules.read", group: "Gouvernance" },
   { key: "audit", label: "Journal d’audit", href: "/audit", icon: "sh", permission: "audit.read", group: "Gouvernance" },
   { key: "me", label: "Mes CRA", href: "/me/timesheets", icon: "cal", permission: "portal.self", group: "Mon espace" },
+  { key: "support", label: "Support", href: "/support", icon: "chat", permission: "support.create", group: "Support" },
   { key: "myagent", label: "Mon assistant", href: "/me/assistant", icon: "ai", permission: "portal.self", group: "Mon espace" },
   { key: "myleaves", label: "Mes absences", href: "/me/leaves", icon: "cal", permission: "portal.self", group: "Mon espace" },
   { key: "myexpenses", label: "Mes notes de frais", href: "/me/expenses", icon: "rec", permission: "portal.self", group: "Mon espace" },
