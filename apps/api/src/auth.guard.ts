@@ -5,7 +5,7 @@ import { loadConfig } from "./config";
 import { PrismaService } from "./prisma.service";
 import { Permission, can } from "./permissions";
 
-export interface RequestContext { userId: string; tenantId: string; roles: string[] }
+export interface RequestContext { userId: string; tenantId: string; roles: string[]; companyId?: string; consultantId?: string }
 export const PERMISSION_KEY = "permission";
 export const RequirePermission = (p: Permission) => SetMetadata(PERMISSION_KEY, p);
 export const PUBLIC_KEY = "public";
@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
     const m = await this.prisma.membership.findUnique({
       where: { userId_tenantId: { userId: claims.sub, tenantId: claims.tid } }, include: { user: true } });
     if (!m || m.user.disabledAt) throw new UnauthorizedException("Accès révoqué");
-    const ctx: RequestContext = { userId: m.userId, tenantId: m.tenantId, roles: m.roles };
+    const ctx: RequestContext = { userId: m.userId, tenantId: m.tenantId, roles: m.roles, companyId: m.companyId ?? undefined, consultantId: m.consultantId ?? undefined };
     req.ctx = ctx;
     const need = this.reflector.getAllAndOverride<Permission>(PERMISSION_KEY, [c.getHandler(), c.getClass()]);
     if (need && !can(ctx.roles, need)) throw new ForbiddenException("Permission insuffisante");

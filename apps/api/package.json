@@ -19,7 +19,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^3.23.8",
-    "@portage/domain": "workspace:*"
+    "@portage/domain": "workspace:*",
+    "decimal.js": "^10.4.3"
   },
   "devDependencies": {
     "@swc/core": "^1.7.0",

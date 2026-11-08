@@ -99,3 +99,39 @@ describe("prospectPipeline", () => {
     expect(() => prospectPipeline.apply("converted", "reopen", u, { kind: "company", hasContact: true })).toThrow(/interdite/);
   });
 });
+
+import { timesheetWorkflow, invoiceWorkflow, computeInvoice, applyPayment, isValidDayQuantity, isValidPeriod } from "../src/index";
+describe("billing", () => {
+  it("quantités de jours et périodes", () => {
+    expect(isValidDayQuantity("0.5")).toBe(true); expect(isValidDayQuantity(1)).toBe(true);
+    expect(isValidDayQuantity("0.75")).toBe(false); expect(isValidDayQuantity(2)).toBe(false);
+    expect(isValidPeriod("2026-10")).toBe(true); expect(isValidPeriod("2026-13")).toBe(false);
+  });
+  it("calcule HT/TVA/TTC exacts (19 j × 650,00 €, TVA 20 %)", () => {
+    const t = computeInvoice({ days: "19", unitPrice: "650.00", vatRate: "20" });
+    expect(t.net.toString()).toBe("12350.00 EUR"); expect(t.vat.toString()).toBe("2470.00 EUR"); expect(t.gross.toString()).toBe("14820.00 EUR");
+    const r = computeInvoice({ days: "0.5", unitPrice: "333.33", vatRate: "5.5" });
+    expect(r.net.toString()).toBe("166.67 EUR"); expect(r.vat.toString()).toBe("9.17 EUR");
+  });
+  it("CRA: refus client sans motif, approbation réservée au client, facturation exige une facture", () => {
+    const ctx = { totalDays: "10" };
+    expect(() => timesheetWorkflow.apply("submitted", "approve", { id: "u", role: "operations" }, ctx)).toThrow(/non autorisé/);
+    expect(() => timesheetWorkflow.apply("submitted", "reject", { id: "c", role: "client_user" }, ctx)).toThrow(/motif/);
+    expect(timesheetWorkflow.apply("submitted", "reject", { id: "c", role: "client_user" }, { ...ctx, rejectReason: "Jours erronés" }).state).toBe("client_rejected");
+    expect(() => timesheetWorkflow.apply("draft", "submit", { id: "u", role: "consultant" }, { totalDays: "0" })).toThrow(/aucun jour/);
+    expect(() => timesheetWorkflow.apply("validated", "mark_invoiced", { id: "f", role: "finance" }, ctx)).toThrow(/facture requise/);
+    expect(() => timesheetWorkflow.apply("invoiced", "reopen_approved", { id: "a", role: "tenant_admin" }, ctx)).toThrow(/interdite/);
+  });
+  it("encaissements: partiel, solde, trop-perçu et facture non émise refusés", () => {
+    expect(applyPayment("issued", "100.00", "0", "40")).toEqual({ paid: "40.00", state: "partially_paid" });
+    expect(applyPayment("partially_paid", "100.00", "40.00", "60")).toEqual({ paid: "100.00", state: "paid" });
+    expect(() => applyPayment("partially_paid", "100.00", "40.00", "60.01")).toThrow(/supérieur/);
+    expect(() => applyPayment("draft", "100.00", "0", "10")).toThrow(/impossible/);
+    expect(() => applyPayment("paid", "100.00", "100.00", "1")).toThrow(/impossible/);
+  });
+  it("annulation: refusée si encaissée", () => {
+    expect(invoiceWorkflow.apply("issued", "cancel", { id: "f", role: "finance" }, { paid: "0.00" }).state).toBe("cancelled");
+    expect(() => invoiceWorkflow.apply("issued", "cancel", { id: "f", role: "finance" }, { paid: "10.00" })).toThrow(/avoir/);
+    expect(() => invoiceWorkflow.apply("draft", "issue", { id: "o", role: "operations" }, { paid: "0" })).toThrow(/non autorisé/);
+  });
+});

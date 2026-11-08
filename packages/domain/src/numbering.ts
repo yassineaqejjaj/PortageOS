@@ -12,3 +12,7 @@ export class InvoiceNumbering {
     return `${series}-${year}-${String(n).padStart(6, "0")}`;
   }
 }
+
+export function formatInvoiceNumber(series: string, year: number, n: number): string {
+  return `${series}-${year}-${String(n).padStart(6, "0")}`;
+}
