@@ -401,3 +401,84 @@ model LeaveAdjustment {
 
   @@index([consultantId])
 }
+
+/// Exécution d'un agent (playbook déterministe). Aucun fournisseur LLM n'est connecté : usage = {provider:"none"}.
+model AgentRun {
+  id            String          @id @default(uuid())
+  tenantId      String
+  agentKey      String
+  playbook      String
+  params        Json
+  status        String          @default("running")
+  createdBy     String
+  toolCallCount Int             @default(0)
+  summary       Json?
+  usage         Json
+  error         String?
+  startedAt     DateTime        @default(now())
+  finishedAt    DateTime?
+  toolCalls     AgentToolCall[]
+  proposals     AgentProposal[]
+
+  @@index([tenantId, startedAt])
+}
+
+/// Journal des appels d'outils (append-only) : lectures et propositions.
+model AgentToolCall {
+  id        String   @id @default(uuid())
+  tenantId  String
+  runId     String
+  tool      String
+  kind      String
+  input     Json
+  output    Json?
+  status    String
+  createdAt DateTime @default(now())
+  run       AgentRun @relation(fields: [runId], references: [id])
+
+  @@index([runId])
+}
+
+/// Action d'écriture PROPOSÉE par un agent ; rien n'est exécuté sans approbation humaine. tool/input immuables.
+model AgentProposal {
+  id                String          @id @default(uuid())
+  tenantId          String
+  runId             String
+  tool              String
+  input             Json
+  summary           String
+  riskAmount        Decimal?        @db.Decimal(14, 2)
+  requiredApprovals Int             @default(1)
+  status            String          @default("pending")
+  result            Json?
+  error             String?
+  createdAt         DateTime        @default(now())
+  decidedAt         DateTime?
+  run               AgentRun        @relation(fields: [runId], references: [id])
+  approvals         AgentApproval[]
+
+  @@index([tenantId, status])
+}
+
+model AgentApproval {
+  id         String        @id @default(uuid())
+  tenantId   String
+  proposalId String
+  userId     String
+  decision   String
+  comment    String?
+  createdAt  DateTime      @default(now())
+  proposal   AgentProposal @relation(fields: [proposalId], references: [id])
+
+  @@unique([proposalId, userId])
+}
+
+model AgentConfig {
+  tenantId           String
+  agentKey           String
+  enabled            Boolean @default(true)
+  maxToolCallsPerRun Int     @default(50)
+  maxRunsPerDay      Int     @default(20)
+
+  @@id([tenantId, agentKey])
+}

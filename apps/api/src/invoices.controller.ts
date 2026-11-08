@@ -7,6 +7,7 @@ import { AuditService } from "./audit.service";
 import { RequestContext, RequirePermission } from "./auth.guard";
 import { ACCOUNTS, LedgerService } from "./ledger.service";
 import { applyAsAnyRole, parisToday, parseZod } from "./workflow";
+import { InvoicesService } from "./invoices.service";
 
 const Create = z.object({ timesheetId: z.string().uuid() });
 const Credit = z.object({ reason: z.string().min(5, "Motif obligatoire (5 caractères min.)").max(500) });
@@ -15,7 +16,7 @@ type R = { ctx: RequestContext };
 
 @Controller("invoices")
 export class InvoicesController {
-  constructor(private prisma: PrismaService, private audit: AuditService, private ledger: LedgerService) {}
+  constructor(private prisma: PrismaService, private audit: AuditService, private ledger: LedgerService, private invoices: InvoicesService) {}
 
   @Get() @RequirePermission("invoice.read")
   list(@Req() { ctx }: R, @Query("status") status?: string) {
@@ -30,25 +31,11 @@ export class InvoicesController {
     return i;
   }
 
-  /** Facture préparée à partir d'un CRA validé; le CRA passe « facturé » (verrouillé). Montants calculés côté serveur uniquement. */
+  /** Facture préparée à partir d'un CRA validé (logique dans InvoicesService, partagée avec les agents après approbation). */
   @Post() @RequirePermission("invoice.write")
   create(@Req() { ctx }: R, @Body() body: unknown) {
     const { timesheetId } = parseZod(Create, body);
-    return this.prisma.forTenant(ctx.tenantId, async tx => {
-      const ts = await tx.timesheet.findUnique({ where: { id: timesheetId }, include: { mission: true, lines: true } });
-      if (!ts) throw new NotFoundException();
-      if (ts.status !== "validated") throw new BadRequestException(`Le CRA doit être validé (statut actuel : ${ts.status})`);
-      if (await tx.invoice.findUnique({ where: { timesheetId } })) throw new ConflictException("Ce CRA est déjà facturé");
-      const days = ts.lines.reduce((s, l) => s.plus(l.quantity.toString()), new Decimal(0));
-      const t = computeInvoice({ days: days.toString(), unitPrice: ts.mission.dailyRate.toString(), vatRate: ts.mission.vatRate.toString() });
-      const inv = await tx.invoice.create({ data: { tenantId: ctx.tenantId, companyId: ts.mission.companyId, missionId: ts.missionId, timesheetId,
-        days: days.toString(), unitPrice: ts.mission.dailyRate, vatRate: ts.mission.vatRate, net: t.net.amount.toFixed(2), vat: t.vat.amount.toFixed(2), gross: t.gross.amount.toFixed(2) } });
-      const next = applyAsAnyRole(timesheetWorkflow, ts.status as TimesheetState, "mark_invoiced", ctx.userId, ctx.roles, { totalDays: days.toString(), invoiceId: inv.id });
-      const r = await tx.timesheet.updateMany({ where: { id: timesheetId, status: "validated" }, data: { status: next } });
-      if (r.count !== 1) throw new ConflictException("CRA modifié entre-temps");
-      await this.audit.record(tx, ctx, { action: "invoice.create", entity: "Invoice", entityId: inv.id, after: { timesheetId, net: inv.net, vat: inv.vat, gross: inv.gross } });
-      return inv;
-    });
+    return this.prisma.forTenant(ctx.tenantId, tx => this.invoices.createDraft(tx, ctx, timesheetId));
   }
 
   /** Émission : numéro séquentiel sans trou (verrou de ligne, annulé avec la transaction) + écriture comptable. */
