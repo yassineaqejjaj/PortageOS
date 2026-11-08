@@ -3,11 +3,23 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: portage, POSTGRES_PASSWORD: portage, POSTGRES_DB: portage }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U portage" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://portage:portage@localhost:5432/portage
+      APP_DATABASE_URL: postgresql://portage_app:ci_only_password@localhost:5432/portage
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile=false
+      - run: pnpm -F @portage/api exec prisma migrate deploy && pnpm -F @portage/api exec prisma generate
+      - run: psql "$DATABASE_URL" -c "ALTER ROLE portage_app LOGIN PASSWORD 'ci_only_password'"
       - run: pnpm typecheck
       - run: pnpm test

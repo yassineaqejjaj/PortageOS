@@ -11,7 +11,7 @@
     "lint": "pnpm -r --if-present lint",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
-    "migrate": "echo 'Prisma non initialise (Lot 0 en cours)'",
-    "seed": "echo 'Seeds demo non initialises (Lot 0 en cours)'"
+    "migrate": "pnpm -F @portage/api exec prisma migrate deploy",
+    "seed": "pnpm -F @portage/api seed"
   }
 }

@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id          String       @id @default(uuid())
+  slug        String       @unique
+  name        String
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+  companies   Company[]
+}
+
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  disabledAt   DateTime?
+  memberships  Membership[]
+}
+
+/// Un utilisateur peut avoir plusieurs sociétés (tenants) avec des rôles distincts.
+model Membership {
+  id        String   @id @default(uuid())
+  userId    String
+  tenantId  String
+  roles     String[]
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+}
+
+/// Entreprise cliente (premier objet métier tenant-scopé, protégé par RLS).
+model Company {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  siren     String?
+  createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  @@unique([tenantId, siren])
+  @@index([tenantId])
+}
+
+/// Piste d'audit append-only (UPDATE/DELETE interdits par trigger).
+model AuditEvent {
+  id        String   @id @default(uuid())
+  tenantId  String
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  before    Json?
+  after     Json?
+  at        DateTime @default(now())
+  @@index([tenantId, at])
+}

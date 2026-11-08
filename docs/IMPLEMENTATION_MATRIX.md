@@ -10,7 +10,8 @@ Aucun module n'est ✅ de bout en bout (UI+API+DB+droits+audit+tests+doc).
 | Numérotation factures | `numbering.ts` (mémoire) | – | – | domain.test.ts | 🟡 version DB transactionnelle et test de concurrence à faire |
 | Machine d'état générique | `state-machine.ts` | – | – | domain.test.ts | 🟡 les 12 workflows ne sont pas définis |
 | Monorepo, CI, docker-compose, .env.example | racine | – | – | CI non exécutée | 🟡 compose non lancé |
-| Auth/tenant/RBAC/audit | ⬜ | ⬜ | – | ⬜ | ⬜ |
+| Auth/tenant/RBAC/audit | `apps/api/src/*` (login JWT HS256 15 min, AuthGuard rechargeant Membership, RBAC par rôle, RLS Postgres `Company`/`AuditEvent`, audit append-only par trigger, limiteur de login mémoire) | ⬜ | – | `apps/api/test/tenant-isolation.test.ts` (14 tests, base réelle; mutation RLS off → 3 échecs) | 🟡 socle seulement: pas de MFA/SSO, pas d'invitation email, pas de refresh/rotation de tokens, pas de RLS sur Membership, pas d'UI, rôles non personnalisables, pas de journal d'accès |
+| Clients (entité Company minimale) | create/get/list/patch, SIREN 9 chiffres | ⬜ | Sirene ⬜ | inclus ci-dessus | 🟡 pas de sites/contacts/risque, pas de validation Luhn/Sirene |
 | Design System / tokens | – | ⬜ | Claude Design non lu | ⬜ | ⬜ bloqué: lien manquant |
 | A CRM | ⬜ | ⬜ | – | ⬜ | ⬜ |
 | B Onboarding consultants | ⬜ | ⬜ | DPAE, OCR | ⬜ | ⬜ |
@@ -35,4 +36,5 @@ Aucun module n'est ✅ de bout en bout (UI+API+DB+droits+audit+tests+doc).
 | Validation juridique/métier/paie | – | – | – | – | ⬜ aucune effectuée |
 
 ## Reprise
-Prochaines étapes Lot 0 : Prisma + schéma tenant/identités + migrations, `apps/api` NestJS (auth, tenant guard, audit), `apps/web` Next.js, Playwright, import design (dès lien fourni).
+Fait séance 2 : Prisma + migration init, `apps/api` (auth, garde tenant, RBAC, audit), tests d'intégration.
+Prochaines étapes Lot 0 : `apps/web` Next.js, Playwright, OpenAPI, MFA/invitations, rotation de tokens, outbox/idempotence API, logs structurés, import design (dès lien fourni). Puis Lot 1.
