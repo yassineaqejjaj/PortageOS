@@ -1,0 +1,17 @@
+{
+  "name": "portage-os",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.0.0",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "setup": "pnpm install && docker compose up -d",
+    "dev": "docker compose up -d && echo 'apps/* non encore implementes - voir docs/IMPLEMENTATION_MATRIX.md'",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "migrate": "echo 'Prisma non initialise (Lot 0 en cours)'",
+    "seed": "echo 'Seeds demo non initialises (Lot 0 en cours)'"
+  }
+}
