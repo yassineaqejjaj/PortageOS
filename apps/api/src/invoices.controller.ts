@@ -9,6 +9,7 @@ import { ACCOUNTS, LedgerService } from "./ledger.service";
 import { applyAsAnyRole, parisToday, parseZod } from "./workflow";
 
 const Create = z.object({ timesheetId: z.string().uuid() });
+const Credit = z.object({ reason: z.string().min(5, "Motif obligatoire (5 caractères min.)").max(500) });
 const Pay = z.object({ amount: z.string().regex(/^\d{1,12}(\.\d{1,2})?$/, "Montant invalide"), receivedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date AAAA-MM-JJ"), reference: z.string().max(100).optional() });
 type R = { ctx: RequestContext };
 
@@ -105,6 +106,30 @@ export class InvoicesController {
     });
   }
 
+  /** Avoir total : contrepassation de l'écriture d'émission, numéro AV séquentiel sans trou. Si la facture était encaissée, le trop-perçu reste visible au compte 411 (à rembourser : non automatisé). */
+  @Post(":id/credit") @RequirePermission("invoice.issue")
+  credit(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const { reason } = parseZod(Credit, body);
+    return this.prisma.forTenant(ctx.tenantId, async tx => {
+      const inv = await tx.invoice.findUnique({ where: { id } });
+      if (!inv) throw new NotFoundException();
+      const next = applyAsAnyRole(invoiceWorkflow, inv.status as InvoiceState, "credit", ctx.userId, ctx.roles, { paid: inv.paid.toString() });
+      const today = parisToday(); const year = Number(today.slice(0, 4));
+      const rows = await tx.$queryRaw<{ last: number }[]>`
+        INSERT INTO "InvoiceSequence"("tenantId","series","year","last") VALUES (${ctx.tenantId}, 'AV', ${year}, 1)
+        ON CONFLICT ("tenantId","series","year") DO UPDATE SET "last" = "InvoiceSequence"."last" + 1 RETURNING "last"`;
+      const number = formatInvoiceNumber("AV", year, rows[0]!.last);
+      const r = await tx.invoice.updateMany({ where: { id, status: inv.status, paid: inv.paid }, data: { status: next } });
+      if (r.count !== 1) throw new ConflictException("Facture modifiée entre-temps");
+      const cn = await tx.creditNote.create({ data: { tenantId: ctx.tenantId, invoiceId: id, number, issueDate: new Date(today), net: inv.net, vat: inv.vat, gross: inv.gross, reason, createdBy: ctx.userId } });
+      const orig = await tx.journalEntry.findUniqueOrThrow({ where: { tenantId_key: { tenantId: ctx.tenantId, key: `invoice.issue:${id}` } }, include: { lines: true } });
+      await this.ledger.post(tx, { tenantId: ctx.tenantId, key: `credit_note:${cn.id}`, label: `Avoir ${number} (facture ${inv.number})`, valueDate: today, sourceType: "credit_note", sourceId: cn.id, consultantId: orig.consultantId ?? undefined, reversalOf: orig.id,
+        lines: orig.lines.map(l => ({ account: l.account, debit: l.credit.toString(), credit: l.debit.toString() })) });
+      await this.audit.record(tx, ctx, { action: "invoice.credit_note", entity: "Invoice", entityId: id, before: { status: inv.status, paid: inv.paid.toString() }, after: { status: next, creditNote: number, gross: inv.gross.toString(), reason } });
+      return { invoice: await tx.invoice.findUniqueOrThrow({ where: { id } }), creditNote: cn };
+    });
+  }
+
   private async reverseIssue(tx: Tx, ctx: RequestContext, invoiceId: string) {
     const orig = await tx.journalEntry.findUniqueOrThrow({ where: { tenantId_key: { tenantId: ctx.tenantId, key: `invoice.issue:${invoiceId}` } }, include: { lines: true } });
     await this.ledger.post(tx, { tenantId: ctx.tenantId, key: `invoice.cancel:${invoiceId}`, label: `Annulation ${orig.label}`, valueDate: parisToday(), sourceType: "invoice", sourceId: invoiceId,
@@ -137,7 +162,10 @@ export class LedgerController {
       const a = await tx.journalLine.aggregate({ where: { account: ACCOUNTS.clients }, _sum: { debit: true, credit: true } });
       const ledger411 = new Decimal((a._sum.debit ?? 0).toString()).minus((a._sum.credit ?? 0).toString());
       const open = await tx.invoice.findMany({ where: { status: { in: ["issued", "partially_paid", "paid"] } }, select: { gross: true, paid: true } });
-      const outstanding = open.reduce((s, i) => s.plus(i.gross.toString()).minus(i.paid.toString()), new Decimal(0));
+      const credited = await tx.invoice.findMany({ where: { status: "credited" }, select: { paid: true } });
+      // Facture avoirée : solde 411 = -encaissé (trop-perçu à rembourser au client).
+      const outstanding = open.reduce((s, i) => s.plus(i.gross.toString()).minus(i.paid.toString()), new Decimal(0))
+        .minus(credited.reduce((s, i) => s.plus(i.paid.toString()), new Decimal(0)));
       const lines = await tx.journalLine.aggregate({ _sum: { debit: true, credit: true } });
       const totalDebit = new Decimal((lines._sum.debit ?? 0).toString()), totalCredit = new Decimal((lines._sum.credit ?? 0).toString());
       return { ledger411: ledger411.toFixed(2), invoicesOutstanding: outstanding.toFixed(2), receivablesMatch: ledger411.eq(outstanding), totalDebit: totalDebit.toFixed(2), totalCredit: totalCredit.toFixed(2), journalBalanced: totalDebit.eq(totalCredit) };

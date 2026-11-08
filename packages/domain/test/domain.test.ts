@@ -135,3 +135,35 @@ describe("billing", () => {
     expect(() => invoiceWorkflow.apply("draft", "issue", { id: "o", role: "operations" }, { paid: "0" })).toThrow(/non autorisé/);
   });
 });
+
+import { expenseWorkflow, mileageAmount, expenseFingerprint, contractWorkflow, declaredVariables, renderTemplate, activityStatement } from "../src/index";
+describe("modules 2", () => {
+  const base = { lineCount: 2, missingReceipts: 0, ownerUserId: "own", actorUserId: "act" };
+  it("frais : justificatifs requis, pas d'auto-approbation, motif de refus, remboursement réservé", () => {
+    expect(() => expenseWorkflow.apply("draft", "submit", { id: "u", role: "consultant" }, { ...base, missingReceipts: 1 })).toThrow(/sans justificatif/);
+    expect(() => expenseWorkflow.apply("draft", "submit", { id: "u", role: "consultant" }, { ...base, lineCount: 0 })).toThrow(/aucune ligne/);
+    expect(() => expenseWorkflow.apply("submitted", "approve", { id: "own", role: "operations" }, { ...base, actorUserId: "own" })).toThrow(/propres frais/);
+    expect(() => expenseWorkflow.apply("submitted", "reject", { id: "a", role: "operations" }, base)).toThrow(/motif/);
+    expect(() => expenseWorkflow.apply("approved", "reimburse", { id: "a", role: "operations" }, base)).toThrow(/non autorisé/);
+    expect(expenseWorkflow.apply("approved", "reimburse", { id: "a", role: "finance" }, base).state).toBe("reimbursed");
+  });
+  it("kilométrage exact, empreinte stable", () => {
+    expect(mileageAmount("123.4", "0.606").toString()).toBe("74.78 EUR");
+    expect(() => mileageAmount("0", "0.5")).toThrow();
+    expect(expenseFingerprint("c", "2026-10-01", "meal", "12.5")).toBe("c|2026-10-01|meal|12.50");
+  });
+  it("contrats : variables, signature déclarée, immuabilité du flux", () => {
+    expect(declaredVariables("Bonjour {{ nom }}, {{ref}} {{nom}}")).toEqual(["nom", "ref"]);
+    expect(renderTemplate("A {{x}} B", { x: "1" })).toBe("A 1 B");
+    expect(() => renderTemplate("A {{x}}", {})).toThrow(/manquantes/);
+    expect(() => renderTemplate("A {{x}}", { x: "1", y: "2" })).toThrow(/inconnues/);
+    expect(() => contractWorkflow.apply("sent", "sign", { id: "h", role: "hr" }, { signatureDeclaration: "court" })).toThrow(/déclaration/);
+    expect(() => contractWorkflow.apply("signed", "cancel", { id: "h", role: "hr" }, {})).toThrow(/interdite/);
+  });
+  it("compte d'activité : jamais de frais de gestion inventés si le paramètre manque", () => {
+    const ok = activityStatement({ payments: [{ amount: "1950.00", invoiceNet: "1625.00", invoiceGross: "1950.00", feeRatePercent: "10" }], invoicedNet: "1625", expensesReimbursed: "50" });
+    expect(ok).toMatchObject({ collectedNet: "1625.00", managementFee: "162.50", balanceBeforeSocialAndSalary: "1412.50" });
+    const missing = activityStatement({ payments: [{ amount: "100", invoiceNet: "100", invoiceGross: "120", feeRatePercent: null }], invoicedNet: "0", expensesReimbursed: "0" });
+    expect(missing.managementFee).toBeNull(); expect(missing.balanceBeforeSocialAndSalary).toBeNull();
+  });
+});

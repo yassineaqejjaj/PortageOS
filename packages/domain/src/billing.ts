@@ -34,12 +34,15 @@ export function computeInvoice(i: InvoiceInput) {
   return { net, vat, gross: net.add(vat) };
 }
 
-export const INVOICE_STATES = ["draft", "issued", "partially_paid", "paid", "cancelled"] as const;
+export const INVOICE_STATES = ["draft", "issued", "partially_paid", "paid", "cancelled", "credited"] as const;
 export type InvoiceState = (typeof INVOICE_STATES)[number];
 export interface InvoiceCtx { paid: string }
 const FIN = ["tenant_admin", "finance"];
 export const invoiceWorkflow = new StateMachine<InvoiceState, InvoiceCtx>([
   { from: "draft", to: "issued", event: "issue", allowedRoles: FIN },
+  { from: "issued", to: "credited", event: "credit", allowedRoles: FIN },
+  { from: "partially_paid", to: "credited", event: "credit", allowedRoles: FIN },
+  { from: "paid", to: "credited", event: "credit", allowedRoles: FIN },
   { from: "issued", to: "cancelled", event: "cancel", allowedRoles: FIN, guard: c => (new Decimal(c.paid).isZero() ? null : "facture encaissée : un avoir est requis (non implémenté)") },
 ]);
 

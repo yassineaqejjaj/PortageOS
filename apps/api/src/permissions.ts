@@ -3,20 +3,21 @@ export type Role = (typeof ROLES)[number];
 export type Permission =
   | "company.read" | "company.write" | "audit.read" | "member.manage" | "prospect.read" | "prospect.write"
   | "consultant.read" | "consultant.write" | "mission.read" | "mission.write" | "timesheet.read" | "timesheet.write"
-  | "invoice.read" | "invoice.write" | "invoice.issue" | "payment.write" | "ledger.read" | "portal.client" | "portal.self";
+  | "invoice.read" | "invoice.write" | "invoice.issue" | "payment.write" | "ledger.read" | "portal.client" | "portal.self"
+  | "rules.read" | "rules.write" | "rules.approve" | "expense.read" | "expense.write" | "expense.reimburse" | "contract.read" | "contract.write" | "contract.sign" | "account.read";
 
-const ALL: Permission[] = ["company.read","company.write","audit.read","member.manage","prospect.read","prospect.write","consultant.read","consultant.write","mission.read","mission.write","timesheet.read","timesheet.write","invoice.read","invoice.write","invoice.issue","payment.write","ledger.read"];
+const ALL: Permission[] = ["company.read","company.write","audit.read","member.manage","prospect.read","prospect.write","consultant.read","consultant.write","mission.read","mission.write","timesheet.read","timesheet.write","invoice.read","invoice.write","invoice.issue","payment.write","ledger.read","rules.read","rules.write","rules.approve","expense.read","expense.write","expense.reimburse","contract.read","contract.write","contract.sign","account.read"];
 
 /** RBAC de base. Les portails (client_user, consultant) ajoutent un contrôle d'objet (entreprise / dossier) dans les contrôleurs. */
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   tenant_admin: ALL,
-  direction: ["company.read","audit.read","prospect.read","consultant.read","mission.read","timesheet.read","invoice.read","ledger.read"],
+  direction: ["company.read","audit.read","prospect.read","consultant.read","mission.read","timesheet.read","invoice.read","ledger.read","rules.read","expense.read","contract.read","account.read"],
   commerce: ["company.read","company.write","prospect.read","prospect.write"],
-  operations: ["company.read","consultant.read","consultant.write","mission.read","mission.write","timesheet.read","timesheet.write","invoice.read"],
-  hr: ["consultant.read","consultant.write"],
-  payroll: [],
-  finance: ["company.read","consultant.read","mission.read","timesheet.read","invoice.read","invoice.write","invoice.issue","payment.write","ledger.read"],
-  compliance: ["company.read","audit.read","consultant.read"],
+  operations: ["company.read","consultant.read","consultant.write","mission.read","mission.write","timesheet.read","timesheet.write","invoice.read","expense.read","expense.write"],
+  hr: ["consultant.read","consultant.write","contract.read","contract.write","contract.sign"],
+  payroll: ["rules.read"],
+  finance: ["company.read","consultant.read","mission.read","timesheet.read","invoice.read","invoice.write","invoice.issue","payment.write","ledger.read","rules.read","expense.read","expense.reimburse","account.read"],
+  compliance: ["company.read","audit.read","consultant.read","rules.read","rules.write","rules.approve","contract.read"],
   consultant: ["portal.self"],
   client_user: ["portal.client"],
   external_accountant: [],

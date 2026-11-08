@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { Tx } from "./prisma.service";
 
 /** Plan comptable par défaut (comptes PCG usuels) — configurable par tenant dans un lot ultérieur. */
-export const ACCOUNTS = { clients: "411", prestations: "706", tvaCollectee: "44571", banque: "512" } as const;
+export const ACCOUNTS = { clients: "411", prestations: "706", tvaCollectee: "44571", banque: "512", fraisDeplacement: "6251" } as const;
 
 export interface PostInput { tenantId: string; key: string; label: string; valueDate: string; sourceType: string; sourceId: string; consultantId?: string; reversalOf?: string; lines: { account: string; debit?: string; credit?: string }[] }
 

@@ -13,10 +13,15 @@ import { ClientPortalController, SelfPortalController, TimesheetsController } fr
 import { TimesheetsService } from "./timesheets.service";
 import { InvoicesController, LedgerController } from "./invoices.controller";
 import { LedgerService } from "./ledger.service";
+import { ParametersService } from "./parameters.service";
+import { RulesController } from "./rules.controller";
+import { ExpensesController } from "./expenses.controller";
+import { AccountsController } from "./accounts.controller";
+import { ContractsController } from "./contracts.controller";
 import { PrismaService } from "./prisma.service";
 
 @Module({
-  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController],
-  providers: [PrismaService, AuditService, ConsultantsService, TimesheetsService, LedgerService, { provide: APP_GUARD, useClass: AuthGuard }],
+  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController],
+  providers: [PrismaService, AuditService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

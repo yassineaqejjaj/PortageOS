@@ -252,3 +252,115 @@ model JournalLine {
 
   @@index([entryId])
 }
+
+/// Paramètres réglementaires/métier datés, sourcés, approuvés à 4 yeux. AUCUNE valeur légale n'est livrée : à saisir depuis des sources officielles.
+model RuleParameter {
+  id            String    @id @default(uuid())
+  tenantId      String
+  key           String
+  value         String
+  unit          String
+  validFrom     DateTime  @db.Date
+  validTo       DateTime? @db.Date
+  source        String
+  justification String?
+  status        String    @default("draft")
+  createdBy     String
+  approvedBy    String?
+  approvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([tenantId, key, status])
+}
+
+model ExpenseClaim {
+  id           String        @id @default(uuid())
+  tenantId     String
+  consultantId String
+  ownerUserId  String
+  title        String
+  status       String        @default("draft")
+  rejectReason String?
+  total        Decimal       @default(0) @db.Decimal(12, 2)
+  submittedAt  DateTime?
+  decidedAt    DateTime?
+  decidedBy    String?
+  reimbursedAt DateTime?
+  createdAt    DateTime      @default(now())
+  lines        ExpenseLine[]
+
+  @@index([tenantId, status])
+}
+
+model ExpenseLine {
+  id          String       @id @default(uuid())
+  tenantId    String
+  claimId     String
+  date        DateTime     @db.Date
+  category    String
+  description String
+  amount      Decimal      @db.Decimal(10, 2)
+  km          Decimal?     @db.Decimal(8, 1)
+  /// Référence du justificatif (nom/numéro). Le dépôt de fichier et l'OCR ne sont pas implémentés.
+  receiptRef  String?
+  rebillable  Boolean      @default(false)
+  policyFlag  String?
+  fingerprint String
+  claim       ExpenseClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, fingerprint])
+}
+
+model CreditNote {
+  id        String   @id @default(uuid())
+  tenantId  String
+  invoiceId String   @unique
+  number    String
+  issueDate DateTime @db.Date
+  net       Decimal  @db.Decimal(14, 2)
+  vat       Decimal  @db.Decimal(14, 2)
+  gross     Decimal  @db.Decimal(14, 2)
+  reason    String
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, number])
+}
+
+model ContractTemplate {
+  id        String     @id @default(uuid())
+  tenantId  String
+  kind      String
+  name      String
+  version   Int
+  body      String
+  variables String[]
+  status    String     @default("draft")
+  createdBy String
+  createdAt DateTime   @default(now())
+  contracts Contract[]
+
+  @@unique([tenantId, name, version])
+}
+
+model Contract {
+  id                String           @id @default(uuid())
+  tenantId          String
+  templateId        String
+  kind              String
+  consultantId      String?
+  companyId         String?
+  status            String           @default("draft")
+  renderedBody      String
+  variableValues    Json
+  sentAt            DateTime?
+  signedAt          DateTime?
+  /// Aucun fournisseur de signature électronique n'est connecté : la signature est une déclaration interne, non qualifiée.
+  signatureProvider String           @default("none")
+  signatureEvidence String?
+  createdBy         String
+  createdAt         DateTime         @default(now())
+  template          ContractTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([tenantId, status])
+}
