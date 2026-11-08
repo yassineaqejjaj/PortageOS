@@ -6,13 +6,14 @@ import { AuditService } from "./audit.service";
 import { RequestContext } from "./auth.guard";
 import { applyAsAnyRole } from "./workflow";
 import { LeavesService } from "./leaves.service";
+import { NotificationsService } from "./notifications.service";
 
 export interface Scope { consultantId?: string; companyId?: string }
 export interface LineInput { date: string; quantity: string }
 
 @Injectable()
 export class TimesheetsService {
-  constructor(private audit: AuditService, private leaves: LeavesService) {}
+  constructor(private audit: AuditService, private leaves: LeavesService, private notif: NotificationsService) {}
 
   private visible(m: { consultantId: string; companyId: string }, scope: Scope) {
     return (!scope.consultantId || m.consultantId === scope.consultantId) && (!scope.companyId || m.companyId === scope.companyId);
@@ -75,6 +76,17 @@ export class TimesheetsService {
     if (r.count !== 1) throw new ConflictException("CRA modifié entre-temps, rechargez.");
     // Preuve de validation : acteur, rôle, horodatage et étape sont tracés dans l'audit append-only.
     await this.audit.record(tx, ctx, { action: `timesheet.${event}`, entity: "Timesheet", entityId: id, before: { status: t.status }, after: { status: next, totalDays: total, reason: data.rejectReason, roles: ctx.roles } });
+    await this.notifyTransition(tx, ctx, t.mission, event, t.period, reason);
     return this.view(tx, id);
+  }
+
+  private async notifyTransition(tx: Tx, ctx: RequestContext, mission: { consultantId: string; companyId: string; title: string }, event: string, period: string, reason?: string) {
+    const who = `${period} · ${mission.title}`;
+    const consultants = await this.notif.consultantUsers(tx, ctx.tenantId, mission.consultantId);
+    const staff = await this.notif.usersByRoles(tx, ctx.tenantId, ["operations", "tenant_admin"]);
+    if (event === "submit") await this.notif.notify(tx, ctx.tenantId, await this.notif.clientUsers(tx, ctx.tenantId, mission.companyId), { type: "timesheet.submitted", title: `CRA à valider : ${who}`, link: "/client/timesheets" }, ctx.userId);
+    if (event === "approve") { await this.notif.notify(tx, ctx.tenantId, staff, { type: "timesheet.client_approved", title: `CRA approuvé par le client, à valider : ${who}`, link: "/timesheets" }, ctx.userId); await this.notif.notify(tx, ctx.tenantId, consultants, { type: "timesheet.client_approved", title: `Votre CRA ${who} a été approuvé par le client`, link: "/me/timesheets" }, ctx.userId); }
+    if (event === "reject") await this.notif.notify(tx, ctx.tenantId, [...consultants, ...staff], { type: "timesheet.client_rejected", title: `CRA refusé par le client : ${who}`, body: reason, link: "/me/timesheets" }, ctx.userId);
+    if (event === "validate") await this.notif.notify(tx, ctx.tenantId, consultants, { type: "timesheet.validated", title: `Votre CRA ${who} est validé`, link: "/me/timesheets" }, ctx.userId);
   }
 }

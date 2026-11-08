@@ -191,3 +191,17 @@ describe("congés", () => {
     expect(() => leaveWorkflow.apply("submitted", "reject", { id: "a", role: "hr" }, ctx)).toThrow(/motif/);
   });
 });
+
+import { ticketWorkflow } from "../src/index";
+describe("support", () => {
+  const a = (s: "open" | "pending_requester" | "resolved" | "closed", ev: string, role: string) => ticketWorkflow.apply(s, ev, { id: "u", role }, {} as Record<string, never>).state;
+  it("workflow des tickets : réponses, résolution, réouverture, clôture définitive", () => {
+    expect(a("open", "staff_reply", "staff")).toBe("pending_requester");
+    expect(a("pending_requester", "requester_reply", "requester")).toBe("open");
+    expect(a("resolved", "requester_reply", "requester")).toBe("open");
+    expect(a("resolved", "close", "requester")).toBe("closed");
+    expect(() => a("open", "resolve", "requester")).toThrow(/non autorisé/);
+    expect(() => a("closed", "requester_reply", "requester")).toThrow(/interdite/);
+    expect(() => a("resolved", "staff_reply", "staff")).toThrow(/interdite/);
+  });
+});

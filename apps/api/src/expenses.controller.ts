@@ -8,6 +8,7 @@ import { RequestContext, RequirePermission } from "./auth.guard";
 import { ACCOUNTS, LedgerService } from "./ledger.service";
 import { ParametersService } from "./parameters.service";
 import { can } from "./permissions";
+import { NotificationsService } from "./notifications.service";
 import { applyAsAnyRole, parisToday, parseZod } from "./workflow";
 
 const Line = z.object({
@@ -27,7 +28,7 @@ const view = (c: { id: string; title: string; status: string; total: unknown; re
 
 @Controller()
 export class ExpensesController {
-  constructor(private prisma: PrismaService, private audit: AuditService, private ledger: LedgerService, private params: ParametersService) {}
+  constructor(private prisma: PrismaService, private audit: AuditService, private ledger: LedgerService, private params: ParametersService, private notif: NotificationsService) {}
 
   private async load(tx: Tx, id: string, scopeConsultant?: string) {
     const c = await tx.expenseClaim.findUnique({ where: { id }, include: { lines: { orderBy: { date: "asc" } } } });
@@ -88,6 +89,8 @@ export class ExpensesController {
       await this.ledger.post(tx, { tenantId: ctx.tenantId, key: `expense.reimburse:${id}`, label: `Remboursement frais : ${c.title}`, valueDate: parisToday(), sourceType: "expense", sourceId: id, consultantId: c.consultantId,
         lines: [{ account: ACCOUNTS.fraisDeplacement, debit: String(c.total) }, { account: ACCOUNTS.banque, credit: String(c.total) }] });
     }
+    if (event === "submit") await this.notif.notify(tx, ctx.tenantId, await this.notif.usersByRoles(tx, ctx.tenantId, ["operations", "tenant_admin"]), { type: "expense.submitted", title: `Note de frais à approuver : ${c.title}`, link: "/expenses" }, ctx.userId);
+    if (["approve", "reject", "reimburse"].includes(event)) await this.notif.notify(tx, ctx.tenantId, [c.ownerUserId], { type: "expense.decided", title: `Note de frais « ${c.title} » : ${event === "approve" ? "approuvée" : event === "reject" ? "refusée" : "remboursée"}`, body: data.rejectReason as string | undefined ?? undefined, link: "/me/expenses" }, ctx.userId);
     await this.audit.record(tx, ctx, { action: `expense.${event}`, entity: "ExpenseClaim", entityId: id, before: { status: c.status }, after: { status: next, total: String(c.total), reason: data.rejectReason } });
     return view(await this.load(tx, id));
   }

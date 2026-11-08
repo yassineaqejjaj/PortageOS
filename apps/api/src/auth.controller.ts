@@ -54,7 +54,7 @@ export class AuthController {
       this.prisma.tenant.findUnique({ where: { id: tenantId }, select: { slug: true, name: true } }),
     ]);
     const all = [...new Set(Object.values(ROLE_PERMISSIONS).flat())] as Permission[];
-    return { userId, tenantId, roles, email: user?.email, tenant, permissions: all.filter(p => can(roles, p)) };
+    return { userId, tenantId, roles, email: user?.email, tenant, permissions: [...all.filter(p => can(roles, p)), "support.create", "notification.read"] };
   }
 
   @Public() @Get("health")

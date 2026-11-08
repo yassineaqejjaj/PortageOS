@@ -6,6 +6,7 @@ import { PrismaService, Tx } from "./prisma.service";
 import { AuditService } from "./audit.service";
 import { RequestContext, RequirePermission } from "./auth.guard";
 import { LeavesService } from "./leaves.service";
+import { NotificationsService } from "./notifications.service";
 import { applyAsAnyRole, parisToday, parseZod } from "./workflow";
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date AAAA-MM-JJ");
@@ -20,7 +21,7 @@ const view = (r: Row, name?: string) => ({ id: r.id, consultantId: r.consultantI
 
 @Controller()
 export class LeavesController {
-  constructor(private prisma: PrismaService, private audit: AuditService, private svc: LeavesService) {}
+  constructor(private prisma: PrismaService, private audit: AuditService, private svc: LeavesService, private notif: NotificationsService) {}
 
   private selfId(ctx: RequestContext) { if (!ctx.consultantId) throw new ForbiddenException("Compte non rattaché à un dossier consultant"); return ctx.consultantId; }
 
@@ -37,6 +38,7 @@ export class LeavesController {
     const u = await tx.leaveRequest.updateMany({ where: { id, status: r.status }, data });
     if (u.count !== 1) throw new ConflictException("Demande modifiée entre-temps");
     await this.audit.record(tx, ctx, { action: `leave.${event}`, entity: "LeaveRequest", entityId: id, before: { status: r.status }, after: { status: next, days: r.days.toString(), type: r.type, reason: data.rejectReason } });
+    if (["approve", "reject"].includes(event)) await this.notif.notify(tx, ctx.tenantId, [r.ownerUserId], { type: "leave.decided", title: `Demande d'absence ${event === "approve" ? "approuvée" : "refusée"} (${r.startDate.toISOString().slice(0, 10)})`, body: data.rejectReason as string | undefined ?? undefined, link: "/me/leaves" }, ctx.userId);
     return view(await tx.leaveRequest.findUniqueOrThrow({ where: { id } }));
   }
 
@@ -58,6 +60,7 @@ export class LeavesController {
       if (overlap) throw new ConflictException("Une demande en cours ou approuvée couvre déjà tout ou partie de cette période");
       const r = await tx.leaveRequest.create({ data: { tenantId: ctx.tenantId, consultantId: cid, ownerUserId: ctx.userId, type: d.type, startDate: new Date(d.startDate), endDate: new Date(d.endDate), halfStart: d.halfStart ?? false, halfEnd: d.halfEnd ?? false, days: days.toFixed(1), holidaysConfigured: calc.configured, reason: d.reason } });
       await this.audit.record(tx, ctx, { action: "leave.submit", entity: "LeaveRequest", entityId: r.id, after: { type: d.type, start: d.startDate, end: d.endDate, days: days.toFixed(1), holidaysConfigured: calc.configured } });
+      await this.notif.notify(tx, ctx.tenantId, await this.notif.usersByRoles(tx, ctx.tenantId, ["hr", "operations", "tenant_admin"]), { type: "leave.submitted", title: `Demande d'absence à traiter (${d.startDate} → ${d.endDate})`, link: "/leaves" }, ctx.userId);
       return view(r);
     });
   }

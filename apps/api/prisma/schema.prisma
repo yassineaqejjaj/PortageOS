@@ -482,3 +482,69 @@ model AgentConfig {
 
   @@id([tenantId, agentKey])
 }
+
+model Notification {
+  id        String    @id @default(uuid())
+  tenantId  String
+  userId    String
+  type      String
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt, createdAt])
+}
+
+model NotificationPreference {
+  tenantId String
+  userId   String
+  type     String
+  enabled  Boolean
+
+  @@id([userId, tenantId, type])
+}
+
+model SupportTicket {
+  id              String           @id @default(uuid())
+  tenantId        String
+  requesterUserId String
+  subject         String
+  category        String
+  priority        String           @default("normal")
+  status          String           @default("open")
+  assigneeUserId  String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  closedAt        DateTime?
+  messages        SupportMessage[]
+
+  @@index([tenantId, status])
+  @@index([requesterUserId])
+}
+
+/// Messages de support : append-only. `internal` = note réservée au personnel (jamais visible du demandeur).
+model SupportMessage {
+  id           String        @id @default(uuid())
+  tenantId     String
+  ticketId     String
+  authorUserId String
+  body         String
+  internal     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id])
+
+  @@index([ticketId, createdAt])
+}
+
+model MessageTemplate {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  body      String
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, name])
+}
