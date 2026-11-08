@@ -1,12 +1,12 @@
 export const ROLES = ["tenant_admin","direction","commerce","operations","hr","payroll","finance","compliance","consultant","client_user","external_accountant","referrer"] as const;
 export type Role = (typeof ROLES)[number];
-export type Permission = "company.read" | "company.write" | "audit.read" | "member.manage";
+export type Permission = "company.read" | "company.write" | "audit.read" | "member.manage" | "prospect.read" | "prospect.write";
 
 /** RBAC de base (Lot 0). À affiner par module; ABAC (objets) viendra avec les portails. */
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  tenant_admin: ["company.read","company.write","audit.read","member.manage"],
-  direction: ["company.read","audit.read"],
-  commerce: ["company.read","company.write"],
+  tenant_admin: ["company.read","company.write","audit.read","member.manage","prospect.read","prospect.write"],
+  direction: ["company.read","audit.read","prospect.read"],
+  commerce: ["company.read","company.write","prospect.read","prospect.write"],
   operations: ["company.read"],
   hr: [],
   payroll: [],

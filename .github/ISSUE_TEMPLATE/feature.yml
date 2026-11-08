@@ -1,0 +1,13 @@
+name: Fonctionnalité
+description: Module ou évolution (voir docs/IMPLEMENTATION_MATRIX.md)
+labels: [feature]
+body:
+  - type: input
+    attributes: { label: Module (A à Q, IA, plateforme) }
+    validations: { required: true }
+  - type: textarea
+    attributes: { label: Besoin et règle métier, description: "Source réglementaire si applicable (jamais déduite d'un LLM)" }
+    validations: { required: true }
+  - type: textarea
+    attributes: { label: Critères d'acceptation }
+    validations: { required: true }

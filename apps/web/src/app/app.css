@@ -3,7 +3,7 @@
   --type-display: var(--font-jakarta), 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --type-mono: var(--font-mono), 'JetBrains Mono', ui-monospace, Menlo, monospace; }
 html, body { margin: 0; }
-body.po { min-height: 100vh; }
+body { min-height: 100vh; background: var(--color-bg-canvas); color: var(--color-text-primary); font-family: var(--type-ui); }
 .nav-shell { background: var(--color-bg-nav); color: var(--color-text-nav); display: flex; flex-direction: column; min-height: 100%; }
 .po .nav-link { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--radius-md); text-decoration: none; color: var(--color-text-nav); font-weight: 500; }
 .po .nav-link:hover { background: var(--color-bg-nav-active); color: #fff; }

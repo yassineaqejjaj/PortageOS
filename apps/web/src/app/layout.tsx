@@ -15,9 +15,9 @@ const themeScript = `try{var t=localStorage.getItem('theme');if(!t)t=matchMedia(
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning className={`${inter.variable} ${mono.variable} ${jakarta.variable}`}>
+    <html lang="fr" suppressHydrationWarning className={`po ${inter.variable} ${mono.variable} ${jakarta.variable}`}>
       <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
-      <body className="po"><Providers>{children}</Providers></body>
+      <body><Providers>{children}</Providers></body>
     </html>
   );
 }

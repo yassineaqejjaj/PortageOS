@@ -1,0 +1,13 @@
+name: Bug
+description: Comportement incorrect
+labels: [bug]
+body:
+  - type: textarea
+    attributes: { label: Étapes pour reproduire, description: "Rôle utilisé, tenant (fictif), pas de donnée réelle" }
+    validations: { required: true }
+  - type: textarea
+    attributes: { label: Résultat attendu / obtenu }
+    validations: { required: true }
+  - type: dropdown
+    attributes: { label: Gravité, options: ["Sécurité / isolation tenant", "Bloquant", "Majeur", "Mineur"] }
+    validations: { required: true }

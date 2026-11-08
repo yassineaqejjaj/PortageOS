@@ -13,6 +13,7 @@ model Tenant {
   createdAt   DateTime     @default(now())
   memberships Membership[]
   companies   Company[]
+  prospects   Prospect[]
 }
 
 model User {
@@ -61,4 +62,21 @@ model AuditEvent {
   after     Json?
   at        DateTime @default(now())
   @@index([tenantId, at])
+}
+
+/// Prospect CRM (consultant ou entreprise). Étapes pilotées par la machine d'état du domaine.
+model Prospect {
+  id         String   @id @default(uuid())
+  tenantId   String
+  kind       String
+  name       String
+  email      String?
+  phone      String?
+  source     String?
+  stage      String   @default("new")
+  lostReason String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  @@index([tenantId, stage])
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { API_URL, COOKIE } from "@/lib/server";
 
 // Liste blanche: le front ne peut atteindre que ces routes de l'API.
-const ALLOWED = [/^me$/, /^companies(\/[0-9a-f-]{36})?$/, /^audit$/, /^members$/];
+const ALLOWED = [/^me$/, /^companies(\/[0-9a-f-]{36})?$/, /^audit$/, /^prospects(\/[0-9a-f-]{36}(\/transition)?)?$/, /^members$/];
 
 async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;

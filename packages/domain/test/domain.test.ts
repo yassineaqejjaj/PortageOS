@@ -83,3 +83,19 @@ describe("InvoiceNumbering", () => {
     expect(n.next("t2", "FA", 2026)).toBe("FA-2026-000001");
   });
 });
+
+import { prospectPipeline } from "../src/index";
+describe("prospectPipeline", () => {
+  const u = { id: "u", role: "commerce" };
+  it("suit le parcours nominal avec audit", () => {
+    let s = prospectPipeline.apply("new", "contact", u, { kind: "consultant", hasContact: true });
+    s = prospectPipeline.apply(s.state, "qualify", u, { kind: "consultant", hasContact: true });
+    expect(prospectPipeline.apply(s.state, "convert", u, { kind: "consultant", hasContact: true }).state).toBe("converted");
+  });
+  it("refuse sans contact, sans motif de perte, rôle non commercial, converti->autre", () => {
+    expect(() => prospectPipeline.apply("new", "contact", u, { kind: "company", hasContact: false })).toThrow(/Précondition/);
+    expect(() => prospectPipeline.apply("new", "lose", u, { kind: "company", hasContact: true })).toThrow(/motif/);
+    expect(() => prospectPipeline.apply("new", "contact", { id: "x", role: "consultant" }, { kind: "company", hasContact: true })).toThrow(/non autorisé/);
+    expect(() => prospectPipeline.apply("converted", "reopen", u, { kind: "company", hasContact: true })).toThrow(/interdite/);
+  });
+});
