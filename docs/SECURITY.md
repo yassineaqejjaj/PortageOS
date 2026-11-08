@@ -31,3 +31,10 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 ## Séance 7
 - Absences : RLS sur LeaveRequest/LeaveAdjustment ; ajustements de solde append-only et motivés ; pas d'auto-approbation ; un arrêt maladie ne consomme pas le solde. Les motifs d'absence et arrêts maladie sont des données de santé sensibles (art. 9 RGPD) : le champ `reason` est libre et ne doit pas contenir de diagnostic ; chiffrement applicatif, minimisation des accès et durée de conservation à définir avant tout usage réel.
 - Limite : le non-chevauchement des demandes est vérifié par le code, pas par une contrainte SQL.
+
+## Séance 8 — agents
+- Moindre privilège : un agent s'exécute avec les permissions de l'utilisateur qui le lance (vérifiées avant le run et à chaque appel d'outil) ; liste blanche d'outils par agent ; lecture et écriture distinctes.
+- Aucune écriture autonome : une action est une proposition figée (outil, arguments, montant, niveau d'approbation immuables par trigger), exécutée seulement après approbation d'un humain disposant du droit de l'action, avec SES droits. L'audit attribue l'action à l'humain. Au-delà d'un seuil de montant paramétré (`ai.second_approval_threshold_eur`), deux approbateurs distincts sont requis ; les décisions concurrentes sont sérialisées (verrou de ligne) et l'exécution n'a lieu qu'une fois.
+- Budgets et coupe-circuit par agent et par tenant (appels d'outils par exécution, exécutions par jour, désactivation immédiate), configurables par l'administrateur seul.
+- Isolation : RLS sur toutes les tables d'agents ; journal d'appels et approbations append-only.
+- **Non couvert** : aucun modèle de langage n'est connecté. Par conséquent, l'injection de prompt, l'exfiltration via un modèle, le RAG avec ACL, la minimisation des données envoyées à un fournisseur et les évaluations de modèles ne sont ni implémentés ni testés. Ils devront l'être AVANT toute connexion d'un LLM (analyse d'impact RGPD, validation juridique).

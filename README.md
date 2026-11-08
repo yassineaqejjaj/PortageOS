@@ -8,7 +8,7 @@
 |                     |                                                                                              |
 | ------------------- | -------------------------------------------------------------------------------------------- |
 | **Stack**           | TypeScript · Next.js 15 · NestJS · Prisma · PostgreSQL (RLS) · Playwright · Docker           |
-| **Qualité**         | 24 tests domaine · 50 tests API/intégration (base réelle) · 19 tests E2E · TypeScript strict · CI |
+| **Qualité**         | 24 tests domaine · 63 tests API/intégration (base réelle) · 20 tests E2E · TypeScript strict · CI |
 | **En ligne (test)** | Voir [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (Railway : API + PostgreSQL · Vercel : web)     |
 | **Design**          | Claude Design importé (`packages/design-system`), clair et sombre, WCAG 2.2 AA visé          |
 | **Données**         | 100 % fictives (jeux de démonstration isolés des workflows réels)                            |
@@ -37,11 +37,12 @@
 | Compte d'activité | Relevé mensuel **estimatif** détaillé, sourcé, jamais présenté comme un salaire | idem + E2E |
 | Contrats | Modèles versionnés immuables, variables strictes, signature **déclarée** (non qualifiée) | idem + E2E |
 | Absences et congés | Décompte en jours ouvrés (fériés = paramètres approuvés), solde par ajustements RH motivés, approbation sans auto-validation, annulation, cohérence avec le CRA | `leaves.test.ts` + E2E |
+| Agents | 6 agents (Payroll indisponible), outils typés lecture/écriture, playbooks **déterministes**, propositions approuvées par des humains (1 ou 2 niveaux), budgets, coupe-circuit, journal d'appels. **Aucun LLM connecté** | `agents.test.ts` + E2E |
 | Registre financier | Journal append-only équilibré (trigger en base), balance, réconciliation créances ↔ factures | idem |
 | Front | Coque du design, login, prospects, clients, audit ; BFF avec cookie httpOnly ; clair/sombre ; mobile | `apps/web/e2e` |
 
 ## Ce qui n'existe pas encore
-Signature électronique qualifiée, acquisition automatique des congés, dépôt de justificatifs/OCR, facturation électronique (PDF, plateforme agréée), banque et recouvrement, **paie et DSN**, compte d'activité, RH, conformité (règles légales à saisir depuis des sources officielles), comptabilité, pilotage, portails consultant/client/partenaires, administration SaaS, agents IA et RAG, portails partenaire, MFA/SSO, invitations, workers durables, webhooks. Chaque ligne figure dans la [matrice d'implémentation](docs/IMPLEMENTATION_MATRIX.md) avec son statut.
+Signature électronique qualifiée, acquisition automatique des congés, dépôt de justificatifs/OCR, facturation électronique (PDF, plateforme agréée), banque et recouvrement, **paie et DSN**, compte d'activité, RH, conformité (règles légales à saisir depuis des sources officielles), comptabilité, pilotage, portails consultant/client/partenaires, administration SaaS, planificateur LLM, RAG et évaluations des agents, portails partenaire, MFA/SSO, invitations, workers durables, webhooks. Chaque ligne figure dans la [matrice d'implémentation](docs/IMPLEMENTATION_MATRIX.md) avec son statut.
 
 ## Architecture
 ```

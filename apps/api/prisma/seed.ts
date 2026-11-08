@@ -29,6 +29,8 @@ async function main() {
     const user = await db.user.upsert({ where: { email }, update: {}, create: { email, passwordHash: await hashPassword(pw) } });
     await db.membership.upsert({ where: { userId_tenantId: { userId: user.id, tenantId } }, update: { roles, ...link }, create: { userId: user.id, tenantId, roles, ...link } });
   }
+  // Démo : budget quotidien d'exécutions relevé pour permettre les tests répétés (valeur par défaut en production : 20).
+  for (const agentKey of ["onboarding", "contract", "operations", "finance", "consultant"]) await db.agentConfig.upsert({ where: { tenantId_agentKey: { tenantId, agentKey } }, update: { maxRunsPerDay: 500 }, create: { tenantId, agentKey, maxRunsPerDay: 500 } });
   await db.$disconnect();
   console.log("Seed démo OK (tenant 'demo').");
 }

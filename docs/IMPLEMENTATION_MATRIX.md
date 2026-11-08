@@ -1,4 +1,6 @@
 # Matrice d'implémentation (état au 2026-11-08, fin de séance 1)
+Mise à jour séance 8 : agents (playbooks déterministes, approbations humaines). 63 tests API, 24 tests domaine, 20 E2E.
+
 Mise à jour séance 7 : absences et congés. 50 tests API, 24 tests domaine, 19 E2E.
 
 Mise à jour séance 6 : paramètres datés (4 yeux), notes de frais, avoirs totaux, compte d'activité estimatif, contrats versionnés. 42 tests API, 22 tests domaine, 18 E2E.
@@ -38,7 +40,7 @@ Aucun module n'est ✅ de bout en bout (UI+API+DB+droits+audit+tests+doc).
 | O Pilotage | ⬜ | ⬜ | – | ⬜ | ⬜ |
 | P Support & portails (consultant/client/partenaire) | portails consultant (CRA) et client (validation, sans donnée salariale) | `me/timesheets`, `client/timesheets` | Email ⬜ | `billing-chain.test.ts`, E2E | 🟡 pas de messagerie, tickets, notifications, documents, accueil/compte d'activité, portail partenaire |
 | Q Admin SaaS/abonnements | ⬜ | ⬜ | Paiement SaaS | ⬜ | ⬜ |
-| IA : 6 agents + orchestrateur, RAG, éval | ⬜ | ⬜ | Providers IA | ⬜ | ⬜ |
+| IA : 6 agents + orchestrateur, RAG, éval | `agents.registry.ts` (catalogue de 6 agents, outils typés lecture/écriture séparés, liste blanche par agent), `agents.service.ts` (moteur persistant : exécution, journal d'appels append-only, propositions figées, approbation humaine à 1 ou 2 niveaux selon un seuil paramétré, exécution avec les droits de l'approbateur, budgets d'appels et d'exécutions, coupe-circuit, annulation), `agents.controller.ts` | `agents/`, `me/assistant` | **Fournisseur LLM : non connecté** (aucune clé, aucun appel de modèle) | `agents.test.ts` (13 scénarios, stable sur 5 exécutions), `e2e/agents.spec.ts` | 🟡 **Playbooks déterministes uniquement** : pas de planification en langage naturel, pas de RAG (recherche hybride, citations de documents), pas d'évaluations de modèles, pas de défense contre l'injection de prompt testée (aucun texte libre n'est envoyé à un modèle), pas de coûts en tokens, pas de providers multiples ; Payroll Agent indisponible (pas de prestataire de paie) ; Onboarding, Contract, Operations, Finance, Consultant : playbooks limités (voir `agents.registry.ts`) ; pas d'AIPlan/AITask/AIEvaluation/AIFeedback/AIIncident |
 | Workflows 1–12 | W1 début (prospect→converti→dossier onboarding→activation→mission) · W3 CRA→validation client→validation interne→facture→émission→encaissement→réconciliation (jusqu'à l'émission électronique exclue) | – | – | `e2e/chain.spec.ts` | 🟡 W1 et W3 partiels ; W2, W4–W12 ⬜ ; W10 partiel (paiement partiel, annulation ; pas d'avoir ni de CRA corrigé après facturation) |
 | Webhooks/outbox/imports/exports/recherche | ⬜ | ⬜ | – | ⬜ | ⬜ |
 | Validation juridique/métier/paie | – | – | – | – | ⬜ aucune effectuée |
