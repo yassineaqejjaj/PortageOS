@@ -18,4 +18,4 @@ COPY --from=build /repo /repo
 USER node
 EXPOSE 3001
 # Migrations (propriétaire) puis API (rôle portage_app, soumis au RLS). Voir docs/DEPLOYMENT.md.
-CMD ["sh", "-c", "pnpm -F @portage/api exec prisma migrate deploy && node apps/api/dist/main.js"]
+CMD ["sh", "-c", "pnpm -F @portage/api exec prisma migrate deploy && node apps/api/dist/bootstrap-db.js && node apps/api/dist/main.js"]
