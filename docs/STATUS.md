@@ -4,8 +4,8 @@ Tableau d'honnêteté : ce qui est **fonctionnel en local**, **testé en CI**, *
 | Niveau | État |
 |---|---|
 | Fonctionnel en local | Auth/tenant/RBAC/audit, prospects, clients, coque UI, clair/sombre |
-| Testé automatiquement | 13 + 20 + 14 tests (domaine, API sur Postgres réel, E2E Playwright desktop et mobile). La CI GitHub n'a pas encore tourné au moment de la rédaction : voir l'onglet Actions |
-| Déployé | Voir docs/DEPLOYMENT.md (état réel et URL consignés après chaque déploiement) |
+| Testé automatiquement | 13 + 20 + 14 tests (domaine, API sur Postgres réel, E2E Playwright desktop et mobile). CI GitHub verte sur `main` au 2026-11-08 (typecheck, build, tests, seed, E2E sur PostgreSQL jetable) |
+| Déployé | Test uniquement, base vide : web sur Vercel, API + PostgreSQL sur Railway (voir docs/DEPLOYMENT.md pour ce qui est vérifié et non vérifié) |
 | Connecté à un prestataire | **Rien** (paie, DSN, facturation électronique, signature, banque, Sirene : non démarrés, statut « non connecté ») |
 | Validé juridiquement / métier | **Rien**. Aucune règle légale n'est saisie ; aucune recette par un spécialiste paie ou juriste |
 
