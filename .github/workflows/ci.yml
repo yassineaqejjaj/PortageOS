@@ -35,7 +35,7 @@ jobs:
           psql "$DATABASE_URL" -c "ALTER ROLE portage_app LOGIN PASSWORD 'ci_only_password'"
       - run: pnpm typecheck
       - name: Build
-        run: pnpm -F @portage/domain build && pnpm build
+        run: pnpm build
       - name: Tests unitaires et d'intégration
         run: pnpm test
       - name: Seed démo (test uniquement)
