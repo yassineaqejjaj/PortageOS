@@ -30,3 +30,7 @@ export function Badge({ map, value }: { map: Record<string, { label: string; cls
 
 export type Claim = { id: string; title: string; status: string; total: string; rejectReason: string | null; lines: { id: string; date: string; category: string; description: string; amount: string; km: string | null; receiptRef: string | null; policyFlag: string | null }[] };
 export const EXP_STATUS: Record<string, { label: string; cls: string }> = { draft: { label: "Brouillon", cls: "b-neutral" }, submitted: { label: "À approuver", cls: "b-info" }, approved: { label: "Approuvée", cls: "b-warning" }, rejected: { label: "Refusée", cls: "b-danger" }, reimbursed: { label: "Remboursée", cls: "b-success" } };
+
+export type Leave = { id: string; consultant?: string; type: string; startDate: string; endDate: string; halfStart: boolean; halfEnd: boolean; days: string; status: string; reason: string | null; rejectReason: string | null; holidaysConfigured: boolean };
+export const LEAVE_TYPE: Record<string, string> = { paid_leave: "Congé payé", sick: "Arrêt maladie", unpaid: "Congé sans solde", other: "Autre absence" };
+export const LEAVE_STATUS: Record<string, { label: string; cls: string }> = { submitted: { label: "En attente", cls: "b-info" }, approved: { label: "Approuvée", cls: "b-success" }, rejected: { label: "Refusée", cls: "b-danger" }, cancelled: { label: "Annulée", cls: "b-neutral" } };

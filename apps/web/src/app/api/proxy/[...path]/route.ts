@@ -20,6 +20,8 @@ const ALLOWED = [
   /^me\/account$/, new RegExp(`^accounts/${U}$`),
   /^contract-templates$/, new RegExp(`^contract-templates/${U}/publish$`),
   new RegExp(`^contracts(/${U}(/transition)?)?$`),
+  /^me\/leaves$/, new RegExp(`^me/leaves/${U}/cancel$`), /^me\/leave-balance$/,
+  /^leaves$/, new RegExp(`^leaves/${U}/transition$`), new RegExp(`^leave-balances/${U}$`), /^leave-adjustments$/,
 ];
 
 async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {

@@ -18,10 +18,12 @@ import { RulesController } from "./rules.controller";
 import { ExpensesController } from "./expenses.controller";
 import { AccountsController } from "./accounts.controller";
 import { ContractsController } from "./contracts.controller";
+import { LeavesController } from "./leaves.controller";
+import { LeavesService } from "./leaves.service";
 import { PrismaService } from "./prisma.service";
 
 @Module({
-  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController],
-  providers: [PrismaService, AuditService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, { provide: APP_GUARD, useClass: AuthGuard }],
+  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController, LeavesController],
+  providers: [PrismaService, AuditService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, LeavesService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

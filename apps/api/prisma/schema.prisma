@@ -364,3 +364,40 @@ model Contract {
 
   @@index([tenantId, status])
 }
+
+model LeaveRequest {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  consultantId       String
+  ownerUserId        String
+  type               String
+  startDate          DateTime  @db.Date
+  endDate            DateTime  @db.Date
+  halfStart          Boolean   @default(false)
+  halfEnd            Boolean   @default(false)
+  days               Decimal   @db.Decimal(4, 1)
+  /// Faux si aucun jour férié approuvé n'était paramétré sur la période : le décompte peut alors surestimer les jours.
+  holidaysConfigured Boolean   @default(false)
+  status             String    @default("submitted")
+  reason             String?
+  rejectReason       String?
+  decidedBy          String?
+  decidedAt          DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@index([tenantId, status])
+  @@index([consultantId, startDate])
+}
+
+/// Ajustements de solde saisis par la RH (solde initial, acquisition, correction) : append-only, motivés, audités.
+model LeaveAdjustment {
+  id           String   @id @default(uuid())
+  tenantId     String
+  consultantId String
+  days         Decimal  @db.Decimal(5, 1)
+  reason       String
+  createdBy    String
+  createdAt    DateTime @default(now())
+
+  @@index([consultantId])
+}

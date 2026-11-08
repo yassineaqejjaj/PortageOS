@@ -167,3 +167,27 @@ describe("modules 2", () => {
     expect(missing.managementFee).toBeNull(); expect(missing.balanceBeforeSocialAndSalary).toBeNull();
   });
 });
+
+import { leaveDays, totalDays as ltotal, leaveBalance, leaveWorkflow } from "../src/index";
+describe("congés", () => {
+  it("jours ouvrés, week-ends et fériés paramétrés exclus, demi-journées", () => {
+    const w = leaveDays({ start: "2031-03-03", end: "2031-03-09" }); // lun → dim
+    expect(w).toHaveLength(5); expect(ltotal(w).toString()).toBe("5");
+    expect(ltotal(leaveDays({ start: "2031-03-03", end: "2031-03-07" }, new Set(["2031-03-05"]))).toString()).toBe("4");
+    expect(ltotal(leaveDays({ start: "2031-03-03", end: "2031-03-05", halfStart: true, halfEnd: true })).toString()).toBe("2");
+    expect(ltotal(leaveDays({ start: "2031-03-08", end: "2031-03-09" })).toString()).toBe("0"); // week-end
+    expect(ltotal(leaveDays({ start: "2031-03-08", end: "2031-03-10", halfStart: true })).toString()).toBe("1"); // demi-jour sur un samedi ignoré
+    expect(() => leaveDays({ start: "2031-03-05", end: "2031-03-03" })).toThrow(/précède/);
+    expect(() => leaveDays({ start: "2031-03-03", end: "2031-03-03", halfStart: true, halfEnd: true })).toThrow(/demi-jour/);
+  });
+  it("solde et workflow : pas d'auto-approbation, solde insuffisant, annulation après début interdite", () => {
+    expect(leaveBalance(["10", "-1.5"], ["3", "0.5"])).toBe("5.0");
+    const ctx = { ownerUserId: "o", actorUserId: "a", startsInFuture: true, consumes: true, balanceAfter: "2" };
+    expect(leaveWorkflow.apply("submitted", "approve", { id: "a", role: "hr" }, ctx).state).toBe("approved");
+    expect(() => leaveWorkflow.apply("submitted", "approve", { id: "o", role: "hr" }, { ...ctx, actorUserId: "o" })).toThrow(/propre/);
+    expect(() => leaveWorkflow.apply("submitted", "approve", { id: "a", role: "hr" }, { ...ctx, balanceAfter: "-0.5" })).toThrow(/insuffisant/);
+    expect(leaveWorkflow.apply("submitted", "approve", { id: "a", role: "hr" }, { ...ctx, consumes: false, balanceAfter: "-5" }).state).toBe("approved");
+    expect(() => leaveWorkflow.apply("approved", "cancel", { id: "c", role: "consultant" }, { ...ctx, startsInFuture: false })).toThrow(/déjà commencée/);
+    expect(() => leaveWorkflow.apply("submitted", "reject", { id: "a", role: "hr" }, ctx)).toThrow(/motif/);
+  });
+});

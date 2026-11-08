@@ -27,3 +27,7 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - Notes de frais : séparation des tâches (pas d'auto-approbation), remboursement réservé à la finance.
 - Compte d'activité : montant jamais calculé avec un paramètre manquant ; étiqueté estimation.
 - Limite : les justificatifs ne sont pas stockés (référence texte). Avant tout dépôt de fichiers : stockage privé, antivirus, URL temporaires, contrôle d'accès.
+
+## Séance 7
+- Absences : RLS sur LeaveRequest/LeaveAdjustment ; ajustements de solde append-only et motivés ; pas d'auto-approbation ; un arrêt maladie ne consomme pas le solde. Les motifs d'absence et arrêts maladie sont des données de santé sensibles (art. 9 RGPD) : le champ `reason` est libre et ne doit pas contenir de diagnostic ; chiffrement applicatif, minimisation des accès et durée de conservation à définir avant tout usage réel.
+- Limite : le non-chevauchement des demandes est vérifié par le code, pas par une contrainte SQL.

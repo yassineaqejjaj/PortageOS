@@ -5,13 +5,14 @@ import { Tx } from "./prisma.service";
 import { AuditService } from "./audit.service";
 import { RequestContext } from "./auth.guard";
 import { applyAsAnyRole } from "./workflow";
+import { LeavesService } from "./leaves.service";
 
 export interface Scope { consultantId?: string; companyId?: string }
 export interface LineInput { date: string; quantity: string }
 
 @Injectable()
 export class TimesheetsService {
-  constructor(private audit: AuditService) {}
+  constructor(private audit: AuditService, private leaves: LeavesService) {}
 
   private visible(m: { consultantId: string; companyId: string }, scope: Scope) {
     return (!scope.consultantId || m.consultantId === scope.consultantId) && (!scope.companyId || m.companyId === scope.companyId);
@@ -30,6 +31,12 @@ export class TimesheetsService {
       if (!isValidDayQuantity(l.quantity)) throw new BadRequestException("Quantité : 0,5 ou 1 jour");
       if (seen.has(l.date)) throw new BadRequestException(`Date en double : ${l.date}`);
       seen.add(l.date);
+    }
+    // Cohérence avec les absences approuvées : on ne déclare pas d'activité sur un jour (ou demi-jour) d'absence.
+    const cover = await this.leaves.coverage(tx, mission.consultantId, lines.map(l => l.date));
+    for (const l of lines) {
+      const c = cover.get(l.date) ?? 0;
+      if (c > 0 && Number(l.quantity) > 1 - c) throw new BadRequestException(`Absence approuvée le ${l.date} : activité déclarable ${1 - c} j au plus`);
     }
     let ts = await tx.timesheet.findUnique({ where: { missionId_period: { missionId, period } } });
     if (ts && ts.status !== "draft") throw new BadRequestException(`CRA non modifiable (statut ${ts.status})`);
