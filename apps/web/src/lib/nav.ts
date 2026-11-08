@@ -12,6 +12,7 @@ export const ICONS = {
   rec: "M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3",
   ai: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6",
   chat: "M4 5h16v11H8l-4 4z",
+  chart: "M4 20V10M10 20V4M16 20v-7M2 20h20",
   sh: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
 } as const;
 
@@ -28,6 +29,7 @@ export const NAV: NavItem[] = [
   { key: "missions", label: "Missions", href: "/missions", icon: "bag", permission: "mission.read", group: "Opérations" },
   { key: "timesheets", label: "Activité / CRA", href: "/timesheets", icon: "cal", permission: "timesheet.read", group: "Opérations" },
   { key: "invoices", label: "Facturation", href: "/invoices", icon: "eur", permission: "invoice.read", group: "Opérations" },
+  { key: "pilotage", label: "Pilotage", href: "/pilotage", icon: "chart", permission: "pilotage.read", group: "Pilotage" },
   { key: "agents", label: "Agents", href: "/agents", icon: "ai", permission: "agent.read", group: "Pilotage" },
   { key: "ledger", label: "Registre financier", href: "/ledger", icon: "led", permission: "ledger.read", group: "Opérations" },
   { key: "expenses", label: "Notes de frais", href: "/expenses", icon: "rec", permission: "expense.read", group: "Opérations" },

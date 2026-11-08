@@ -8,7 +8,7 @@
 |                     |                                                                                              |
 | ------------------- | -------------------------------------------------------------------------------------------- |
 | **Stack**           | TypeScript · Next.js 15 · NestJS · Prisma · PostgreSQL (RLS) · Playwright · Docker           |
-| **Qualité**         | 25 tests domaine · 73 tests API/intégration (base réelle) · 22 tests E2E · TypeScript strict · CI |
+| **Qualité**         | 29 tests domaine · 83 tests API/intégration (base réelle) · 24 tests E2E · TypeScript strict · CI |
 | **En ligne (test)** | Voir [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (Railway : API + PostgreSQL · Vercel : web)     |
 | **Design**          | Claude Design importé (`packages/design-system`), clair et sombre, WCAG 2.2 AA visé          |
 | **Données**         | 100 % fictives (jeux de démonstration isolés des workflows réels)                            |
@@ -40,6 +40,7 @@
 | Agents | 6 agents (Payroll indisponible), outils typés lecture/écriture, playbooks **déterministes**, propositions approuvées par des humains (1 ou 2 niveaux), budgets, coupe-circuit, journal d'appels. **Aucun LLM connecté** | `agents.test.ts` + E2E |
 | Notifications | In-app (CRA, frais, absences, support), destinataires cloisonnés, préférences par type. **E-mail non connecté** | `support-notifications.test.ts` + E2E |
 | Support | Tickets, réponses, notes internes invisibles du demandeur, workflow, assignation, recherche, modèles | idem + E2E |
+| Pilotage | KPI définis et sourcés (CA, encaissements, frais de gestion, créances, DSO, cohortes, conversion…), export CSV audité. Pas de MRR, marges ni prévisions | `pilotage.test.ts` (calculs vérifiés à la main) + E2E |
 | Registre financier | Journal append-only équilibré (trigger en base), balance, réconciliation créances ↔ factures | idem |
 | Front | Coque du design, login, prospects, clients, audit ; BFF avec cookie httpOnly ; clair/sombre ; mobile | `apps/web/e2e` |
 

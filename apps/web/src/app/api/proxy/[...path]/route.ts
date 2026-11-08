@@ -23,7 +23,7 @@ const ALLOWED = [
   /^me\/leaves$/, new RegExp(`^me/leaves/${U}/cancel$`), /^me\/leave-balance$/,
   /^leaves$/, new RegExp(`^leaves/${U}/transition$`), new RegExp(`^leave-balances/${U}$`), /^leave-adjustments$/,
   /^agents$/, /^agents\/[a-z]{3,20}\/config$/, /^agent-runs$/, new RegExp(`^agent-runs/${U}(/cancel)?$`), new RegExp(`^agent-proposals/${U}/decision$`), /^me\/agent-runs$/,
-  /^notifications$/, /^notifications\/(unread-count|read-all)$/, new RegExp(`^notifications/${U}/read$`), /^notification-preferences$/,
+  /^pilotage\/(overview|export\.csv)$/, /^notifications$/, /^notifications\/(unread-count|read-all)$/, new RegExp(`^notifications/${U}/read$`), /^notification-preferences$/,
   /^support\/tickets$/, new RegExp(`^support/tickets/${U}(/messages|/transition|/assign)?$`), /^support\/(staff|templates)$/,
 ];
 
@@ -42,6 +42,8 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
     body: req.method === "GET" ? undefined : await req.text(),
   });
-  return new NextResponse(await r.text(), { status: r.status, headers: { "content-type": "application/json" } });
+  const headers: Record<string, string> = { "content-type": r.headers.get("content-type")?.startsWith("text/csv") ? "text/csv; charset=utf-8" : "application/json" };
+  const cd = r.headers.get("content-disposition"); if (cd && /^attachment; filename="[\w.-]+"$/.test(cd)) headers["content-disposition"] = cd;
+  return new NextResponse(await r.text(), { status: r.status, headers });
 }
 export { handle as GET, handle as POST, handle as PATCH, handle as PUT };

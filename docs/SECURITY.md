@@ -43,3 +43,8 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - Notifications : boîte strictement personnelle (filtrée par utilisateur authentifié, IDOR = 404), destinataires déterminés côté serveur (client = utilisateurs de l'entreprise de la mission uniquement), l'acteur n'est pas notifié de sa propre action, seule la date de lecture est modifiable (trigger), jamais supprimées.
 - Support : un demandeur ne voit que ses tickets (404 sinon), les notes internes sont filtrées côté serveur dans la requête, les messages sont append-only, le contenu est stocké en texte brut et affiché échappé (React), longueurs bornées.
 - Limites : pas de pièces jointes (pas d'antivirus à gérer), pas de limitation de débit propre à la création de tickets/messages (risque d'abus par un compte authentifié), pas d'e-mail (aucune fuite par e-mail, mais pas d'alerte hors application). Les tickets peuvent contenir des données personnelles saisies librement : durée de conservation à définir.
+
+## Séance 10 — pilotage
+- Accès réservé à `pilotage.read` (administrateur, direction, finance) ; l'export CSV est audité et protégé contre l'injection de formules (cellules commençant par = + - @ préfixées).
+- Les agrégats sont calculés dans la transaction du tenant (RLS) : aucun mélange inter-tenant (testé).
+- Limite : la période est bornée à 36 mois et le calcul se fait en mémoire ; pas de limitation de débit propre aux exports.
