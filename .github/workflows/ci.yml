@@ -23,7 +23,7 @@ jobs:
       JWT_SECRET: ci-only-secret-ci-only-secret-ci-only-secret
       DEMO_PASSWORD: ci-only-demo-password
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
