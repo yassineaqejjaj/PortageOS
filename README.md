@@ -1,24 +1,76 @@
-# PORTAGE OS
+# PortageOS
 
-**Le poste de gestion du portage salarial français : CRM, contrats, CRA, facturation, paie via prestataire, compte d'activité et agents IA, dans un SaaS multi-tenant en marque blanche.**
+<!-- portfolio-summary:start -->
 
-> **Statut : socle en construction (Lot 0 terminé, Lot 1 amorcé). Ce n'est pas un produit utilisable en réel.**
-> Aucune paie, DSN, facturation électronique, signature ni intégration bancaire n'est implémentée ou connectée. Rien n'a été validé juridiquement ni par un spécialiste paie. Voir [docs/STATUS.md](docs/STATUS.md) pour l'état exact, module par module.
+![PortageOS, identité IASEEN Constellation](docs/assets/github-cover.svg)
 
-|                     |                                                                                              |
-| ------------------- | -------------------------------------------------------------------------------------------- |
-| **Stack**           | TypeScript · Next.js 15 · NestJS · Prisma · PostgreSQL (RLS) · Playwright · Docker           |
-| **Qualité**         | 29 tests domaine · 83 tests API/intégration (base réelle) · 24 tests E2E · TypeScript strict · CI |
-| **En ligne (test)** | Voir [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (Railway : API + PostgreSQL · Vercel : web)     |
-| **Design**          | Claude Design importé (`packages/design-system`), clair et sombre, WCAG 2.2 AA visé          |
-| **Données**         | 100 % fictives (jeux de démonstration isolés des workflows réels)                            |
+> **Le portage salarial, de bout en bout.**
+>
+> Une plateforme SaaS pour les sociétés de portage salarial françaises : CRM, consultants, missions, contrats, CRA, facturation, compte d'activité et workflows assistés.
+>
+> **Statut : prototype technique. Ne pas utiliser en production.**
+>
+> [État vérifié](docs/STATUS.md) · [Fonctionnalités prévues](docs/PRODUCT_SCOPE.md) · [Architecture](docs/ARCHITECTURE.md) · [Suivi d'implémentation](docs/IMPLEMENTATION_MATRIX.md)
 
-![Facturation, thème clair](docs/screenshots/factures-light.png)
+[![CI](https://github.com/yassineaqejjaj/PortageOS/actions/workflows/ci.yml/badge.svg)](https://github.com/yassineaqejjaj/PortageOS/actions/workflows/ci.yml)
 
-## Sommaire
-[Ce qui existe](#ce-qui-existe) · [Ce qui n'existe pas](#ce-qui-nexiste-pas-encore) · [Architecture](#architecture) · [Sécurité](#sécurité) · [Qualité et tests](#qualité-et-tests) · [Démarrer en local](#démarrer-en-local) · [Déploiement](#déploiement) · [Structure du dépôt](#structure-du-dépôt) · [Documentation](#documentation)
+<!-- portfolio-summary:end -->
 
-## Ce qui existe
+**Un espace pour gérer l'activité. Des données séparées par société. Des actions que les équipes peuvent vérifier.**
+
+PortageOS réunit les étapes du portage salarial dans un même produit. Son objectif : réduire les échanges dispersés entre commerce, opérations, RH et finance, et donner aux consultants comme aux entreprises clientes un espace adapté à leurs droits.
+
+**À lire avant toute utilisation :** le dépôt n'est pas un logiciel de paie prêt à l'emploi. Aucune paie ni DSN n'est produite, aucun prestataire de facturation électronique, de banque ou de signature électronique n'est connecté, et aucune règle juridique n'a été validée par un professionnel. Les données de démonstration sont fictives. Voir [docs/STATUS.md](docs/STATUS.md).
+
+## 01. Pourquoi PortageOS ?
+
+| Situation courante | Ce que PortageOS cherche à apporter |
+|---|---|
+| Les données des prospects, consultants et clients sont réparties entre plusieurs outils | Une chaîne CRM → dossier → mission → CRA → facture |
+| Les validations de temps et de frais passent par des échanges manuels | Des workflows explicites avec des rôles et un historique |
+| La finance perd du temps à relier les montants aux opérations | Un registre et un compte d'activité **estimatif** avec les mouvements associés |
+| Les utilisateurs voient trop de données ou pas les bonnes | Des espaces back-office, consultant et client, avec contrôle des droits côté serveur |
+| Une IA pourrait agir sans preuve ni accord | Des propositions enregistrées et une validation humaine avant les actions sensibles |
+
+### À qui s'adresse la plateforme ?
+
+| Profil | Expérience cible |
+|---|---|
+| **Direction / opérations** | Vue sur les consultants, missions, contrats et tâches à traiter |
+| **Commerce** | Suivi des prospects et des entreprises clientes |
+| **RH / finance / conformité** | Vérifications, approbations, flux financiers, audit |
+| **Consultant porté** | CRA, frais, absences, informations liées à son activité |
+| **Entreprise cliente** | Consultation et validation des CRA de ses missions |
+| **Opérateur SaaS** | Gestion de plusieurs sociétés de portage, sans mélange de données |
+
+## 02. Le parcours métier
+
+```mermaid
+flowchart LR
+    A["Prospect"] --> B["Consultant et client"]
+    B --> C["Mission et contrat"]
+    C --> D["CRA et validation"]
+    D --> E["Facture"]
+    E --> F["Encaissement"]
+    F --> G["Compte d'activité estimatif"]
+    C --> H["Frais et absences"]
+    H --> G
+```
+
+Le métier reste la référence : les étapes sont liées, les montants sont calculés côté serveur et les décisions importantes peuvent être retracées.
+
+### Capture de l'interface
+
+![Facturation de PortageOS, thème clair](docs/screenshots/factures-light.png)
+
+*Écran issu du développement. Il ne correspond pas à une solution de facturation électronique connectée à une plateforme agréée.*
+
+Le design system, provenant de Claude Design, se trouve dans [`packages/design-system`](packages/design-system). Il comprend les tokens, la coque de navigation et les thèmes clair/sombre ; tous les composants prévus ne sont pas encore réalisés.
+
+## 03. Ce qui est réellement implémenté
+
+Le tableau qui suit reprend les fonctionnalités présentes dans le code et leurs preuves. **Chaque module reste partiel** : une route, un test ou un écran ne suffit pas à établir qu'un processus est opérationnel chez un client.
+
 | Domaine | Contenu réel | Preuve |
 |---|---|---|
 | Identité et tenants | Login JWT 15 min, mots de passe scrypt, appartenances multi-sociétés, 12 rôles RBAC, limiteur d'échecs de login | `apps/api/test/tenant-isolation.test.ts` |
@@ -44,54 +96,141 @@
 | Registre financier | Journal append-only équilibré (trigger en base), balance, réconciliation créances ↔ factures | idem |
 | Front | Coque du design, login, prospects, clients, audit ; BFF avec cookie httpOnly ; clair/sombre ; mobile | `apps/web/e2e` |
 
-## Ce qui n'existe pas encore
-Signature électronique qualifiée, acquisition automatique des congés, dépôt de justificatifs/OCR, facturation électronique (PDF, plateforme agréée), banque et recouvrement, **paie et DSN**, compte d'activité, RH, conformité (règles légales à saisir depuis des sources officielles), comptabilité, pilotage, portails consultant/client/partenaires, administration SaaS, planificateur LLM, RAG et évaluations des agents, portails partenaire, MFA/SSO, invitations, workers durables, webhooks. Chaque ligne figure dans la [matrice d'implémentation](docs/IMPLEMENTATION_MATRIX.md) avec son statut.
+Les statuts détaillés par backend, UI, intégration et tests figurent dans [IMPLEMENTATION_MATRIX.md](docs/IMPLEMENTATION_MATRIX.md). Cette matrice est la source à consulter pour distinguer les écrans opérationnels, les règles codées et les dépendances non connectées.
 
-## Architecture
+## 04. L'IA, sous contrôle
+
+La cible produit prévoit des agents d'assistance pour l'intégration des consultants, les contrats, les opérations, la finance et l'espace consultant, ainsi qu'un agent lié à la paie.
+
+**Ce qui existe :** six rôles d'agents enregistrés, des outils typés, des playbooks déterministes, un journal d'appels, des budgets d'exécution, un coupe-circuit et des propositions soumises à une ou deux validations humaines. Les actions sont exécutées avec les droits de l'approbateur. L'agent Payroll est indisponible.
+
+**Ce qui reste à construire :** connexion à un LLM, compréhension des demandes en langage naturel, orchestration autonome, RAG documentaire avec sources, évaluations et suivi de la qualité des modèles. Aucun de ces éléments n'est aujourd'hui opérationnel. Il serait donc inexact de présenter le prototype comme une plateforme d'agents IA autonomes.
+
+**Principe de conception :** l'IA peut proposer ; les règles métier, les permissions et les humains restent responsables de l'exécution.
+
+## 05. Architecture et choix techniques
+
+```mermaid
+flowchart LR
+    U["Équipe / consultant / client"] --> W["Next.js : UI et BFF"]
+    W -->|"Session httpOnly et routes autorisées"| A["NestJS : API et RBAC"]
+    A --> D["Domaine TypeScript : règles et calculs"]
+    A --> P[("PostgreSQL : RLS, données et audit")]
+    A --> G["Agents : playbooks et validations"]
+    G --> P
 ```
-Navigateur ──► Vercel (Next.js : UI + BFF /api/session, /api/proxy) ──► Railway : API NestJS ──► PostgreSQL (RLS)
-                    cookie httpOnly, liste blanche de routes, contrôle d'Origin    rôle portage_app, audit append-only
-```
-Monorepo pnpm : `apps/api`, `apps/web`, `packages/domain` (règles pures), `packages/design-system`. Détail : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), décisions : [docs/adr](docs/adr).
 
-## Sécurité
-Tenant imposé côté serveur, jamais le rôle du front. Aucun secret dans le dépôt. Limites connues (pas de MFA, pas de refresh de token, `User`/`Membership` hors RLS, limiteur en mémoire) : [docs/SECURITY.md](docs/SECURITY.md).
+| Couche | Technologies |
+|---|---|
+| Interface | Next.js 15, TypeScript, responsive, thèmes clair et sombre |
+| API | NestJS, Prisma, JWT, autorisations |
+| Métier | TypeScript, montants Decimal, machines d'état, paramètres datés |
+| Données | PostgreSQL, isolation RLS par tenant, registre et journal append-only |
+| Qualité | Tests de domaine, API sur base réelle, Playwright E2E, CI GitHub |
+| Environnement de test | Vercel pour le web, Railway pour l'API et PostgreSQL |
 
-## Qualité et tests
+Le dépôt est un monorepo **pnpm** organisé autour de `apps/api`, `apps/web`, `packages/domain` et `packages/design-system`. Les détails et les décisions sont documentés dans [ARCHITECTURE](docs/ARCHITECTURE.md) et [ADR](docs/adr).
+
+### Sécurité et limites
+
+L'identité du tenant et les rôles sont vérifiés côté serveur, jamais déduits du front. Le code contient des contrôles d'isolation, des vérifications anti-accès hors périmètre et un audit des actions critiques. **Ce socle n'est pas une validation de sécurité pour une mise en production.** MFA/SSO, gestion avancée des sessions et plusieurs mesures d'exploitation restent à ajouter. Voir [SECURITY](docs/SECURITY.md).
+
+## 06. Qualité et état du projet
+
+<!-- technical-verification:start -->
+
+| Vérification documentée au 8 novembre 2026 | Nombre |
+|---|---:|
+| Tests de domaine | **29** |
+| Tests API / intégration sur PostgreSQL | **83** |
+| Scénarios navigateur Playwright | **24** |
+
+<!-- technical-verification:end -->
+
+La CI couvre typecheck, build, tests, seed fictif et E2E sur une base PostgreSQL temporaire. Ces tests **ne remplacent pas** une validation juridique, une recette de paie, un test de sécurité externe ni un essai auprès d'une société de portage.
+
 ```bash
-pnpm test                                   # domaine + API (Postgres requis)
-pnpm -F @portage/web test:e2e               # Playwright, ports dédiés 4310/4311
+pnpm test
+pnpm -F @portage/web test:e2e
 ```
-La CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) exécute typecheck, build, tests, seed démo et E2E sur une base PostgreSQL jetable. Plan : [docs/TEST_PLAN.md](docs/TEST_PLAN.md).
 
-## Démarrer en local
-Prérequis : Node 22+, pnpm 10, Docker.
+Voir le [plan de tests](docs/TEST_PLAN.md) et le [statut vérifié](docs/STATUS.md).
+
+## 07. Démarrage local
+
+Prérequis : Node.js 22 recommandé, pnpm 10 et Docker.
+
 ```bash
-cp .env.example .env              # renseigner des valeurs LOCALES (aucun secret réel)
-docker compose up -d postgres
+git clone https://github.com/yassineaqejjaj/PortageOS.git
+cd PortageOS
+
+cp .env.example .env
 pnpm install
-pnpm migrate                      # migrations (propriétaire)
-APP_DB_PASSWORD=... ./scripts/db-roles.sh   # active le rôle applicatif portage_app
-DEMO_PASSWORD=... pnpm seed       # tenant « demo » fictif (refusé si APP_ENV=production)
-pnpm -F @portage/domain build && pnpm -F @portage/api build
-node apps/api/dist/main.js        # API :3001 (JWT_SECRET, APP_DATABASE_URL requis)
-pnpm -F @portage/web dev          # web :3000
+docker compose up -d postgres
+pnpm migrate
+
+# Configurer uniquement des identifiants locaux et fictifs.
+APP_DB_PASSWORD=... ./scripts/db-roles.sh
+DEMO_PASSWORD=... pnpm seed
+
+pnpm -F @portage/domain build
+pnpm -F @portage/api build
+node apps/api/dist/main.js
+
+# Dans un autre terminal :
+pnpm -F @portage/web dev
 ```
 
-## Déploiement
-Railway (API + PostgreSQL) et Vercel (web) : procédure, variables et vérifications dans [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Alternative européenne documentée dans le même fichier.
+Web : `http://localhost:3000` · API : `http://localhost:3001`.
 
-## Structure du dépôt
+Avant le lancement, renseigner les variables requises dans `.env`, dont les paramètres d'accès à la base et `JWT_SECRET`. Le seed de démonstration refuse `APP_ENV=production`. Ne jamais charger de données personnelles réelles dans cet environnement.
+
+## 08. Déploiement de test
+
+| Composant | Service | État |
+|---|---|---|
+| Web | [portageos.vercel.app](https://portageos.vercel.app) | Environnement de test |
+| API | [Endpoint santé Railway](https://api-production-3d59.up.railway.app/health) | `/health` vérifié |
+| Base | PostgreSQL Railway privé | Migrations et rôle applicatif testés |
+
+L'environnement distant dispose d'une **base vide**, sans compte de démonstration en ligne. Le parcours authentifié complet, la restauration, la charge, la résidence UE et la mise en service réelle ne sont pas validés. Consulter le [guide de déploiement](docs/DEPLOYMENT.md).
+
+## 09. Prochaines étapes
+
+| Priorité produit | Ce qu'il reste à réaliser |
+|---|---|
+| **Parcours métiers complets** | Documents, avenants, workflows transversaux, portails et administration |
+| **Intégrations françaises** | Signature, facturation électronique, banque, paie externalisée et DSN |
+| **Conformité** | Règles françaises datées, contrôles et validation par spécialistes |
+| **IA générative** | Modèles connectés, orchestration, RAG, évaluation et observabilité |
+| **SaaS exploitable** | SSO/MFA, workers durables, supervision, reprise après incident et exigences de sécurité |
+
+Cette feuille de route exprime **l'objectif du produit**, pas des fonctionnalités déjà livrées.
+
+## 10. Le dépôt
+
 ```text
-apps/api              API NestJS (auth, tenant, RBAC, audit, prospects, clients) + Prisma
-apps/web              Next.js (UI, BFF), tests E2E Playwright
-packages/domain       Règles métier pures et testées
-packages/design-system  Tokens et CSS importés de Claude Design + sources des artboards
-docs/                 Architecture, ADR, sécurité, déploiement, matrice, statut, captures
-.github/              CI, modèles de PR/issues, CODEOWNERS, Dependabot
+apps/
+  api/                   NestJS, Prisma, authentification, API et services
+  web/                   Next.js, portails, BFF et Playwright
+packages/
+  domain/                Règles métier, montants et états
+  design-system/         Tokens et styles Claude Design
+docs/
+  assets/                Bannière et identité visuelle IASEEN
+  screenshots/           Captures d'écran de développement
+  adr/                   Décisions techniques
+  STATUS.md              État réel du produit
+  IMPLEMENTATION_MATRIX.md
+.github/                 Intégration continue et fichiers de contribution
 ```
 
-## Documentation
-[STATUS](docs/STATUS.md) · [IMPLEMENTATION_MATRIX](docs/IMPLEMENTATION_MATRIX.md) · [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) · [DOMAIN_RULES](docs/DOMAIN_RULES.md) · [DESIGN_HANDOFF](docs/DESIGN_HANDOFF.md) · [INTEGRATIONS](docs/INTEGRATIONS.md) · [SECURITY](docs/SECURITY.md) · [TEST_PLAN](docs/TEST_PLAN.md) · [DEPLOYMENT](docs/DEPLOYMENT.md) · [OPERATIONS](docs/OPERATIONS.md) · [ENGINEERING](docs/ENGINEERING.md) · [DECISIONS](docs/DECISIONS.md)
+### Documentation
 
-> Aucune licence n'est accordée : tous droits réservés tant qu'aucune licence n'est ajoutée.
+[État](docs/STATUS.md) · [Périmètre](docs/PRODUCT_SCOPE.md) · [Matrice](docs/IMPLEMENTATION_MATRIX.md) · [Architecture](docs/ARCHITECTURE.md) · [Règles métier](docs/DOMAIN_RULES.md) · [Design](docs/DESIGN_HANDOFF.md) · [Intégrations](docs/INTEGRATIONS.md) · [Sécurité](docs/SECURITY.md) · [Tests](docs/TEST_PLAN.md) · [Déploiement](docs/DEPLOYMENT.md) · [Opérations](docs/OPERATIONS.md) · [Engineering](docs/ENGINEERING.md) · [Décisions](docs/DECISIONS.md)
+
+---
+
+**PortageOS** · Un projet [IASEEN](https://iaseen.com). Identité visuelle : **IASEEN Constellation**.
+
+**Licence :** aucune licence open source n'a été accordée pour ce dépôt. Tous droits réservés sauf mention contraire.
