@@ -8,3 +8,4 @@ export * from "./billing.js";
 export * from "./modules2.js";
 export * from "./leave.js";
 export * from "./support.js";
+export * from "./pilotage.js";

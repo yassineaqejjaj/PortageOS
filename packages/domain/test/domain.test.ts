@@ -205,3 +205,27 @@ describe("support", () => {
     expect(() => a("resolved", "staff_reply", "staff")).toThrow(/interdite/);
   });
 });
+
+import { monthRange, monthDiff, daysInMonths, agingBucket, daysBetween, dso, cohortMatrix, csvCell, toCsv } from "../src/index";
+describe("pilotage", () => {
+  it("périodes et jours", () => {
+    expect(monthRange("2026-11", "2027-02")).toEqual(["2026-11", "2026-12", "2027-01", "2027-02"]);
+    expect(() => monthRange("2026-03", "2026-01")).toThrow(); expect(() => monthRange("2026-13", "2026-14")).toThrow(); expect(() => monthRange("2020-01", "2026-12")).toThrow(/trop longue/);
+    expect(daysInMonths(["2026-01", "2026-02"])).toBe(59); expect(daysInMonths(["2028-02"])).toBe(29);
+    expect(monthDiff("2026-11", "2027-02")).toBe(3); expect(daysBetween("2026-02-10", "2026-03-01")).toBe(19);
+  });
+  it("ancienneté des créances et DSO", () => {
+    expect([0, 30, 31, 60, 61, 90, 91, 400].map(agingBucket)).toEqual(["0-30", "0-30", "31-60", "31-60", "61-90", "61-90", "91+", "91+"]);
+    expect(() => agingBucket(-1)).toThrow();
+    expect(dso("2400", "4200", 59)).toBe("33.7"); expect(dso("0", "1000", 30)).toBe("0.0"); expect(dso("100", "0", 30)).toBeNull();
+  });
+  it("cohortes : consultants distincts facturés par mois d'écart", () => {
+    const m = cohortMatrix([{ id: "A", createdMonth: "2026-01" }, { id: "B", createdMonth: "2026-02" }, { id: "C", createdMonth: "2026-01" }],
+      [{ consultantId: "A", month: "2026-01" }, { consultantId: "A", month: "2026-01" }, { consultantId: "A", month: "2026-02" }, { consultantId: "B", month: "2026-02" }], 2);
+    expect(m).toEqual([{ cohort: "2026-01", size: 2, billedByOffset: [1, 1, 0] }, { cohort: "2026-02", size: 1, billedByOffset: [1, 0, 0] }]);
+  });
+  it("CSV : guillemets, séparateurs, injection de formule neutralisée, nombres négatifs conservés", () => {
+    expect(csvCell("=HYPERLINK(\"x\")")).toBe("\"'=HYPERLINK(\"\"x\"\")\""); expect(csvCell("@cmd")).toBe("'@cmd"); expect(csvCell("-12,5")).toBe("-12,5"); expect(csvCell("a;b")).toBe("\"a;b\"");
+    expect(toCsv([["mois", "ca"], ["2026-01", 1000]])).toBe("mois;ca\r\n2026-01;1000\r\n");
+  });
+});
