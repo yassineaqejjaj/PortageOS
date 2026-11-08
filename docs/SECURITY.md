@@ -13,3 +13,10 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - Limiteur de login en mémoire (mono-instance). Pas de MFA, SSO, refresh token, invitation par email, ni vérification de force des mots de passe au-delà de 12 caractères.
 - `JWT_SECRET` unique, sans rotation. Pas de journal d'accès (lectures).
 - Front : jeton jamais accessible au JS (cookie httpOnly), liste blanche du proxy, contrôle d'Origin sur login/logout/écritures (vérifié par curl), en-têtes X-Frame-Options/nosniff/Referrer-Policy. Pas de CSP ni de rate limiting côté BFF (à faire). Pas de renouvellement de session : expiration à 15 min = retour au login.
+
+## Séance 5
+- RLS étendue à Consultant, Mission, Timesheet(+Line), Invoice(+Sequence), Payment, JournalEntry/Line, OnboardingTask.
+- Portails : cloisonnement par `Membership.companyId` / `consultantId` (contrôle d'objet applicatif en plus du RLS tenant). Le portail client ne renvoie ni TJM, ni montants, ni rémunération (test sur le contenu des réponses).
+- Registre : append-only (journal, paiements), équilibre vérifié en base par contrainte différée, montants contraints (CHECK).
+- Limite : le rattachement d'un utilisateur à une entreprise/un consultant se fait par la base (aucune UI d'administration des membres) ; le contrôle d'objet des portails repose sur le code des contrôleurs (pas de RLS par entreprise).
+- Données personnelles : les dossiers consultants contiennent des données personnelles (nom, email) ; pas de pièces d'identité ni de RIB stockés à ce jour. Avant d'y ajouter des pièces d'identité, coordonnées bancaires ou données de paie (classification C2/C3 selon votre politique), chiffrement applicatif, journal d'accès et hébergement UE sont à mettre en place.

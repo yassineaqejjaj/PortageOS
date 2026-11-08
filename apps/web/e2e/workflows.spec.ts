@@ -19,7 +19,7 @@ test("admin crée un client (validation SIREN, puis succès et audit)", async ({
 });
 
 test("consultant: aucune entrée de navigation métier et accès refusé aux clients", async ({ page }) => {
-  await login(page, "consultant@demo.test").catch(() => {});
+  await login(page, "consultant@demo.test");
   await page.goto("/companies");
   await expect(page.getByRole("alert").filter({ hasText: "Accès refusé" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Clients" })).toHaveCount(0);

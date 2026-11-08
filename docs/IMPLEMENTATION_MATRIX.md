@@ -1,4 +1,6 @@
 # Matrice d'implémentation (état au 2026-11-08, fin de séance 1)
+Mise à jour séance 5 : chaîne consultants → missions → CRA (portails) → factures → encaissements → registre, 34 tests API, 18 tests domaine, 16 E2E (dont 1 chaîne multi-rôles). Constat : le mode `mission` ne gère qu'une facture par CRA.
+
 Mise à jour séance 4 : prospects + E2E (14 tests Playwright, ports 4310/4311). Correction d'un défaut réel : le mode sombre ne s'appliquait pas (le conteneur `.po` redéfinissait les tokens clairs), corrigé et vérifié par capture. Limiteur de login : ne compte plus que les échecs.
 
 Légende : ✅ terminé · 🟡 partiel · ⬜ non démarré · 🔒 bloqué intégration externe.
@@ -16,24 +18,24 @@ Aucun module n'est ✅ de bout en bout (UI+API+DB+droits+audit+tests+doc).
 | Clients (entité Company minimale) | create/get/list/patch, SIREN 9 chiffres | `apps/web/src/app/(app)/companies` (liste, création, états chargement/vide/403/erreur) | Sirene ⬜ | inclus ci-dessus | 🟡 pas de sites/contacts/risque, pas de validation Luhn/Sirene |
 | Design System / tokens | – | `packages/design-system/src/portage.css` (copie fidèle du design), coque Sidebar/Topbar, thèmes light/dark | Claude Design lu (sources des artboards) | ⬜ pas de test visuel ni de galerie de composants | 🟡 tokens et classes CSS importés ; ~60 composants du design (DataTable, Drawer, ApprovalQueue, etc.) pas encore réalisés en React |
 | A CRM — prospects | `apps/api/src/prospects.controller.ts`, machine d'état `packages/domain/src/prospect-pipeline.ts`, RLS, audit, concurrence optimiste | `apps/web/src/app/(app)/crm/prospects` | – | `apps/api/test/prospects.test.ts` (6), `e2e/workflows.spec.ts` | 🟡 pipeline prospect seul : pas de campagnes, scoring, simulation, accords-cadres, parrainage, apporteurs, commissions, imports, interactions/tâches ; la conversion ne crée pas encore de dossier consultant/client |
-| B Onboarding consultants | ⬜ | ⬜ | DPAE, OCR | ⬜ | ⬜ |
+| B Onboarding consultants | `consultants.controller.ts`, `consultants.service.ts`, conversion prospect→dossier | `consultants/`, `consultants/[id]` | DPAE, OCR, signature 🔒 non connectés | `billing-chain.test.ts` (activation, conversion) | 🟡 checklist de 6 tâches cochées à la main, activation conditionnée ; pas de pièces/documents, OCR, données bancaires chiffrées, médecine du travail, changements de situation, archivage |
 | C Clients | ⬜ | ⬜ | Sirene | ⬜ | ⬜ |
 | D Contrats/juridique | ⬜ | ⬜ | Signature | ⬜ | ⬜ |
-| E Missions | ⬜ | ⬜ | – | ⬜ | ⬜ |
-| F CRA/temps/absences | ⬜ | ⬜ | – | ⬜ | ⬜ |
+| E Missions | `missions.controller.ts` (TJM, TVA saisie, dates, consultant actif requis) | `missions/` | – | `billing-chain.test.ts` | 🟡 pas de renouvellement, fin anticipée, budgets, frais refacturables, multi-missions avancé, calendrier, avenants |
+| F CRA/temps/absences | `timesheets.*` : saisie contrôlée (demi/journées, période, dates mission), machine d'état, portails consultant et client cloisonnés, preuve en audit, verrouillage après facturation | `timesheets/`, `me/timesheets`, `client/timesheets` | – | `domain.test.ts`, `billing-chain.test.ts`, `e2e/chain.spec.ts` | 🟡 pas d'heures/forfait jours, absences/congés, import/export, relances, approbation multi-niveaux, version corrigée après facturation (workflow 10) |
 | G Notes de frais | ⬜ | ⬜ | OCR | ⬜ | ⬜ |
-| H Facturation électronique | ⬜ | ⬜ | PA agréée 🔒 | ⬜ | ⬜ |
-| I Banque/recouvrement | ⬜ | ⬜ | Banque 🔒 | ⬜ | ⬜ |
+| H Facturation électronique | `invoices.controller.ts` : facture depuis CRA validé, montants Decimal côté serveur, numérotation sans trou, émission, annulation par contrepassation | `invoices/` | Plateforme agréée 🔒 `einvoiceStatus=not_connected` | `billing-chain.test.ts` (numéros simultanés), `e2e/chain.spec.ts` | 🟡 pas de PDF/formats structurés, avoirs, acomptes, multi-lignes/taux, devis, factures fournisseurs, e-reporting, rejet/retry plateforme ; facture mono-ligne |
+| I Banque/recouvrement | Encaissements saisis à la main (partiels, anti-trop-perçu, concurrence) | dans `invoices/` | Banque 🔒 non connectée | `billing-chain.test.ts` | 🟡 pas de connexion bancaire, import de relevés, rapprochement automatique, relances, litiges, avances, prévisions, balance âgée |
 | J Paie & DSN | ⬜ | ⬜ | Prestataire paie 🔒 | ⬜ | ⬜ (traitement réel = non connecté) |
 | K Compte d'activité/simulateur | ⬜ | ⬜ | – | ⬜ | ⬜ |
 | L RH | ⬜ | ⬜ | – | ⬜ | ⬜ |
 | M Conformité | ⬜ | ⬜ | – | ⬜ | ⬜ règles légales à saisir depuis sources officielles |
-| N Comptabilité | ⬜ | ⬜ | Export compta | ⬜ | ⬜ |
+| N Comptabilité | Journal append-only équilibré en base (trigger différé), balance, réconciliation 411 ↔ factures | `ledger/` | Export compta ⬜ | `billing-chain.test.ts` | 🟡 plan comptable minimal en dur (411/706/44571/512), pas de clôture, exports, tiers, TVA déclarative |
 | O Pilotage | ⬜ | ⬜ | – | ⬜ | ⬜ |
-| P Support & portails (consultant/client/partenaire) | ⬜ | ⬜ | Email | ⬜ | ⬜ |
+| P Support & portails (consultant/client/partenaire) | portails consultant (CRA) et client (validation, sans donnée salariale) | `me/timesheets`, `client/timesheets` | Email ⬜ | `billing-chain.test.ts`, E2E | 🟡 pas de messagerie, tickets, notifications, documents, accueil/compte d'activité, portail partenaire |
 | Q Admin SaaS/abonnements | ⬜ | ⬜ | Paiement SaaS | ⬜ | ⬜ |
 | IA : 6 agents + orchestrateur, RAG, éval | ⬜ | ⬜ | Providers IA | ⬜ | ⬜ |
-| Workflows 1–12 | ⬜ | ⬜ | – | ⬜ | ⬜ |
+| Workflows 1–12 | W1 début (prospect→converti→dossier onboarding→activation→mission) · W3 CRA→validation client→validation interne→facture→émission→encaissement→réconciliation (jusqu'à l'émission électronique exclue) | – | – | `e2e/chain.spec.ts` | 🟡 W1 et W3 partiels ; W2, W4–W12 ⬜ ; W10 partiel (paiement partiel, annulation ; pas d'avoir ni de CRA corrigé après facturation) |
 | Webhooks/outbox/imports/exports/recherche | ⬜ | ⬜ | – | ⬜ | ⬜ |
 | Validation juridique/métier/paie | – | – | – | – | ⬜ aucune effectuée |
 

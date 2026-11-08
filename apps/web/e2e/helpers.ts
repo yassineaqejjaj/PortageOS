@@ -8,5 +8,5 @@ export async function login(page: Page, email: string) {
   await page.getByLabel("Adresse email").fill(email);
   await page.getByLabel("Mot de passe").fill(PASSWORD);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  await expect(page).toHaveURL(/\/(companies|crm|audit)/);
+  await expect(page).not.toHaveURL(/\/login/);
 }

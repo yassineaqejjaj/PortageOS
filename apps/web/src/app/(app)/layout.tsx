@@ -3,10 +3,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
-import { BO_NAV, ICONS } from "@/lib/nav";
-import { can } from "@/lib/permissions";
+import { NAV, ICONS } from "@/lib/nav";
 
-interface Me { userId: string; roles: string[]; email?: string; tenant?: { slug: string; name: string } }
+interface Me { userId: string; roles: string[]; permissions: string[]; email?: string; tenant?: { slug: string; name: string } }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -15,7 +14,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (me.error instanceof ApiError && me.error.status === 401) { router.replace("/login"); return null; }
   async function logout() { await fetch("/api/session", { method: "DELETE" }); router.replace("/login"); router.refresh(); }
   const roles = me.data?.roles ?? [];
-  const items = BO_NAV.filter(i => can(roles, i.permission));
+  const items = NAV.filter(i => me.data?.permissions.includes(i.permission));
   const groups = [...new Set(items.map(i => i.group))];
   const initials = (me.data?.email ?? "?").slice(0, 2).toUpperCase();
   return (

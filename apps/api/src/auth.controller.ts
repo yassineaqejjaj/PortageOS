@@ -6,6 +6,7 @@ import { PrismaService } from "./prisma.service";
 import { AuditService } from "./audit.service";
 import { Public, RequestContext } from "./auth.guard";
 import { hashPassword, verifyPassword } from "./password";
+import { ROLE_PERMISSIONS, can, Permission } from "./permissions";
 
 const LoginDto = z.object({ email: z.string().email().max(254), password: z.string().min(1).max(200), tenantSlug: z.string().min(1).max(100) });
 const DUMMY_HASH_PROMISE = hashPassword("dummy-password-for-timing");
@@ -52,7 +53,8 @@ export class AuthController {
       this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } }),
       this.prisma.tenant.findUnique({ where: { id: tenantId }, select: { slug: true, name: true } }),
     ]);
-    return { userId, tenantId, roles, email: user?.email, tenant };
+    const all = [...new Set(Object.values(ROLE_PERMISSIONS).flat())] as Permission[];
+    return { userId, tenantId, roles, email: user?.email, tenant, permissions: all.filter(p => can(roles, p)) };
   }
 
   @Public() @Get("health")

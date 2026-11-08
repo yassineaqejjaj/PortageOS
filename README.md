@@ -8,12 +8,12 @@
 |                     |                                                                                              |
 | ------------------- | -------------------------------------------------------------------------------------------- |
 | **Stack**           | TypeScript · Next.js 15 · NestJS · Prisma · PostgreSQL (RLS) · Playwright · Docker           |
-| **Qualité**         | 13 tests domaine · 20 tests API/intégration (base réelle) · 14 tests E2E · TypeScript strict · CI |
+| **Qualité**         | 18 tests domaine · 34 tests API/intégration (base réelle) · 15 tests E2E · TypeScript strict · CI |
 | **En ligne (test)** | Voir [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (Railway : API + PostgreSQL · Vercel : web)     |
 | **Design**          | Claude Design importé (`packages/design-system`), clair et sombre, WCAG 2.2 AA visé          |
 | **Données**         | 100 % fictives (jeux de démonstration isolés des workflows réels)                            |
 
-![Prospects, thème clair](docs/screenshots/prospects-light.png)
+![Facturation, thème clair](docs/screenshots/factures-light.png)
 
 ## Sommaire
 [Ce qui existe](#ce-qui-existe) · [Ce qui n'existe pas](#ce-qui-nexiste-pas-encore) · [Architecture](#architecture) · [Sécurité](#sécurité) · [Qualité et tests](#qualité-et-tests) · [Démarrer en local](#démarrer-en-local) · [Déploiement](#déploiement) · [Structure du dépôt](#structure-du-dépôt) · [Documentation](#documentation)
@@ -27,10 +27,15 @@
 | Domaine pur | Montants Decimal, TVA par ligne, paramètres réglementaires datés/sourcés/approuvés, journal comptable équilibré avec contrepassation, numérotation sans trou, machine d'état | `packages/domain/test` |
 | CRM prospects | Pipeline nouveau → contacté → qualifié → converti / perdu, préconditions, concurrence optimiste, audit | `apps/api/test/prospects.test.ts`, E2E |
 | Clients | Entreprises clientes (nom, SIREN), validation | tests API + E2E |
+| Consultants | Dossier, checklist d'onboarding (6 tâches manuelles), activation conditionnée, création à la conversion d'un prospect | `billing-chain.test.ts` |
+| Missions | Consultant actif × client, TJM, TVA saisie, dates | idem |
+| CRA | Saisie contrôlée (½/1 jour, période, dates), machine d'état, portails consultant et client cloisonnés (client sans donnée salariale), preuve en audit, verrouillage | idem + `e2e/chain.spec.ts` |
+| Facturation | Facture depuis CRA validé (Decimal), numérotation sans trou, émission, encaissements partiels, annulation par contrepassation. **Non connectée** à une plateforme agréée | idem |
+| Registre financier | Journal append-only équilibré (trigger en base), balance, réconciliation créances ↔ factures | idem |
 | Front | Coque du design, login, prospects, clients, audit ; BFF avec cookie httpOnly ; clair/sombre ; mobile | `apps/web/e2e` |
 
 ## Ce qui n'existe pas encore
-Contrats et signatures, missions, CRA et absences, notes de frais, facturation électronique, banque et recouvrement, **paie et DSN**, compte d'activité, RH, conformité (règles légales à saisir depuis des sources officielles), comptabilité, pilotage, portails consultant/client/partenaires, administration SaaS, agents IA et RAG, MFA/SSO, invitations, workers durables, webhooks. Chaque ligne figure dans la [matrice d'implémentation](docs/IMPLEMENTATION_MATRIX.md) avec son statut.
+Contrats et signatures, absences et congés, notes de frais, facturation électronique (PDF, avoirs, plateforme agréée), banque et recouvrement, **paie et DSN**, compte d'activité, RH, conformité (règles légales à saisir depuis des sources officielles), comptabilité, pilotage, portails consultant/client/partenaires, administration SaaS, agents IA et RAG, portails partenaire, MFA/SSO, invitations, workers durables, webhooks. Chaque ligne figure dans la [matrice d'implémentation](docs/IMPLEMENTATION_MATRIX.md) avec son statut.
 
 ## Architecture
 ```

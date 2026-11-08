@@ -13,6 +13,13 @@ for (const scheme of ["light", "dark"] as const) {
         await page.waitForLoadState("networkidle");
         await page.screenshot({ path: `../../docs/screenshots/${file}-${scheme}.png` });
       }
+      await page.getByRole("button", { name: "Se déconnecter" }).click();
+      await login(page, "finance@demo.test");
+      for (const [path, file] of [["/invoices", "factures"], ["/ledger", "registre"]] as const) {
+        await page.goto(path);
+        await page.waitForLoadState("networkidle");
+        await page.screenshot({ path: `../../docs/screenshots/${file}-${scheme}.png` });
+      }
     });
   });
 }
