@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import { NAV, ICONS } from "@/lib/nav";
 
-interface Me { userId: string; roles: string[]; permissions: string[]; email?: string; tenant?: { slug: string; name: string } }
+interface Me { userId: string; roles: string[]; permissions: string[]; mfaEnrollmentRequired?: boolean; email?: string; tenant?: { slug: string; name: string } }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (me.error instanceof ApiError && me.error.status === 401) { router.replace("/login"); return null; }
   async function logout() { await fetch("/api/session", { method: "DELETE" }); router.replace("/login"); router.refresh(); }
   const unread = useQuery({ queryKey: ["unread"], queryFn: () => api<{ count: number }>("notifications/unread-count"), refetchInterval: 30_000, enabled: !!me.data });
+  useEffect(() => { if (me.data?.mfaEnrollmentRequired && pathname !== "/security") router.replace("/security"); }, [me.data, pathname, router]);
   const roles = me.data?.roles ?? [];
   const items = NAV.filter(i => me.data?.permissions.includes(i.permission));
   const groups = [...new Set(items.map(i => i.group))];

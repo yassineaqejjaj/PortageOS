@@ -13,6 +13,7 @@ export const ICONS = {
   ai: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6",
   chat: "M4 5h16v11H8l-4 4z",
   chart: "M4 20V10M10 20V4M16 20v-7M2 20h20",
+  key: "M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zM11.4 11.6L15.5 7.5m0 0l3 3L22 7l-3-3",
   sh: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6zM9 12l2 2 4-4",
 } as const;
 
@@ -37,9 +38,11 @@ export const NAV: NavItem[] = [
   { key: "accounts", label: "Comptes d’activité", href: "/accounts", icon: "led", permission: "account.read", group: "Opérations" },
   { key: "contracts", label: "Contrats", href: "/contracts", icon: "doc", permission: "contract.read", group: "Relation" },
   { key: "rules", label: "Paramètres réglementaires", href: "/rules", icon: "sh", permission: "rules.read", group: "Gouvernance" },
+  { key: "members", label: "Membres et accès", href: "/members", icon: "users", permission: "member.manage", group: "Gouvernance" },
   { key: "audit", label: "Journal d’audit", href: "/audit", icon: "sh", permission: "audit.read", group: "Gouvernance" },
   { key: "me", label: "Mes CRA", href: "/me/timesheets", icon: "cal", permission: "portal.self", group: "Mon espace" },
   { key: "support", label: "Support", href: "/support", icon: "chat", permission: "support.create", group: "Support" },
+  { key: "security", label: "Sécurité du compte", href: "/security", icon: "key", permission: "notification.read", group: "Mon compte" },
   { key: "myagent", label: "Mon assistant", href: "/me/assistant", icon: "ai", permission: "portal.self", group: "Mon espace" },
   { key: "myleaves", label: "Mes absences", href: "/me/leaves", icon: "cal", permission: "portal.self", group: "Mon espace" },
   { key: "myexpenses", label: "Mes notes de frais", href: "/me/expenses", icon: "rec", permission: "portal.self", group: "Mon espace" },

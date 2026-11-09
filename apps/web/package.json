@@ -17,13 +17,15 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.53.0",
     "zod": "^3.23.8",
-    "@portage/design-system": "workspace:*"
+    "@portage/design-system": "workspace:*",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.6.0",
-    "@playwright/test": "^1.48.0"
+    "@playwright/test": "^1.48.0",
+    "@types/qrcode": "^1.5.5"
   }
 }

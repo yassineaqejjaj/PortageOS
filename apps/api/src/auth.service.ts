@@ -11,6 +11,7 @@ import { newToken, open, seal, sha256 } from "./secretbox";
 import { checkLimit, clearLimit, recordFailure } from "./limiter";
 import { ROLES } from "./permissions";
 
+const REFRESH_GRACE_MS = 15_000; // requêtes parallèles du navigateur portant l'ancien jeton juste après une rotation
 const SESSION_ABSOLUTE_MS = 30 * 86400_000, SESSION_IDLE_MS = 7 * 86400_000, INVITE_TTL_MS = 7 * 86400_000;
 const DUMMY = hashPassword("dummy-password-for-timing");
 export interface Meta { userAgent?: string }
@@ -77,7 +78,12 @@ export class AuthService {
     const s = await this.prisma.session.findUnique({ where: { refreshHash: h } });
     if (!s) {
       const reused = await this.prisma.session.findFirst({ where: { prevRefreshHash: h, revokedAt: null } });
-      if (reused) { await this.prisma.session.update({ where: { id: reused.id }, data: { revokedAt: new Date(), revokedReason: "refresh_reuse" } }); await this.prisma.forTenant(reused.tenantId, tx => this.audit.record(tx, { tenantId: reused.tenantId, userId: reused.userId }, { action: "auth.refresh_reuse_detected", entity: "Session", entityId: reused.id })); }
+      if (reused) {
+        // Rejeu IMMÉDIAT (requêtes parallèles légitimes) : nouveau jeton d'accès, sans nouvelle rotation. Au-delà de la fenêtre : vol présumé, session révoquée.
+        if (reused.prevRotatedAt && Date.now() - reused.prevRotatedAt.getTime() < REFRESH_GRACE_MS) return this.graceAccess(reused);
+        await this.prisma.session.update({ where: { id: reused.id }, data: { revokedAt: new Date(), revokedReason: "refresh_reuse" } });
+        await this.prisma.forTenant(reused.tenantId, tx => this.audit.record(tx, { tenantId: reused.tenantId, userId: reused.userId }, { action: "auth.refresh_reuse_detected", entity: "Session", entityId: reused.id }));
+      }
       throw new UnauthorizedException("Session invalide");
     }
     const now = new Date();
@@ -85,10 +91,20 @@ export class AuthService {
     const m = await this.prisma.membership.findUnique({ where: { userId_tenantId: { userId: s.userId, tenantId: s.tenantId } }, include: { user: true } });
     if (!m || m.user.disabledAt) throw new UnauthorizedException("Accès révoqué");
     const next = newToken();
-    const r = await this.prisma.session.updateMany({ where: { id: s.id, refreshHash: h, revokedAt: null }, data: { prevRefreshHash: h, refreshHash: sha256(next), lastUsedAt: now } });
-    if (r.count !== 1) throw new UnauthorizedException("Session invalide");
+    const r = await this.prisma.session.updateMany({ where: { id: s.id, refreshHash: h, revokedAt: null }, data: { prevRefreshHash: h, prevRotatedAt: now, refreshHash: sha256(next), lastUsedAt: now } });
+    if (r.count !== 1) {
+      // Course avec une requête parallèle qui vient de faire tourner le jeton : même traitement qu'un rejeu immédiat.
+      const again = await this.prisma.session.findUnique({ where: { id: s.id } });
+      if (again && !again.revokedAt && again.prevRefreshHash === h && again.prevRotatedAt && Date.now() - again.prevRotatedAt.getTime() < REFRESH_GRACE_MS) return this.graceAccess(again);
+      throw new UnauthorizedException("Session invalide");
+    }
     const cfg = loadConfig();
     return { accessToken: jwt.sign({ sub: s.userId, tid: s.tenantId, sid: s.id }, cfg.jwtSecret, { algorithm: "HS256", expiresIn: cfg.tokenTtlSeconds }), refreshToken: next, expiresIn: cfg.tokenTtlSeconds };
+  }
+
+  private graceAccess(s: { id: string; userId: string; tenantId: string }) {
+    const cfg = loadConfig();
+    return { accessToken: jwt.sign({ sub: s.userId, tid: s.tenantId, sid: s.id }, cfg.jwtSecret, { algorithm: "HS256", expiresIn: cfg.tokenTtlSeconds }), refreshToken: undefined as string | undefined, expiresIn: cfg.tokenTtlSeconds };
   }
 
   // ---------- sessions ----------

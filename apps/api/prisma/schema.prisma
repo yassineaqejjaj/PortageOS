@@ -565,6 +565,7 @@ model Session {
   tenantId        String
   refreshHash     String    @unique
   prevRefreshHash String?
+  prevRotatedAt   DateTime?
   userAgent       String?
   mfaVerified     Boolean   @default(false)
   createdAt       DateTime  @default(now())

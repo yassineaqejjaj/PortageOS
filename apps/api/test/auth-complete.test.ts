@@ -52,7 +52,11 @@ describe("sessions : rafraîchissement avec rotation, détection de rejeu, révo
     expect((await srv().get("/me").set(H(l.accessToken))).status).toBe(200);
     const r1 = (await srv().post("/auth/refresh").send({ refreshToken: l.refreshToken })).body;
     expect(r1.refreshToken).not.toBe(l.refreshToken); expect((await srv().get("/me").set(H(r1.accessToken))).status).toBe(200);
-    expect((await srv().post("/auth/refresh").send({ refreshToken: l.refreshToken })).status).toBe(401); // rejeu de l'ancien jeton
+    // requêtes parallèles du navigateur : un rejeu immédiat reçoit un nouveau jeton d'accès, sans nouvelle rotation
+    const par = await srv().post("/auth/refresh").send({ refreshToken: l.refreshToken });
+    expect(par.status).toBe(200); expect(par.body.refreshToken).toBeUndefined(); expect((await srv().get("/me").set(H(par.body.accessToken))).status).toBe(200);
+    await admin.session.updateMany({ where: { user: { email: email("admin") }, prevRefreshHash: { not: null }, revokedAt: null }, data: { prevRotatedAt: new Date(Date.now() - 60_000) } });
+    expect((await srv().post("/auth/refresh").send({ refreshToken: l.refreshToken })).status).toBe(401); // rejeu tardif = vol présumé
     expect((await srv().get("/me").set(H(r1.accessToken))).status).toBe(401); // la session entière est révoquée
     expect((await srv().post("/auth/refresh").send({ refreshToken: r1.refreshToken })).status).toBe(401);
     expect((await admin.auditEvent.count({ where: { tenantId: t1, action: "auth.refresh_reuse_detected" } }))).toBeGreaterThan(0);
@@ -74,6 +78,17 @@ describe("sessions : rafraîchissement avec rotation, détection de rejeu, révo
     expect((await srv().post("/auth/password").set(H(c.accessToken)).send({ currentPassword: PW, newPassword: "Nouveau-Mot-De-Passe-77" })).status).toBe(200);
     expect((await srv().get("/me").set(H(d.accessToken))).status).toBe(401); expect((await srv().get("/me").set(H(c.accessToken))).status).toBe(200);
     expect((await login("ops", S("au1"), PW)).status).toBe(401); expect((await login("ops", S("au1"), "Nouveau-Mot-De-Passe-77")).status).toBe(200);
+  });
+});
+
+describe("rafraîchissements parallèles", () => {
+  it("plusieurs requêtes simultanées avec le même jeton ne révoquent pas la session", async () => {
+    const l = (await login("admin", S("au1"))).body;
+    const rs = await Promise.all(Array.from({ length: 6 }, () => srv().post("/auth/refresh").send({ refreshToken: l.refreshToken })));
+    expect(rs.map(r => r.status)).toEqual([200, 200, 200, 200, 200, 200]);
+    const rotated = rs.filter(r => r.body.refreshToken); expect(rotated).toHaveLength(1); // une seule rotation
+    expect((await srv().get("/me").set(H(rs[0]!.body.accessToken))).status).toBe(200);
+    expect((await srv().post("/auth/refresh").send({ refreshToken: rotated[0]!.body.refreshToken })).status).toBe(200); // le nouveau jeton fonctionne
   });
 });
 
