@@ -21,7 +21,7 @@ test("absence : ajustement RH → demande du consultant → approbation → sold
   await c.page.goto("/me/leaves");
   await expect(c.page.locator(".kpi .v")).toContainText("j");
   const before = num(await c.page.locator(".kpi .v").innerText());
-  await c.page.getByLabel("Du").fill(mon); await c.page.getByLabel("Au").fill(tue);
+  await c.page.getByLabel("Du", { exact: true }).fill(mon); await c.page.getByLabel("Au", { exact: true }).fill(tue);
   await c.page.getByRole("button", { name: "Soumettre la demande" }).click();
   const row = c.page.getByRole("row", { name: new RegExp(`${mon.slice(8)}/03/${Y}`) });
   await expect(row.getByText("En attente")).toBeVisible();
