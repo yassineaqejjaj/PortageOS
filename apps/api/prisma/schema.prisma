@@ -243,6 +243,7 @@ model JournalEntry {
   sourceType   String
   sourceId     String
   reversalOf   String?       @unique
+  reason       String?
   createdAt    DateTime      @default(now())
   lines        JournalLine[]
 
@@ -595,4 +596,33 @@ model Invitation {
   createdAt    DateTime  @default(now())
 
   @@index([tenantId, email])
+}
+
+/// Plan comptable par société. Les comptes « système » sont ceux utilisés par les flux automatiques ; le plan par défaut est à valider par l'expert-comptable.
+model Account {
+  id        String   @id @default(uuid())
+  tenantId  String
+  code      String
+  label     String
+  type      String
+  system    Boolean  @default(false)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, code])
+}
+
+/// Clôture mensuelle : une période close n'accepte plus aucune écriture (appliqué par l'application ET par un trigger).
+model ClosingPeriod {
+  id           String    @id @default(uuid())
+  tenantId     String
+  period       String
+  status       String    @default("closed")
+  closedBy     String
+  closedAt     DateTime  @default(now())
+  reopenedBy   String?
+  reopenedAt   DateTime?
+  reopenReason String?
+
+  @@unique([tenantId, period])
 }

@@ -243,3 +243,21 @@ describe("politique de mot de passe", () => {
     expect(checkPassword("phrase de passe très longue et unique")).toEqual([]);
   });
 });
+
+import { isValidAccountCode, accountBalance, journalCode, fecDate, fecAmount, fecRows, toFecText, FEC_COLUMNS } from "../src/index";
+describe("comptabilité", () => {
+  it("comptes, soldes, formats FEC", () => {
+    expect(["411", "44571", "6251", "10", "0411", "41a", "123456789"].map(isValidAccountCode)).toEqual([true, true, true, false, false, false, false]);
+    expect(accountBalance("100", "40")).toEqual({ debit: "60.00", credit: "0.00" }); expect(accountBalance("10", "40.5")).toEqual({ debit: "0.00", credit: "30.50" }); expect(accountBalance("5", "5")).toEqual({ debit: "0.00", credit: "0.00" });
+    expect([journalCode("invoice"), journalCode("credit_note"), journalCode("payment"), journalCode("expense"), journalCode("manual")]).toEqual(["VT", "VT", "BQ", "BQ", "OD"]);
+    expect(fecDate("2026-02-10")).toBe("20260210"); expect(fecAmount("1234.5")).toBe("1234,50"); expect(fecAmount(0)).toBe("0,00");
+  });
+  it("lignes FEC : 18 colonnes, numérotation, libellés assainis, équilibre", () => {
+    const rows = fecRows([{ id: "e1", valueDate: "2026-02-10", createdDate: "2026-02-10", sourceType: "invoice", sourceId: "abcdefghijklmnopqrstuvwxyz", label: "Facture\tFA|1", validDate: "2026-03-05",
+      lines: [{ account: "411", debit: "1200", credit: "0" }, { account: "706", debit: "0", credit: "1000" }, { account: "44571", debit: "0", credit: "200" }] }], { "411": "Clients", "706": "Prestations" });
+    expect(rows).toHaveLength(3); expect(rows.every(r => r.length === FEC_COLUMNS.length)).toBe(true);
+    expect(rows[0]).toEqual(["VT", "Journal des ventes", "1", "20260210", "411", "Clients", "", "", "abcdefghijklmnopqrst", "20260210", "Facture FA 1", "1200,00", "0,00", "", "", "20260305", "", ""]);
+    expect(rows[2]![5]).toBe("44571"); // libellé absent => numéro de compte
+    const text = toFecText(rows); expect(text.split("\r\n")[0]).toBe(FEC_COLUMNS.join("\t")); expect(text.split("\r\n")).toHaveLength(5);
+  });
+});
