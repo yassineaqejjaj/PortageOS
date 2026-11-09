@@ -62,10 +62,11 @@ export class SelfPortalController {
   }
 
   @Get("timesheets") @RequirePermission("portal.self")
-  list(@Req() { ctx }: R) {
+  list(@Req() { ctx }: R, @Query("period") period?: string) {
     const s = this.scope(ctx);
+    if (period !== undefined && !/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) throw new BadRequestException("Période invalide (AAAA-MM)");
     return this.prisma.forTenant(ctx.tenantId, async tx => {
-      const rows = await tx.timesheet.findMany({ where: { mission: { consultantId: s.consultantId } }, orderBy: { period: "desc" }, take: 60, select: { id: true } });
+      const rows = await tx.timesheet.findMany({ where: { mission: { consultantId: s.consultantId }, ...(period ? { period } : {}) }, orderBy: { period: "desc" }, take: 60, select: { id: true } });
       return Promise.all(rows.map(r => this.svc.view(tx, r.id)));
     });
   }

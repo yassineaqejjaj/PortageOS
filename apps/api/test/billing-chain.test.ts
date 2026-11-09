@@ -229,3 +229,14 @@ describe("registre financier : garanties en base", () => {
     await expect(admin.invoice.update({ where: { id: inv!.id }, data: { paid: "99999999" } })).rejects.toThrow();
   });
 });
+
+describe("portail consultant : feuille par période", () => {
+  it("le filtre de période renvoie la feuille demandée même au-delà de la liste récente; période invalide refusée", async () => {
+    const far = "9876-05";
+    await srv().put(`/me/timesheets/missions/${missionId}/${far}`).set(H("cons")).send({ lines: [{ date: `${far}-04`, quantity: "1" }] });
+    const one = (await srv().get(`/me/timesheets?period=${far}`).set(H("cons"))).body;
+    expect(one).toHaveLength(1); expect(one[0].period).toBe(far); expect(one[0].totalDays).toBe("1");
+    expect((await srv().get("/me/timesheets?period=2026-13").set(H("cons"))).status).toBe(400);
+    expect((await srv().get("/me/timesheets?period=2026-10").set(H("cons"))).body.every((t: { period: string }) => t.period === "2026-10")).toBe(true);
+  });
+});

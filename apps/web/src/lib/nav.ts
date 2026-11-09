@@ -32,6 +32,7 @@ export const NAV: NavItem[] = [
   { key: "invoices", label: "Facturation", href: "/invoices", icon: "eur", permission: "invoice.read", group: "Opérations" },
   { key: "pilotage", label: "Pilotage", href: "/pilotage", icon: "chart", permission: "pilotage.read", group: "Pilotage" },
   { key: "agents", label: "Agents", href: "/agents", icon: "ai", permission: "agent.read", group: "Pilotage" },
+  { key: "accounting", label: "Comptabilité", href: "/accounting", icon: "led", permission: "accounting.read", group: "Opérations" },
   { key: "ledger", label: "Registre financier", href: "/ledger", icon: "led", permission: "ledger.read", group: "Opérations" },
   { key: "expenses", label: "Notes de frais", href: "/expenses", icon: "rec", permission: "expense.read", group: "Opérations" },
   { key: "leaves", label: "Absences et congés", href: "/leaves", icon: "cal", permission: "leave.read", group: "Opérations" },

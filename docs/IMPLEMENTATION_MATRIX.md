@@ -1,4 +1,4 @@
-# Matrice d'implémentation — état au 2026-11-09 (après la séance 11)
+# Matrice d'implémentation — état au 2026-11-09 (après la séance 12)
 
 Source de vérité de l'avancement. Les prérequis externes (comptes, contrats, validations) sont dans [BLOCKERS.md](BLOCKERS.md) ; le statut global est dans [STATUS.md](STATUS.md).
 
@@ -8,7 +8,7 @@ Source de vérité de l'avancement. Les prérequis externes (comptes, contrats, 
 | Modules terminés de bout en bout (UI + API + persistance + droits + validations + erreurs + audit + tests + doc, **et** intégrations/validations requises) | **0 sur 25** |
 | Modules partiels (fonctionnels en local, testés, avec des manques listés) | **22** |
 | Modules non démarrés | **3** |
-| Tests automatisés | 30 tests domaine · 95 tests API sur PostgreSQL réel · 26 tests E2E Playwright (+2 captures) |
+| Tests automatisés | 32 tests domaine · 107 tests API sur PostgreSQL réel · 27 tests E2E Playwright (+2 captures) |
 | CI GitHub | verte au dernier commit |
 | Déployé | Railway (API + base) et Vercel (web), **environnement de test, base vide** |
 | Connecté à un prestataire | **aucun** (paie, DSN, facturation électronique, signature qualifiée, banque, e-mail, LLM, Sirene, abonnement) |
@@ -36,7 +36,7 @@ Légende : ✅ terminé · 🟡 partiel · ⬜ non démarré · 🔒 bloqué par
 | K Compte d'activité/simulateur | `accounts.controller.ts` : relevé mensuel **estimatif** (CA facturé, encaissements HT, frais de gestion selon paramètre daté, frais remboursés), détail des mouvements, paramètres cités, refus de calculer si le paramètre manque | `me/account`, `accounts/` | Prestataire de paie 🔒 | `modules2.test.ts`, E2E | 🟡 pas de rémunération, charges, impositions, indemnités, réserves, provisions, régularisations ; pas d'export PDF/CSV ; pas de simulateur net/brut/CA |
 | L RH | Congés et absences (cf. F) ; onboarding et contrats (cf. B, D) | `leaves/`, `me/leaves` | – | `leaves.test.ts`, E2E | 🟡 **Non fait** : arrêts maladie justifiés, parentalité, mutuelle/prévoyance, suivi des visites médicales, avantages, titres-restaurant, formations, entretiens, compétences, sorties (attestation France Travail, solde de tout compte), conservation, droits d'accès spécifiques |
 | M Conformité | `rules.controller.ts`, `parameters.service.ts` : catalogue de paramètres datés, sourcés, approuvés à quatre yeux, immuables, sans chevauchement ; consommés par frais et compte d'activité | `rules/` | – | `modules2.test.ts`, `domain.test.ts`, E2E | 🟡 moteur de **paramètres** seulement : aucune règle légale saisie, pas de moteur d'évaluation (éligibilité, durées, minima), de dossier de preuve ni de file d'exceptions ; exclusion de chevauchement vérifiée par le code (pas par contrainte SQL) |
-| N Comptabilité | Journal append-only équilibré en base (trigger différé), balance, réconciliation 411 ↔ factures | `ledger/` | Export compta ⬜ | `billing-chain.test.ts` | 🟡 plan comptable minimal en dur (411/706/44571/512), pas de clôture, exports, tiers, TVA déclarative |
+| N Comptabilité | `accounting.service.ts`, `accounting.controller.ts`, `ledger.service.ts` : plan comptable par société (par défaut créé à la première écriture, comptes système protégés, comptes inactifs refusés), écritures manuelles d'ajustement (équilibrées, motivées, période ouverte) et contrepassation (manuelles seulement, unique), **clôture mensuelle** (contrôles bloquants : factures brouillon, périodes antérieures non closes ; avertissements à accuser et conservés dans l'audit ; période close refusée par l'application **et par un trigger en base** ; réouverture réservée à l'administrateur, motivée, en ordre inverse), balance, TVA collectée, comptes clients rapprochés du 411, **export au format des colonnes du FEC** (provisoire tant que la période n'est pas close) et balance CSV, dossier de l'expert-comptable, rôle `external_accountant` limité à la comptabilité (lecture + exports) | `accounting/`, `accounting/journal`, `accounting/chart` | Export FEC **non validé** par l'outil officiel de l'administration ; connecteur d'outil comptable ⬜ | `accounting.test.ts` (12 scénarios, stable sur 3 exécutions), `domain.test.ts`, `e2e/accounting.spec.ts` | 🟡 **Non fait** : TVA déductible et factures fournisseurs, déclaration de TVA, lettrage, bilan/compte de résultat, immobilisations, écritures d'ouverture/à-nouveaux et clôture d'exercice (seule la clôture mensuelle existe), reprise de balance, plan comptable normalisé complet, numérotation continue des pièces au sens strict du FEC, connecteurs (Pennylane, Cegid…), validation par un expert-comptable |
 | O Pilotage | `pilotage.service.ts`, `pilotage.controller.ts` : CA HT/TTC facturé, encaissé HT, frais de gestion (paramètre daté), créances et ancienneté depuis l'émission, DSO simple, consultants actifs, conversion des prospects, délai d'approbation client (journal d'audit), à facturer / en cours (valeur HT au TJM), cohortes, classement consultants ; chaque indicateur défini et sourcé dans la réponse ; export CSV audité ; helpers purs testés (`pilotage.ts`) | `pilotage/` (cartes, graphique SVG accessible avec valeurs écrites + tableau alternatif, filtres de période, export) | – | `pilotage.test.ts` (jeu de données aux résultats **calculés à la main**, stable sur 4 exécutions), `domain.test.ts`, `e2e/pilotage.spec.ts` | 🟡 **Non fait** : MRR SaaS (aucune facturation d'abonnement), performance des équipes (indicateur non défini), prévisions statistiques, comparaisons de périodes, marges (aucun coût consultant/salaire connu sans paie), export PDF/XLSX, échéances de paiement (donc retards réels et DSO « countback »), vues personnalisées/filtres sauvegardés ; calcul en mémoire à partir des tables (pas de vues matérialisées) : à optimiser pour de gros volumes |
 | P Support & portails (consultant/client/partenaire) | portails consultant (CRA, frais, absences, compte, assistant) et client (validation) ; **notifications in-app** (`notifications.*`, branchées sur CRA, frais, absences, support ; préférences par type ; cloche) ; **support** (`support.controller.ts` : tickets, messages en texte brut append-only, notes internes invisibles du demandeur, workflow, assignation, recherche, modèles de réponse) | `notifications/`, `support/`, `support/[id]`, cloche de la topbar | **E-mail : non connecté** (aucun fournisseur) | `support-notifications.test.ts` (10 scénarios, stable sur 4 exécutions), `domain.test.ts`, `e2e/support.spec.ts` | 🟡 pas d'e-mail ni de push, pas de messagerie temps réel (rafraîchissement toutes les 30 s), pas de pièces jointes aux tickets, pas de SLA, pas de base de connaissances/aide, pas de modèles de notification éditables, pas de portail partenaire (experts-comptables, apporteurs) |
 | Q Admin SaaS/abonnements | ⬜ (console opérateur, création de tenants, plans, quotas, facturation SaaS, rôles personnalisés, branding, domaine personnalisé, clés API, rétention) | ⬜ | Paiement SaaS 🔒 | ⬜ | ⬜ **Non démarré**. Existe seulement : administration des membres d'un tenant et politique MFA (cf. Auth) ; les tenants se créent par script (`bootstrap-tenant`) |
@@ -46,15 +46,14 @@ Légende : ✅ terminé · 🟡 partiel · ⬜ non démarré · 🔒 bloqué par
 | Validation juridique/métier/paie | – | – | – | – | ⬜ **aucune effectuée** : juristes, DPO, expert-comptable, spécialiste paie, test d'intrusion (BLOCKERS) |
 
 ## Ce qui reste, par ordre de faisabilité sans prérequis externe
-1. **Comptabilité et clôture** : plan comptable configurable, écritures d'ajustement, clôture de période, export normalisé (type FEC), dossier expert-comptable.
-2. **Administration SaaS** : console opérateur, création de tenants, plans et quotas, rôles personnalisés, branding.
-3. **Clients** (sites, contacts, conditions, bons de commande), **missions** (renouvellement, avenants), **CRM** (campagnes, scoring, imports, apporteurs, commissions).
-4. **Documents** : stockage privé, antivirus, URL temporaires, justificatifs de frais et pièces d'onboarding.
-5. **Banque** : import de relevés (CSV/OFX) et rapprochement ; relances et litiges.
-6. **Plateforme** : webhooks sortants, outbox/inbox, imports/exports, recherche, OpenAPI, workers durables, logs structurés.
-7. **Facturation** : PDF, avoirs partiels, multi-lignes et multi-taux, acomptes ; **CRA** : heures, forfait jours, import/export, multi-niveaux.
-8. **RH** : visites médicales, formations, entretiens, sorties ; **portail partenaire**.
-9. **Conformité** : moteur d'évaluation des règles (dès que des règles officielles sont saisies et approuvées).
+1. **Administration SaaS** : console opérateur, création de tenants, plans et quotas, rôles personnalisés, branding.
+2. **Clients** (sites, contacts, conditions, bons de commande), **missions** (renouvellement, avenants), **CRM** (campagnes, scoring, imports, apporteurs, commissions).
+3. **Documents** : stockage privé, antivirus, URL temporaires, justificatifs de frais et pièces d'onboarding.
+4. **Banque** : import de relevés (CSV/OFX) et rapprochement ; relances et litiges.
+5. **Plateforme** : webhooks sortants, outbox/inbox, imports/exports, recherche, OpenAPI, workers durables, logs structurés.
+6. **Facturation** : PDF, avoirs partiels, multi-lignes et multi-taux, acomptes ; **CRA** : heures, forfait jours, import/export, multi-niveaux.
+7. **RH** : visites médicales, formations, entretiens, sorties ; **portail partenaire**.
+8. **Conformité** : moteur d'évaluation des règles (dès que des règles officielles sont saisies et approuvées).
 
 ## Historique
 | Séance | Contenu | Tests (domaine · API · E2E) |
@@ -68,3 +67,4 @@ Légende : ✅ terminé · 🟡 partiel · ⬜ non démarré · 🔒 bloqué par
 | 9 | Notifications in-app et support | 25 · 73 · 22 |
 | 10 | Pilotage | 29 · 83 · 24 |
 | 11 | Authentification complète (sessions, MFA, invitations, membres) ; BLOCKERS ; polices auto-hébergées | 30 · 95 · 26 |
+| 12 | Comptabilité et clôture (plan, ajustements, clôture mensuelle avec trigger, balance, TVA collectée, FEC provisoire/définitif, expert-comptable) ; corrections : saisie CRA par période (liste bornée), formulaire CRA désactivé pendant le chargement | 32 · 107 · 27 |

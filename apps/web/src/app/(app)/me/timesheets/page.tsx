@@ -10,16 +10,18 @@ type T = { id: string; period: string; status: string; missionId: string; missio
 export default function MyTimesheetsPage() {
   const qc = useQueryClient();
   const missions = useQuery({ queryKey: ["me-missions"], queryFn: () => api<M[]>("me/missions") });
-  const sheets = useQuery({ queryKey: ["me-ts"], queryFn: () => api<T[]>("me/timesheets") });
   const [missionId, setMissionId] = useState(""); const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7));
+  const sheets = useQuery({ queryKey: ["me-ts"], queryFn: () => api<T[]>("me/timesheets") });
+  // La feuille éditée est chargée par période (la liste d'historique est bornée aux plus récentes).
+  const selected = useQuery({ queryKey: ["me-ts", "period", period], queryFn: () => api<T[]>(`me/timesheets?period=${period}`), enabled: /^\d{4}-\d{2}$/.test(period) });
   const [qty, setQty] = useState<Record<string, string>>({});
-  const current = sheets.data?.find(t => t.missionId === missionId && t.period === period);
+  const current = selected.data?.find(t => t.missionId === missionId && t.period === period);
   const editable = !current || current.status === "draft";
   useEffect(() => { if (!missionId && missions.data?.[0]) setMissionId(missions.data[0].id); }, [missions.data, missionId]);
   useEffect(() => { setQty(Object.fromEntries((current?.lines ?? []).map(l => [l.date, l.quantity]))); }, [current?.id, current?.totalDays, period, missionId]);
   const [y, m] = period.split("-").map(Number) as [number, number];
   const nDays = new Date(y, m, 0).getDate();
-  const refresh = () => qc.invalidateQueries({ queryKey: ["me-ts"] });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["me-ts"] }); // invalide aussi la feuille par période (même préfixe)
   const save = useMutation({
     mutationFn: () => api(`me/timesheets/missions/${missionId}/${period}`, { method: "PUT", body: { lines: Object.entries(qty).filter(([, v]) => v).map(([date, quantity]) => ({ date, quantity })) } }),
     onSuccess: refresh,
@@ -31,7 +33,8 @@ export default function MyTimesheetsPage() {
       <h1>Mes CRA</h1>
       <ErrorBox error={missions.error ?? sheets.error ?? save.error ?? move.error} prefix="Erreur" />
       {missions.data?.length === 0 && <div className="alert a-info" role="note"><span>Aucune mission ne vous est rattachée pour le moment.</span></div>}
-      {!!missions.data?.length && (
+      {!!missions.data?.length && !missionId && <p className="muted" aria-live="polite">Chargement de la saisie…</p>}
+      {!!missions.data?.length && !!missionId && (
         <section className="card" aria-labelledby="s">
           <div className="card-h"><h2 id="s">Saisie</h2>{current && <Badge map={TS_STATUS} value={current.status} />}</div>
           <div className="card-b stack">

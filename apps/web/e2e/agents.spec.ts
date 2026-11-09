@@ -9,6 +9,7 @@ test("agents : clôture et facturation proposées, approuvées par des humains, 
   // Préparation : CRA soumis par le consultant puis approuvé par le client
   const k = await as(browser, "consultant@demo.test");
   await k.page.goto("/me/timesheets");
+  await expect(k.page.getByLabel("Mission")).not.toHaveValue("");
   await k.page.getByLabel("Mois").fill(period);
   await k.page.getByLabel("01", { exact: true }).selectOption("1"); await k.page.getByLabel("02", { exact: true }).selectOption("1");
   await k.page.getByRole("button", { name: "Enregistrer le brouillon" }).click();

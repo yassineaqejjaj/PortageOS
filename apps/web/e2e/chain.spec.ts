@@ -10,6 +10,7 @@ test("CRA déclaré → validé par le client → validé en interne → facture
   // 1. Consultant : saisit 2,5 jours et soumet
   const c = await as("consultant@demo.test");
   await c.page.goto("/me/timesheets");
+  await expect(c.page.getByLabel("Mission")).not.toHaveValue("");
   await c.page.getByLabel("Mois").fill(period);
   await c.page.getByLabel("01", { exact: true }).selectOption("1");
   await c.page.getByLabel("02", { exact: true }).selectOption("1");

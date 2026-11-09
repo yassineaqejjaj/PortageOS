@@ -25,6 +25,8 @@ const ALLOWED = [
   /^agents$/, /^agents\/[a-z]{3,20}\/config$/, /^agent-runs$/, new RegExp(`^agent-runs/${U}(/cancel)?$`), new RegExp(`^agent-proposals/${U}/decision$`), /^me\/agent-runs$/,
   /^pilotage\/(overview|export\.csv)$/, /^auth\/sessions(\/revoke-others)?$/, new RegExp(`^auth/sessions/${U}$`), /^auth\/password$/, /^auth\/mfa\/(setup|enable|disable)$/,
   /^members$/, new RegExp(`^members/${U}(/reset-link)?$`), /^invitations$/, new RegExp(`^invitations/${U}$`), /^tenant\/security$/,
+  /^accounting\/(accounts|periods|balance|vat|third-parties|entries|dossier|export\/fec|export\/balance\.csv)$/, /^accounting\/accounts\/\d{3,8}$/,
+  /^accounting\/periods\/\d{4}-\d{2}\/(checks|close|reopen)$/, new RegExp(`^accounting/entries/${U}/reverse$`),
   /^notifications$/, /^notifications\/(unread-count|read-all)$/, new RegExp(`^notifications/${U}/read$`), /^notification-preferences$/,
   /^support\/tickets$/, new RegExp(`^support/tickets/${U}(/messages|/transition|/assign)?$`), /^support\/(staff|templates)$/,
 ];
@@ -49,7 +51,7 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
     if (!rr.ok) { const res = NextResponse.json({ error: { message: "Session expirée" } }, { status: 401 }); clearSessionCookies(res); return res; }
     renewed = await rr.json(); token = renewed!.accessToken; r = await callApi(req, p, token, body);
   }
-  const headers: Record<string, string> = { "content-type": r!.headers.get("content-type")?.startsWith("text/csv") ? "text/csv; charset=utf-8" : "application/json" };
+  const headers: Record<string, string> = { "content-type": r!.headers.get("content-type")?.startsWith("text/csv") ? "text/csv; charset=utf-8" : r!.headers.get("content-type")?.startsWith("text/plain") ? "text/plain; charset=utf-8" : "application/json" };
   const cd = r!.headers.get("content-disposition"); if (cd && /^attachment; filename="[\w.-]+"$/.test(cd)) headers["content-disposition"] = cd;
   const res = new NextResponse(await r!.text(), { status: r!.status, headers });
   if (renewed) setSessionCookies(res, renewed);
