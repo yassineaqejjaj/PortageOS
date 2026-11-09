@@ -898,3 +898,43 @@ model EmailOutbox {
 
   @@index([tenantId, createdAt])
 }
+
+/// Import de relevé bancaire (CSV) : aperçu puis validation. Aucune connexion bancaire.
+model BankImport {
+  id          String    @id @default(uuid())
+  tenantId    String
+  fileName    String?
+  /// previewed | committed | cancelled
+  status      String    @default("previewed")
+  rowsTotal   Int
+  rowsValid   Int
+  rowsInvalid Int
+  report      Json
+  rows        Json
+  mapping     Json
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  committedAt DateTime?
+}
+
+/// Ligne de relevé. Montant signé (crédit > 0). Empreinte unique par société : un même mouvement n'est jamais importé deux fois.
+model BankTransaction {
+  id          String   @id @default(uuid())
+  tenantId    String
+  importId    String
+  date        DateTime @db.Date
+  label       String
+  reference   String?
+  amount      Decimal  @db.Decimal(14, 2)
+  fingerprint String
+  /// unmatched | matched | ignored
+  status      String   @default("unmatched")
+  paymentId   String?
+  note        String?
+  decidedBy   String?
+  decidedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@unique([tenantId, fingerprint])
+  @@index([tenantId, status])
+}

@@ -33,6 +33,8 @@ import { AccountingController } from "./accounting.controller";
 import { AccountingService } from "./accounting.service";
 import { DocumentsController } from "./documents.controller";
 import { DocumentsService } from "./documents.service";
+import { BankController } from "./bank.controller";
+import { PaymentsService } from "./payments.service";
 import { MailService } from "./mail.service";
 import { CrmController } from "./crm.controller";
 import { CompanyDetailsController } from "./company-details.controller";
@@ -40,7 +42,7 @@ import { CrmService } from "./crm.service";
 import { PrismaService } from "./prisma.service";
 
 @Module({
-  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController, LeavesController, AgentsController, NotificationsController, SupportController, PilotageController, AccountingController, DocumentsController, CrmController, CompanyDetailsController],
-  providers: [PrismaService, AuditService, MailService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, LeavesService, InvoicesService, AgentsService, NotificationsService, PilotageService, AuthService, AccountingService, DocumentsService, CrmService, { provide: APP_GUARD, useClass: AuthGuard }],
+  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController, LeavesController, AgentsController, NotificationsController, SupportController, PilotageController, AccountingController, DocumentsController, CrmController, CompanyDetailsController, BankController],
+  providers: [PrismaService, AuditService, MailService, PaymentsService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, LeavesService, InvoicesService, AgentsService, NotificationsService, PilotageService, AuthService, AccountingService, DocumentsService, CrmService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

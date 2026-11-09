@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Money, invoiceTotals, ParameterCatalog, StateMachine, Ledger, InvoiceNumbering } from "../src/index";
+import { Money, invoiceTotals, ParameterCatalog, StateMachine, Ledger, InvoiceNumbering, parseAmount, parseBankDate, parseBankCsv, suggestMatches } from "../src/index";
 
 describe("Money", () => {
   it("évite les erreurs flottantes", () => {
@@ -299,5 +299,29 @@ describe("CRM", () => {
     expect(() => commissionWorkflow.apply("accrued", "pay", { id: "a", role: "finance" }, { actorUserId: "a", referralCreatedBy: "u" })).toThrow(/interdite/);
     expect(() => commissionWorkflow.apply("accrued", "approve", { id: "a", role: "commerce" }, { actorUserId: "a", referralCreatedBy: "u" })).toThrow(/non autorisé/);
     expect(campaignWorkflow.apply("draft", "launch", { id: "u", role: "commerce" }, {}).state).toBe("active"); expect(() => campaignWorkflow.apply("ended", "launch", { id: "u", role: "commerce" }, {})).toThrow();
+  });
+});
+
+describe("relevés bancaires", () => {
+  it("montants et dates au format français", () => {
+    expect(parseAmount("1 234,56")?.toFixed(2)).toBe("1234.56"); expect(parseAmount("1.234,56")?.toFixed(2)).toBe("1234.56"); expect(parseAmount("-12,5")?.toFixed(2)).toBe("-12.50"); expect(parseAmount("(40,00)")?.toFixed(2)).toBe("-40.00"); expect(parseAmount("1234.56")?.toFixed(2)).toBe("1234.56");
+    expect(parseAmount("1,234,56")).toBeNull(); expect(parseAmount("abc")).toBeNull(); expect(parseAmount("12,345")).toBeNull(); expect(parseAmount("")).toBeNull();
+    expect(parseBankDate("31/01/2026")).toBe("2026-01-31"); expect(parseBankDate("2026-02-30")).toBeNull(); expect(parseBankDate("31/02/2026")).toBeNull(); expect(parseBankDate("demain")).toBeNull();
+  });
+  it("analyse CSV : colonnes montant unique ou débit/crédit, erreurs par ligne", () => {
+    const a = parseBankCsv("Date;Libellé;Montant\r\n05/01/2026;VIR CLIENT FA-2026-0001;1 200,00\r\n06/01/2026;PRLV ASSURANCE;-45,10\r\nx;;0");
+    expect(a.rows.map(r => [r.date, r.amount])).toEqual([["2026-01-05", "1200.00"], ["2026-01-06", "-45.10"]]); expect(a.errors[0]).toMatchObject({ line: 4 });
+    const b = parseBankCsv("Date opération,Libellé,Débit,Crédit\n2026-01-05,Frais,10.00,\n2026-01-06,Virement,,500.00");
+    expect(b.rows.map(r => r.amount)).toEqual(["-10.00", "500.00"]);
+    expect(() => parseBankCsv("A;B\r\n1;2")).toThrow(/introuvables/); expect(() => parseBankCsv("Date;Libellé;Montant\r\n1;2;3", { amount: "Absent" })).toThrow(/inconnue/);
+  });
+  it("propositions de rapprochement : référence prioritaire, montant seulement si non ambigu", () => {
+    const inv = [{ id: "a", number: "FA-2026-0001", remaining: "1200.00" }, { id: "b", number: "FA-2026-0002", remaining: "800.00" }, { id: "c", number: "FA-2026-0003", remaining: "800.00" }];
+    expect(suggestMatches({ amount: "1200.00", label: "VIR SEPA fa-2026-0001 merci" }, inv)).toEqual([{ invoiceId: "a", number: "FA-2026-0001", confidence: "reference", fullySettles: true }]);
+    expect(suggestMatches({ amount: "500.00", label: "ACOMPTE FA-2026-0001" }, inv)[0]).toMatchObject({ invoiceId: "a", fullySettles: false });
+    expect(suggestMatches({ amount: "1300.00", label: "FA-2026-0001" }, inv)).toEqual([]); // dépasse le solde
+    expect(suggestMatches({ amount: "800.00", label: "VIR DIVERS" }, inv)).toEqual([]); // deux factures de même solde : ambigu
+    expect(suggestMatches({ amount: "1200.00", label: "VIR DIVERS" }, inv)[0]).toMatchObject({ invoiceId: "a", confidence: "amount" });
+    expect(suggestMatches({ amount: "-1200.00", label: "FA-2026-0001" }, inv)).toEqual([]);
   });
 });

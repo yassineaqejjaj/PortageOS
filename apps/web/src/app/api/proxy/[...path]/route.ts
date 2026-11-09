@@ -33,6 +33,7 @@ const ALLOWED = [
   /^crm\/(scoring|prospects|tasks|campaigns|referrers|referrals|commissions|agreements|imports|simulations)$/, new RegExp(`^crm/prospects/${U}(/interactions)?$`), new RegExp(`^crm/tasks/${U}/(done|cancel)$`),
   new RegExp(`^crm/campaigns/${U}/(transition|prospects|stats)$`), new RegExp(`^crm/referrers/${U}$`), new RegExp(`^crm/commissions/${U}/transition$`), new RegExp(`^crm/agreements/${U}/transition$`),
   /^crm\/imports\/preview$/, new RegExp(`^crm/imports/${U}(/commit|/cancel|/rollback)?$`),
+  /^bank\/(imports|transactions)$/, /^bank\/imports\/preview$/, new RegExp(`^bank/imports/${U}/(commit|cancel)$`), new RegExp(`^bank/transactions/${U}/(match|ignore)$`),
   /^support\/tickets$/, new RegExp(`^support/tickets/${U}(/messages|/transition|/assign)?$`), /^support\/(staff|templates)$/,
 ];
 

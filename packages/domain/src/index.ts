@@ -12,3 +12,4 @@ export * from "./pilotage.js";
 export * from "./password-policy.js";
 export * from "./accounting.js";
 export * from "./crm.js";
+export * from "./bank";
