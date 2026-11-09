@@ -60,6 +60,8 @@ model Company {
   tenantId  String
   name      String
   siren     String?
+  /// Délai de paiement convenu (jours), saisi : aucune règle légale codée.
+  paymentTermsDays Int?
   createdAt DateTime  @default(now())
   tenant    Tenant    @relation(fields: [tenantId], references: [id])
   missions  Mission[]
@@ -148,6 +150,7 @@ model Mission {
   endDate         DateTime?   @db.Date
   agreementId     String?
   agreementRateId String?
+  purchaseOrderId String?
   status          String      @default("active")
   createdAt       DateTime    @default(now())
   consultant      Consultant  @relation(fields: [consultantId], references: [id])
@@ -827,4 +830,54 @@ model ScoringConfig {
   weights   Json
   updatedBy String
   updatedAt DateTime @default(now())
+}
+
+model CompanyContact {
+  id        String   @id @default(uuid())
+  tenantId  String
+  companyId String
+  name      String
+  email     String?
+  phone     String?
+  /// billing | operations | signatory | other
+  role      String
+  isPrimary Boolean  @default(false)
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, companyId])
+}
+
+model CompanySite {
+  id         String    @id @default(uuid())
+  tenantId   String
+  companyId  String
+  label      String
+  address    String
+  postalCode String
+  city       String
+  country    String    @default("FR")
+  archivedAt DateTime?
+  createdBy  String
+  createdAt  DateTime  @default(now())
+
+  @@index([tenantId, companyId])
+}
+
+/// Bon de commande client : plafond d'engagement, consommation calculée depuis les factures émises.
+model PurchaseOrder {
+  id        String   @id @default(uuid())
+  tenantId  String
+  companyId String
+  reference String
+  amount    Decimal  @db.Decimal(14, 2)
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  /// open | closed | cancelled
+  status    String   @default("open")
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, companyId, reference])
+  @@index([tenantId, companyId])
 }

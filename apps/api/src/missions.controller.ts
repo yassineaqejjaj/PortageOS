@@ -11,7 +11,7 @@ const Create = z.object({
   consultantId: z.string().uuid(), companyId: z.string().uuid(), title: z.string().min(1).max(200),
   dailyRate: money.refine(v => Number(v) > 0, "TJM > 0"),
   vatRate: z.string().regex(/^\d{1,2}(\.\d{1,2})?$|^100$/, "Taux de TVA invalide"),
-  startDate: date, endDate: date.optional(), agreementId: z.string().uuid().optional(), agreementRateId: z.string().uuid().optional(),
+  startDate: date, endDate: date.optional(), agreementId: z.string().uuid().optional(), agreementRateId: z.string().uuid().optional(), purchaseOrderId: z.string().uuid().optional(),
 }).refine(v => !v.endDate || v.endDate >= v.startDate, "La fin précède le début");
 type R = { ctx: RequestContext };
 
@@ -48,7 +48,13 @@ export class MissionsController {
         const rate = a.rates.find(r => r.id === d.agreementRateId); if (!rate) throw new BadRequestException("Tarif de l'accord-cadre requis (agreementRateId)");
         if (Number(d.dailyRate) > Number(rate.maxDailyRate)) throw new BadRequestException(`TJM supérieur au plafond de l'accord-cadre (${rate.maxDailyRate} €)`);
       } else if (d.agreementRateId) throw new BadRequestException("agreementRateId sans agreementId");
-      const m = await tx.mission.create({ data: { agreementId: d.agreementId, agreementRateId: d.agreementRateId, tenantId: ctx.tenantId, consultantId: d.consultantId, companyId: d.companyId, title: d.title,
+      if (d.purchaseOrderId) {
+        const po = await tx.purchaseOrder.findUnique({ where: { id: d.purchaseOrderId } });
+        if (!po || po.companyId !== d.companyId) throw new BadRequestException("Bon de commande introuvable pour ce client");
+        if (po.status !== "open") throw new BadRequestException("Le bon de commande n'est pas ouvert");
+        if (d.startDate < po.startDate.toISOString().slice(0, 10) || (d.endDate ?? d.startDate) > po.endDate.toISOString().slice(0, 10)) throw new BadRequestException("La mission dépasse la période du bon de commande");
+      }
+      const m = await tx.mission.create({ data: { purchaseOrderId: d.purchaseOrderId, agreementId: d.agreementId, agreementRateId: d.agreementRateId, tenantId: ctx.tenantId, consultantId: d.consultantId, companyId: d.companyId, title: d.title,
         dailyRate: d.dailyRate, vatRate: d.vatRate, startDate: new Date(d.startDate), endDate: d.endDate ? new Date(d.endDate) : null } });
       await this.audit.record(tx, ctx, { action: "mission.create", entity: "Mission", entityId: m.id, after: { consultantId: m.consultantId, companyId: m.companyId, dailyRate: d.dailyRate, vatRate: d.vatRate } });
       return m;

@@ -2,6 +2,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
@@ -35,7 +36,7 @@ export default function CompaniesPage() {
             {list.data && list.data.length > 0 && (
               <div className="tbl-wrap"><table className="tbl compact">
                 <thead><tr><th scope="col">Nom</th><th scope="col">SIREN</th><th scope="col">Créé le</th></tr></thead>
-                <tbody>{list.data.map(c => (<tr key={c.id}><td><b>{c.name}</b></td><td className="mono">{c.siren ?? "—"}</td><td className="num">{fmtDate(c.createdAt)}</td></tr>))}</tbody>
+                <tbody>{list.data.map(c => (<tr key={c.id}><td><b><Link href={`/companies/${c.id}`}>{c.name}</Link></b></td><td className="mono">{c.siren ?? "—"}</td><td className="num">{fmtDate(c.createdAt)}</td></tr>))}</tbody>
               </table></div>
             )}
           </section>
