@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req, Res } from "@nestjs/common";
 import Decimal from "decimal.js";
 import { z } from "zod";
 import { INVOICE_STATES, InvoiceState, applyPayment, computeInvoice, formatInvoiceNumber, invoiceWorkflow, timesheetWorkflow, TimesheetState } from "@portage/domain";
@@ -10,7 +10,11 @@ import { applyAsAnyRole, parisToday, parseZod } from "./workflow";
 import { InvoicesService } from "./invoices.service";
 import { CrmService } from "./crm.service";
 import { PaymentsService } from "./payments.service";
+import type { Response } from "express";
+import { renderInvoicePdf } from "./invoice-pdf";
 
+const Line = z.object({ description: z.string().min(2).max(300), quantity: z.string().regex(/^\d{1,6}(\.\d{1,2})?$/, "Quantité invalide").refine(v => Number(v) > 0, "Quantité > 0"), unit: z.string().min(1).max(20).default("unité"),
+  unitPrice: z.string().regex(/^\d{1,10}(\.\d{1,2})?$/, "Prix invalide"), vatRate: z.string().regex(/^\d{1,2}(\.\d{1,2})?$|^100$/, "Taux de TVA invalide") });
 const Create = z.object({ timesheetId: z.string().uuid() });
 const Credit = z.object({ reason: z.string().min(5, "Motif obligatoire (5 caractères min.)").max(500) });
 const Pay = z.object({ amount: z.string().regex(/^\d{1,12}(\.\d{1,2})?$/, "Montant invalide"), receivedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date AAAA-MM-JJ"), reference: z.string().max(100).optional() });
@@ -30,7 +34,7 @@ export class InvoicesController {
   async get(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string) {
     const i = await this.prisma.forTenant(ctx.tenantId, tx => tx.invoice.findUnique({ where: { id }, include: { payments: { orderBy: { createdAt: "asc" } } } }));
     if (!i) throw new NotFoundException();
-    return i;
+    return { ...i, lines: await this.prisma.forTenant(ctx.tenantId, tx => tx.invoiceLine.findMany({ where: { invoiceId: id }, orderBy: { position: "asc" } })) };
   }
 
   /** Facture préparée à partir d'un CRA validé (logique dans InvoicesService, partagée avec les agents après approbation). */
@@ -38,6 +42,34 @@ export class InvoicesController {
   create(@Req() { ctx }: R, @Body() body: unknown) {
     const { timesheetId } = parseZod(Create, body);
     return this.prisma.forTenant(ctx.tenantId, tx => this.invoices.createDraft(tx, ctx, timesheetId));
+  }
+
+  /** PDF de la facture (document de travail, voir invoice-pdf.ts). Téléchargement journalisé. */
+  @Get(":id/pdf") @RequirePermission("invoice.read")
+  async pdf(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string, @Res() res: Response) {
+    const data = await this.prisma.forTenant(ctx.tenantId, async tx => {
+      const inv = await tx.invoice.findUnique({ where: { id } }); if (!inv) throw new NotFoundException();
+      const [lines, company, profile, site] = await Promise.all([tx.invoiceLine.findMany({ where: { invoiceId: id }, orderBy: { position: "asc" } }), tx.company.findUniqueOrThrow({ where: { id: inv.companyId } }), tx.tenantProfile.findUnique({ where: { tenantId: ctx.tenantId } }),
+        tx.companySite.findFirst({ where: { companyId: inv.companyId, archivedAt: null }, orderBy: { createdAt: "asc" } })]);
+      const issue = inv.issueDate ? inv.issueDate.toISOString().slice(0, 10) : null;
+      const due = issue && company.paymentTermsDays != null ? new Date(Date.parse(issue) + company.paymentTermsDays * 86400_000).toISOString().slice(0, 10) : null;
+      await this.audit.record(tx, ctx, { action: "invoice.pdf_downloaded", entity: "Invoice", entityId: id, after: { status: inv.status } });
+      return { inv, buf: await renderInvoicePdf(profile ?? {}, { number: inv.number, status: inv.status, series: inv.series, issueDate: issue, dueDate: due, paymentTermsDays: company.paymentTermsDays,
+        buyer: { name: company.name, siren: company.siren, address: site ? `${site.address}, ${site.postalCode} ${site.city}` : null },
+        lines: lines.map(l => ({ description: l.description, unit: l.unit, quantity: l.quantity.toString(), unitPrice: l.unitPrice.toString(), vatRate: l.vatRate.toString(), net: l.net.toString() })), net: inv.net.toString(), vat: inv.vat.toString(), gross: inv.gross.toString(), paid: inv.paid.toString() }) };
+    });
+    res.set({ "content-type": "application/pdf", "content-disposition": `attachment; filename="${(data.inv.number ?? `brouillon-${id.slice(0, 8)}`).replace(/[^\w.-]/g, "_")}.pdf"`, "x-content-type-options": "nosniff", "cache-control": "no-store" });
+    res.end(data.buf);
+  }
+
+  @Post(":id/lines") @RequirePermission("invoice.write")
+  addLine(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const d = parseZod(Line, body);
+    return this.prisma.forTenant(ctx.tenantId, tx => this.invoices.addLine(tx, ctx, id, d));
+  }
+  @Delete(":id/lines/:lineId") @RequirePermission("invoice.write")
+  removeLine(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string, @Param("lineId", ParseUUIDPipe) lineId: string) {
+    return this.prisma.forTenant(ctx.tenantId, tx => this.invoices.removeLine(tx, ctx, id, lineId));
   }
 
   /** Émission : numéro séquentiel sans trou (verrou de ligne, annulé avec la transaction) + écriture comptable. */

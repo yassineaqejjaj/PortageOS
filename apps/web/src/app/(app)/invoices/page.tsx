@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
@@ -39,7 +40,7 @@ export default function InvoicesPage() {
         {invs.data?.length === 0 && <div className="empty"><h3>Aucune facture</h3><p className="muted">Une facture se prépare à partir d’un CRA validé.</p></div>}
         {!!invs.data?.length && <div className="tbl-wrap"><table className="tbl compact"><thead><tr><th scope="col">N°</th><th scope="col">Date</th><th scope="col" className="r">HT</th><th scope="col" className="r">TVA</th><th scope="col" className="r">TTC</th><th scope="col" className="r">Encaissé</th><th scope="col">Statut</th><th scope="col">Actions</th></tr></thead>
           <tbody>{invs.data.map(i => (
-            <tr key={i.id}><td className="mono">{i.number ?? "—"}</td><td className="num">{i.issueDate ? fmtDate(i.issueDate) : "—"}</td>
+            <tr key={i.id}><td className="mono"><Link href={`/invoices/${i.id}`}>{i.number ?? "Brouillon"}</Link></td><td className="num">{i.issueDate ? fmtDate(i.issueDate) : "—"}</td>
               <td className="r num">{nf(i.net)}</td><td className="r num">{nf(i.vat)} <span className="muted small">({dayFmt(i.vatRate)} %)</span></td><td className="r num"><b>{nf(i.gross)}</b></td><td className="r num">{nf(i.paid)}</td>
               <td><Badge map={INV_STATUS} value={i.status} /></td>
               <td>

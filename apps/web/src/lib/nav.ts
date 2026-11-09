@@ -50,7 +50,7 @@ export const PORTALS: Record<Portal, { label: string; groups: NavGroup[] }> = {
       L("accounts", "Comptes d’activité", "/accounts", "led", "account.read")] },
     { label: "Gouvernance", entries: [
       L("rules", "Conformité", "/rules", "sh", "rules.read"), L("accounting", "Comptabilité", "/accounting", "book", "accounting.read"), L("support", "Support", "/support", "chat", "support.create"),
-      { key: "config", label: "Configuration", icon: "gear", children: [L("members", "Membres et accès", "/members", "users", "member.manage"), L("audit", "Journal d’audit", "/audit", "sh", "audit.read")] }] },
+      { key: "config", label: "Configuration", icon: "gear", children: [L("members", "Membres et accès", "/members", "users", "member.manage"), L("company-profile", "Identité de la société", "/settings/company", "bld", "member.manage"), L("audit", "Journal d’audit", "/audit", "sh", "audit.read")] }] },
   ] },
   consultant: { label: "Consultant", groups: [{ entries: [
     { key: "cra", label: "CRA et absences", icon: "cal", children: [L("me-ts", "Mes CRA", "/me/timesheets", "cal", "portal.self"), L("me-leaves", "Mes absences", "/me/leaves", "cal", "portal.self")] },
