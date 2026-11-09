@@ -57,6 +57,11 @@ export class ExpensesController {
         const max = await this.params.at(tx, MEAL_MAX_KEY, l.date);
         if (max && new Decimal(amount).gt(max.value)) policyFlag = `Dépasse le plafond repas paramétré (${max.value} ${max.unit})`;
       }
+      if (l.receiptRef?.startsWith("doc:")) {
+        const ref = l.receiptRef.slice(4);
+        const doc = /^[0-9a-f-]{36}$/.test(ref) ? await tx.document.findUnique({ where: { id: ref } }) : null;
+        if (!doc || doc.ownerType !== "expense_claim" || doc.ownerId !== claimId || doc.deletedAt) throw new BadRequestException("Justificatif introuvable pour cette note de frais");
+      }
       const fingerprint = expenseFingerprint(claim.consultantId, l.date, l.category, amount);
       if (seen.has(fingerprint)) throw new ConflictException(`Doublon dans la note : ${l.date} ${l.category} ${amount}`);
       seen.add(fingerprint);

@@ -31,10 +31,12 @@ import { PilotageService } from "./pilotage.service";
 import { AuthService } from "./auth.service";
 import { AccountingController } from "./accounting.controller";
 import { AccountingService } from "./accounting.service";
+import { DocumentsController } from "./documents.controller";
+import { DocumentsService } from "./documents.service";
 import { PrismaService } from "./prisma.service";
 
 @Module({
-  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController, LeavesController, AgentsController, NotificationsController, SupportController, PilotageController, AccountingController],
-  providers: [PrismaService, AuditService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, LeavesService, InvoicesService, AgentsService, NotificationsService, PilotageService, AuthService, AccountingService, { provide: APP_GUARD, useClass: AuthGuard }],
+  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController, LeavesController, AgentsController, NotificationsController, SupportController, PilotageController, AccountingController, DocumentsController],
+  providers: [PrismaService, AuditService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, LeavesService, InvoicesService, AgentsService, NotificationsService, PilotageService, AuthService, AccountingService, DocumentsService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

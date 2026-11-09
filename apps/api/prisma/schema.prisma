@@ -626,3 +626,34 @@ model ClosingPeriod {
 
   @@unique([tenantId, period])
 }
+
+/// Document privé (métadonnées). Le contenu est dans DocumentBlob. Les métadonnées sont figées (trigger) ; seules la suppression logique et la purge évoluent.
+model Document {
+  id           String        @id @default(uuid())
+  tenantId     String
+  ownerType    String
+  ownerId      String
+  category     String
+  name         String
+  mime         String
+  size         Int
+  sha256       String
+  scanStatus   String
+  scanEngine   String?
+  uploadedBy   String
+  createdAt    DateTime      @default(now())
+  deletedAt    DateTime?
+  deletedBy    String?
+  deleteReason String?
+  purgedAt     DateTime?
+  blob         DocumentBlob?
+
+  @@index([tenantId, ownerType, ownerId])
+}
+
+model DocumentBlob {
+  documentId String   @id
+  tenantId   String
+  data       Bytes
+  document   Document @relation(fields: [documentId], references: [id])
+}
