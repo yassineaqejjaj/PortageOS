@@ -1,3 +1,4 @@
+import { NestExpressApplication } from "@nestjs/platform-express";
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
@@ -5,7 +6,8 @@ import { loadConfig } from "./config";
 import { ErrorFilter } from "./error.filter";
 
 export async function createApp() {
-  const app = await NestFactory.create(AppModule, { logger: ["error", "warn"] });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ["error", "warn"] });
+  app.useBodyParser("json", { limit: "1.5mb" }); // imports CSV : 1 Mo de fichier + enveloppe JSON
   app.useGlobalFilters(new ErrorFilter());
   return app;
 }

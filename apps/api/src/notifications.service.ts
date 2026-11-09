@@ -13,6 +13,7 @@ export const NOTIFICATION_TYPES: Record<string, string> = {
   "leave.decided": "Décision sur ma demande d'absence",
   "support.ticket_created": "Nouvelle demande de support",
   "support.reply": "Réponse à une demande de support",
+  "crm.task_assigned": "Tâche commerciale qui m'est assignée",
 };
 
 export interface Notice { type: string; title: string; body?: string; link?: string }

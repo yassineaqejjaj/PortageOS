@@ -261,3 +261,43 @@ describe("comptabilité", () => {
     const text = toFecText(rows); expect(text.split("\r\n")[0]).toBe(FEC_COLUMNS.join("\t")); expect(text.split("\r\n")).toHaveLength(5);
   });
 });
+
+import { scoreProspect, DEFAULT_SCORING_WEIGHTS, validateWeights, parseCsv, suggestMapping, validateProspectRow, simulateOffer, validateRule, percentCommission, withinDuration, commissionWorkflow, campaignWorkflow } from "../src/index";
+describe("CRM", () => {
+  const base = { stage: "new", hasEmail: false, hasPhone: false, referred: false, inCampaign: false, interactions: 0, overdueTasks: 0, now: "2026-11-09T10:00:00Z" };
+  it("scoring explicable : chaque point est justifié, plafonds et bornes", () => {
+    const a = scoreProspect({ ...base, stage: "qualified", hasEmail: true, hasPhone: true, referred: true, inCampaign: true, interactions: 6, lastInteractionAt: "2026-11-01T10:00:00Z", overdueTasks: 3 });
+    expect(a.breakdown.map(x => [x.key, x.points])).toEqual([["email", 10], ["phone", 10], ["referred", 20], ["campaign", 5], ["qualified", 30], ["interaction", 20], ["recentActivity", 10], ["overdueTask", -10]]);
+    expect(a.score).toBe(95); expect(a.band).toBe("hot"); expect(a.breakdown.every(x => x.detail.length > 5)).toBe(true); expect(a.disclaimer).toMatch(/décision automatisée/);
+    expect(scoreProspect(base).score).toBe(0); expect(scoreProspect({ ...base, hasEmail: true, hasPhone: true, stage: "contacted" }).band).toBe("warm");
+    expect(scoreProspect({ ...base, stage: "lost", hasEmail: true, referred: true }).score).toBe(0);
+    expect(scoreProspect({ ...base, lastInteractionAt: "2026-10-01T00:00:00Z", interactions: 1 }).breakdown.some(x => x.key === "recentActivity")).toBe(false);
+    expect(scoreProspect({ ...base, stage: "qualified", hasEmail: true, hasPhone: true, referred: true, inCampaign: true, interactions: 4 }, { ...DEFAULT_SCORING_WEIGHTS, referred: 40 }).score).toBe(100); // borné à 100
+    expect(validateWeights({ ...DEFAULT_SCORING_WEIGHTS })).toEqual([]); expect(validateWeights({ ...DEFAULT_SCORING_WEIGHTS, email: 99 })).toHaveLength(1); expect(validateWeights({ ...DEFAULT_SCORING_WEIGHTS, extra: 1 })).toHaveLength(1);
+  });
+  it("CSV : délimiteur, guillemets, BOM, erreurs; mapping et validation de ligne", () => {
+    const r = parseCsv('﻿Nom;Email;Téléphone;Type\r\n"Dupont; Jean";jean@example.test;+33 6 12 34 56 78;consultant\r\n"Société ""X""";;;entreprise\r\n');
+    expect(r.delimiter).toBe(";"); expect(r.headers).toEqual(["Nom", "Email", "Téléphone", "Type"]); expect(r.rows[0]).toMatchObject({ Nom: "Dupont; Jean" }); expect(r.rows[1]!.Nom).toBe('Société "X"');
+    const m = suggestMapping(r.headers); expect(m).toEqual({ name: "Nom", email: "Email", phone: "Téléphone", kind: "Type" });
+    expect(validateProspectRow(r.rows[0]!, m, "company")).toEqual({ ok: true, data: { kind: "consultant", name: "Dupont; Jean", email: "jean@example.test", phone: "+33 6 12 34 56 78" } });
+    expect(validateProspectRow({ Nom: "", Email: "pas-un-email", "Téléphone": "x", Type: "alien" }, m, "company")).toMatchObject({ ok: false, errors: ["nom manquant", "email invalide", "téléphone invalide", "type inconnu (consultant ou entreprise)"] });
+    expect(() => parseCsv('a,b\n"non fermé,1')).toThrow(/Guillemet/); expect(() => parseCsv("a,a\n1,2")).toThrow(/double/); expect(() => parseCsv("")).toThrow(/vide/);
+    expect(parseCsv("a,b\n1,2\n\n3,4").rows).toHaveLength(2); expect(parseCsv("a\tb\n1\t2").delimiter).toBe("\t");
+  });
+  it("simulation : montants exacts, hypothèses restituées, entrées invalides refusées", () => {
+    const s = simulateOffer({ dailyRate: "650", daysPerMonth: "19", vatRate: "20", feeRatePercent: "10", monthlyExpenses: "50" });
+    expect(s).toMatchObject({ invoicedNet: "12350.00", vat: "2470.00", invoicedGross: "14820.00", managementFee: "1235.00", balanceBeforeSocialAndSalary: "11065.00", annualBalanceBeforeSocialAndSalary: "132780.00" });
+    expect(s.hypotheses.join(" ")).toMatch(/NON calculés/);
+    for (const bad of [{ daysPerMonth: "0" }, { daysPerMonth: "32" }, { daysPerMonth: "10.3" }, { dailyRate: "0" }, { feeRatePercent: "101" }, { vatRate: "-1" }]) expect(() => simulateOffer({ dailyRate: "650", daysPerMonth: "19", vatRate: "20", feeRatePercent: "10", ...bad })).toThrow();
+  });
+  it("commissions : règles, durée, arrondi, quatre yeux", () => {
+    expect(validateRule({ type: "percent_of_collected_net", value: "5" })).toBeNull(); expect(validateRule({ type: "percent_of_collected_net", value: "101" })).toMatch(/> 100/); expect(validateRule({ type: "fixed_per_conversion", value: "-1" })).toMatch(/invalide/); expect(validateRule({ type: "magic", value: "1" })).toMatch(/inconnu/);
+    expect(percentCommission("1625.00", "5")).toBe("81.25"); expect(percentCommission("333.33", "7.5")).toBe("25.00");
+    expect(withinDuration("2026-01-15", "2026-07-15", 6)).toBe(true); expect(withinDuration("2026-01-15", "2026-07-16", 6)).toBe(false); expect(withinDuration("2026-01-15", "2026-01-14", 6)).toBe(false);
+    expect(() => commissionWorkflow.apply("accrued", "approve", { id: "u", role: "finance" }, { actorUserId: "u", referralCreatedBy: "u" })).toThrow(/quatre yeux/);
+    expect(commissionWorkflow.apply("accrued", "approve", { id: "a", role: "finance" }, { actorUserId: "a", referralCreatedBy: "u" }).state).toBe("approved");
+    expect(() => commissionWorkflow.apply("accrued", "pay", { id: "a", role: "finance" }, { actorUserId: "a", referralCreatedBy: "u" })).toThrow(/interdite/);
+    expect(() => commissionWorkflow.apply("accrued", "approve", { id: "a", role: "commerce" }, { actorUserId: "a", referralCreatedBy: "u" })).toThrow(/non autorisé/);
+    expect(campaignWorkflow.apply("draft", "launch", { id: "u", role: "commerce" }, {}).state).toBe("active"); expect(() => campaignWorkflow.apply("ended", "launch", { id: "u", role: "commerce" }, {})).toThrow();
+  });
+});

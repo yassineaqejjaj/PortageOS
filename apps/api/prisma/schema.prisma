@@ -85,18 +85,21 @@ model AuditEvent {
 
 /// Prospect CRM (consultant ou entreprise). Étapes pilotées par la machine d'état du domaine.
 model Prospect {
-  id         String   @id @default(uuid())
-  tenantId   String
-  kind       String
-  name       String
-  email      String?
-  phone      String?
-  source     String?
-  stage      String   @default("new")
-  lostReason String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  id          String    @id @default(uuid())
+  tenantId    String
+  kind        String
+  name        String
+  email       String?
+  phone       String?
+  source      String?
+  stage       String    @default("new")
+  lostReason  String?
+  campaignId  String?
+  importJobId String?
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId, stage])
 }
@@ -133,21 +136,23 @@ model OnboardingTask {
 }
 
 model Mission {
-  id           String      @id @default(uuid())
-  tenantId     String
-  consultantId String
-  companyId    String
-  title        String
-  dailyRate    Decimal     @db.Decimal(12, 2)
+  id              String      @id @default(uuid())
+  tenantId        String
+  consultantId    String
+  companyId       String
+  title           String
+  dailyRate       Decimal     @db.Decimal(12, 2)
   /// Taux de TVA saisi explicitement (aucun taux légal codé en dur).
-  vatRate      Decimal     @db.Decimal(5, 2)
-  startDate    DateTime    @db.Date
-  endDate      DateTime?   @db.Date
-  status       String      @default("active")
-  createdAt    DateTime    @default(now())
-  consultant   Consultant  @relation(fields: [consultantId], references: [id])
-  company      Company     @relation(fields: [companyId], references: [id])
-  timesheets   Timesheet[]
+  vatRate         Decimal     @db.Decimal(5, 2)
+  startDate       DateTime    @db.Date
+  endDate         DateTime?   @db.Date
+  agreementId     String?
+  agreementRateId String?
+  status          String      @default("active")
+  createdAt       DateTime    @default(now())
+  consultant      Consultant  @relation(fields: [consultantId], references: [id])
+  company         Company     @relation(fields: [companyId], references: [id])
+  timesheets      Timesheet[]
 
   @@index([tenantId, status])
 }
@@ -656,4 +661,170 @@ model DocumentBlob {
   tenantId   String
   data       Bytes
   document   Document @relation(fields: [documentId], references: [id])
+}
+
+model Campaign {
+  id        String    @id @default(uuid())
+  tenantId  String
+  name      String
+  kind      String
+  channel   String
+  status    String    @default("draft")
+  startDate DateTime? @db.Date
+  endDate   DateTime? @db.Date
+  budget    Decimal?  @db.Decimal(12, 2)
+  createdBy String
+  createdAt DateTime  @default(now())
+
+  @@unique([tenantId, name])
+}
+
+/// Interactions : journal append-only (jamais modifiées).
+model Interaction {
+  id         String   @id @default(uuid())
+  tenantId   String
+  prospectId String
+  type       String
+  summary    String
+  occurredAt DateTime
+  createdBy  String
+  createdAt  DateTime @default(now())
+
+  @@index([prospectId, occurredAt])
+}
+
+model CrmTask {
+  id             String    @id @default(uuid())
+  tenantId       String
+  prospectId     String?
+  title          String
+  dueDate        DateTime  @db.Date
+  assigneeUserId String
+  status         String    @default("open")
+  doneAt         DateTime?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+
+  @@index([tenantId, assigneeUserId, status])
+}
+
+/// Apporteur d'affaires (introducer) ou parrain (sponsor).
+model Referrer {
+  id           String     @id @default(uuid())
+  tenantId     String
+  kind         String
+  name         String
+  email        String?
+  consultantId String?
+  status       String     @default("active")
+  createdBy    String
+  createdAt    DateTime   @default(now())
+  referrals    Referral[]
+
+  @@unique([tenantId, name])
+}
+
+/// La règle de commission est convenue et FIGÉE à la création du parrainage (auditable).
+model Referral {
+  id             String       @id @default(uuid())
+  tenantId       String
+  referrerId     String
+  prospectId     String       @unique
+  ruleType       String
+  ruleValue      Decimal      @db.Decimal(12, 2)
+  durationMonths Int          @default(0)
+  convertedAt    DateTime?
+  consultantId   String?
+  companyId      String?
+  createdBy      String
+  createdAt      DateTime     @default(now())
+  referrer       Referrer     @relation(fields: [referrerId], references: [id])
+  commissions    Commission[]
+}
+
+model Commission {
+  id            String    @id @default(uuid())
+  tenantId      String
+  referralId    String
+  sourceType    String
+  sourceId      String
+  amount        Decimal   @db.Decimal(12, 2)
+  status        String    @default("accrued")
+  approvedBy    String?
+  approvedAt    DateTime?
+  paidAt        DateTime?
+  paidReference String?
+  createdAt     DateTime  @default(now())
+  referral      Referral  @relation(fields: [referralId], references: [id])
+
+  @@unique([referralId, sourceType, sourceId])
+  @@index([tenantId, status])
+}
+
+model FrameworkAgreement {
+  id               String          @id @default(uuid())
+  tenantId         String
+  companyId        String
+  name             String
+  startDate        DateTime        @db.Date
+  endDate          DateTime        @db.Date
+  status           String          @default("draft")
+  paymentTermsDays Int?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime        @default(now())
+  rates            FrameworkRate[]
+
+  @@index([tenantId, companyId])
+}
+
+model FrameworkRate {
+  id           String             @id @default(uuid())
+  tenantId     String
+  agreementId  String
+  label        String
+  maxDailyRate Decimal            @db.Decimal(12, 2)
+  agreement    FrameworkAgreement @relation(fields: [agreementId], references: [id])
+
+  @@unique([agreementId, label])
+}
+
+model ImportJob {
+  id           String    @id @default(uuid())
+  tenantId     String
+  kind         String
+  status       String    @default("previewed")
+  fileName     String?
+  campaignId   String?
+  defaultKind  String
+  mapping      Json
+  rowsTotal    Int
+  rowsValid    Int
+  rowsInvalid  Int
+  report       Json
+  validRows    Json
+  createdBy    String
+  createdAt    DateTime  @default(now())
+  committedAt  DateTime?
+  rolledBackAt DateTime?
+
+  @@index([tenantId, createdAt])
+}
+
+/// Simulations enregistrées (historique append-only).
+model Simulation {
+  id         String   @id @default(uuid())
+  tenantId   String
+  prospectId String?
+  inputs     Json
+  results    Json
+  createdBy  String
+  createdAt  DateTime @default(now())
+}
+
+model ScoringConfig {
+  tenantId  String   @id
+  weights   Json
+  updatedBy String
+  updatedAt DateTime @default(now())
 }

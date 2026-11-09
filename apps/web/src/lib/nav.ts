@@ -25,6 +25,11 @@ export interface NavItem { key: string; label: string; href: string; icon: keyof
  */
 export const NAV: NavItem[] = [
   { key: "prospects", label: "Prospects", href: "/crm/prospects", icon: "crm", permission: "prospect.read", group: "Relation" },
+  { key: "crm-tasks", label: "Tâches commerciales", href: "/crm/tasks", icon: "cal", permission: "prospect.read", group: "Relation" },
+  { key: "crm-campaigns", label: "Campagnes", href: "/crm/campaigns", icon: "chart", permission: "prospect.read", group: "Relation" },
+  { key: "crm-referrers", label: "Apporteurs et commissions", href: "/crm/referrers", icon: "users", permission: "commission.read", group: "Relation" },
+  { key: "crm-agreements", label: "Accords-cadres", href: "/crm/agreements", icon: "doc", permission: "prospect.read", group: "Relation" },
+  { key: "crm-imports", label: "Imports de prospects", href: "/crm/imports", icon: "rec", permission: "prospect.write", group: "Relation" },
   { key: "companies", label: "Clients", href: "/companies", icon: "bld", permission: "company.read", group: "Relation" },
   { key: "consultants", label: "Consultants", href: "/consultants", icon: "users", permission: "consultant.read", group: "Relation" },
   { key: "missions", label: "Missions", href: "/missions", icon: "bag", permission: "mission.read", group: "Opérations" },

@@ -11,3 +11,4 @@ export * from "./support.js";
 export * from "./pilotage.js";
 export * from "./password-policy.js";
 export * from "./accounting.js";
+export * from "./crm.js";

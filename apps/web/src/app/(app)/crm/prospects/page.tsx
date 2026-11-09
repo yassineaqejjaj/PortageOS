@@ -5,10 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
+import Link from "next/link";
 import { fmtDate } from "@/lib/format";
+import { Band, ScoreBadge } from "@/lib/crm";
 
 type Stage = "new" | "contacted" | "qualified" | "converted" | "lost";
-type Prospect = { id: string; kind: "consultant" | "company"; name: string; email: string | null; phone: string | null; stage: Stage; lostReason: string | null; createdAt: string };
+type Prospect = { id: string; kind: "consultant" | "company"; name: string; email: string | null; phone: string | null; stage: Stage; lostReason: string | null; createdAt: string; score?: number; band?: Band; campaign?: { id: string; name: string } | null };
 type Ev = "contact" | "qualify" | "convert" | "lose" | "reopen";
 
 // Libellé + forme (jamais la couleur seule) par étape.
@@ -30,7 +32,7 @@ export default function ProspectsPage() {
   const qc = useQueryClient();
   const [losing, setLosing] = useState<string | null>(null);
   const [reason, setReason] = useState("");
-  const list = useQuery({ queryKey: ["prospects"], queryFn: () => api<Prospect[]>("prospects") });
+  const list = useQuery({ queryKey: ["prospects"], queryFn: () => api<Prospect[]>("crm/prospects") });
   const { register, handleSubmit, reset, formState: { errors } } = useForm<V>({ resolver: zodResolver(Schema), defaultValues: { kind: "consultant" } });
   const create = useMutation({
     mutationFn: (v: V) => api<Prospect>("prospects", { method: "POST", body: { kind: v.kind, name: v.name, ...(v.email ? { email: v.email } : {}), ...(v.phone ? { phone: v.phone } : {}) } }),
@@ -55,12 +57,13 @@ export default function ProspectsPage() {
             {list.data && list.data.length === 0 && <div className="empty"><h3>Aucun prospect</h3><p className="muted">Ajoutez un consultant ou une entreprise avec le formulaire.</p></div>}
             {list.data && list.data.length > 0 && (
               <div className="tbl-wrap"><table className="tbl compact">
-                <thead><tr><th scope="col">Nom</th><th scope="col">Type</th><th scope="col">Étape</th><th scope="col">Créé le</th><th scope="col">Actions</th></tr></thead>
+                <thead><tr><th scope="col">Nom</th><th scope="col">Type</th><th scope="col">Étape</th><th scope="col">Score</th><th scope="col">Créé le</th><th scope="col">Actions</th></tr></thead>
                 <tbody>{list.data.map(p => (
                   <tr key={p.id}>
-                    <td><b>{p.name}</b><div className="small muted">{p.email ?? p.phone ?? "Aucun contact"}</div></td>
+                    <td><b><Link href={`/crm/prospects/${p.id}`}>{p.name}</Link></b><div className="small muted">{p.email ?? p.phone ?? "Aucun contact"}</div></td>
                     <td>{p.kind === "consultant" ? "Consultant" : "Entreprise"}</td>
                     <td><span className={`badge ${STAGE[p.stage].cls}`}>{STAGE[p.stage].label}</span>{p.lostReason && <div className="small muted">{p.lostReason}</div>}</td>
+                    <td>{p.score !== undefined && p.band ? <ScoreBadge score={p.score} band={p.band} /> : "—"}{p.campaign && <div className="small muted">{p.campaign.name}</div>}</td>
                     <td className="num">{fmtDate(p.createdAt)}</td>
                     <td>
                       <div className="row" style={{ gap: 6 }}>

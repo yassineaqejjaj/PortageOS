@@ -8,6 +8,7 @@ import { RequestContext, RequirePermission } from "./auth.guard";
 import { ACCOUNTS, LedgerService } from "./ledger.service";
 import { applyAsAnyRole, parisToday, parseZod } from "./workflow";
 import { InvoicesService } from "./invoices.service";
+import { CrmService } from "./crm.service";
 
 const Create = z.object({ timesheetId: z.string().uuid() });
 const Credit = z.object({ reason: z.string().min(5, "Motif obligatoire (5 caractères min.)").max(500) });
@@ -16,7 +17,7 @@ type R = { ctx: RequestContext };
 
 @Controller("invoices")
 export class InvoicesController {
-  constructor(private prisma: PrismaService, private audit: AuditService, private ledger: LedgerService, private invoices: InvoicesService) {}
+  constructor(private prisma: PrismaService, private audit: AuditService, private ledger: LedgerService, private invoices: InvoicesService, private crm: CrmService) {}
 
   @Get() @RequirePermission("invoice.read")
   list(@Req() { ctx }: R, @Query("status") status?: string) {
@@ -73,6 +74,7 @@ export class InvoicesController {
       const mission = await tx.mission.findUniqueOrThrow({ where: { id: inv.missionId } });
       await this.ledger.post(tx, { tenantId: ctx.tenantId, key: `payment:${p.id}`, label: `Encaissement ${inv.number}`, valueDate: d.receivedOn, sourceType: "payment", sourceId: p.id, consultantId: mission.consultantId,
         lines: [{ account: ACCOUNTS.banque, debit: d.amount }, { account: ACCOUNTS.clients, credit: d.amount }] });
+      await this.crm.accrueOnPayment(tx, ctx, { id: p.id, amount: d.amount, receivedOn: d.receivedOn }, { net: inv.net.toString(), gross: inv.gross.toString(), companyId: inv.companyId }, mission.consultantId);
       await this.audit.record(tx, ctx, { action: "payment.record", entity: "Invoice", entityId: id, before: { paid: inv.paid.toString(), status: inv.status }, after: { paid: res.paid, status: res.state, amount: d.amount } });
       return tx.invoice.findUniqueOrThrow({ where: { id }, include: { payments: true } });
     });

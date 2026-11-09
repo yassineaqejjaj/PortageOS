@@ -51,7 +51,7 @@ afterAll(async () => { await app.close(); await admin.$disconnect(); });
 describe("plan comptable", () => {
   it("plan par défaut créé à la demande, comptes système protégés, droits", async () => {
     const a = (await srv().get("/accounting/accounts").set(H("fin"))).body as { code: string; system: boolean }[];
-    expect(a.map(x => x.code)).toEqual(["411", "44571", "512", "6251", "706"]); expect(a.every(x => x.system)).toBe(true);
+    expect(a.map(x => x.code)).toEqual(["411", "44571", "512", "622", "6251", "706"]); expect(a.every(x => x.system)).toBe(true);
     expect((await srv().post("/accounting/accounts").set(H("fin")).send({ code: "401", label: "Fournisseurs", type: "liability" })).status).toBe(201);
     expect((await srv().post("/accounting/accounts").set(H("fin")).send({ code: "401", label: "Doublon", type: "liability" })).status).toBe(409);
     expect((await srv().post("/accounting/accounts").set(H("fin")).send({ code: "0123", label: "Invalide", type: "asset" })).status).toBe(400);

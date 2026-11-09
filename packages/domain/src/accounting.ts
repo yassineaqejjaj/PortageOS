@@ -15,7 +15,7 @@ export function accountBalance(debit: string, credit: string): { debit: string; 
 export const FEC_COLUMNS = ["JournalCode", "JournalLib", "EcritureNum", "EcritureDate", "CompteNum", "CompteLib", "CompAuxNum", "CompAuxLib", "PieceRef", "PieceDate", "EcritureLib", "Debit", "Credit", "EcritureLet", "DateLet", "ValidDate", "Montantdevise", "Idevise"] as const;
 export const JOURNALS: Record<string, string> = { VT: "Journal des ventes", BQ: "Journal de banque", OD: "Opérations diverses" };
 export function journalCode(sourceType: string): "VT" | "BQ" | "OD" {
-  return sourceType === "invoice" || sourceType === "credit_note" ? "VT" : sourceType === "payment" || sourceType === "expense" ? "BQ" : "OD";
+  return sourceType === "invoice" || sourceType === "credit_note" ? "VT" : sourceType === "payment" || sourceType === "expense" || sourceType === "commission" ? "BQ" : "OD";
 }
 export const fecDate = (iso: string) => iso.slice(0, 10).replace(/-/g, "");
 export const fecAmount = (v: string | number | Decimal) => new Decimal(v).toFixed(2).replace(".", ",");

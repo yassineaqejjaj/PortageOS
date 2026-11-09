@@ -72,3 +72,9 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - **Cycle de vie** : suppression logique motivée (droit dédié), purge physique du contenu après suppression (droit à l'effacement) avec conservation des métadonnées et de l'audit ; contenu et métadonnées immuables en base (triggers). Pas de rétention automatique ni de chiffrement applicatif du contenu à ce jour ; le contenu est stocké dans PostgreSQL (sauvegardes de la base = sauvegardes des documents).
 - **Journal d'accès** : téléchargements authentifiés et par lien dans l'audit append-only (acteur, document, catégorie).
 - Données personnelles sensibles : une pièce d'identité ou un RIB déposé en production relève de votre analyse d'impact (classification C2/C3) : hébergement UE, chiffrement et durée de conservation sont à définir avant tout usage réel.
+
+## Séance 14 — CRM
+- **Profilage** : le score de priorisation est calculé à partir de données que la société détient déjà (interactions, étape, campagne) ; il est explicable critère par critère, réglable, **sans effet automatique** (aucune décision n'en découle) ; il doit figurer au registre de traitement et à l'information des personnes (DPO : non fait, cf. BLOCKERS).
+- **Import CSV** : 1 Mo / 2 000 lignes, aperçu sans écriture, adresses validées, doublons écartés, validation à usage unique (revendication atomique), annulation logique tracée ; corps JSON limité à 1,5 Mo, au-delà 413.
+- **Commissions** : droits distincts (lecture, approbation, paiement), quatre yeux entre générateur et approbateur, règle et montants figés par triggers, unicité par source (idempotence), écriture comptable avec clé idempotente.
+- **Journaux** : interactions et simulations append-only (triggers).

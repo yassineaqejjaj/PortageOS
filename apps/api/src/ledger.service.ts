@@ -2,16 +2,16 @@ import { BadRequestException, ConflictException, Injectable } from "@nestjs/comm
 import { Tx } from "./prisma.service";
 
 /** Plan comptable par défaut (comptes PCG usuels) — configurable par tenant dans un lot ultérieur. */
-export const ACCOUNTS = { clients: "411", prestations: "706", tvaCollectee: "44571", banque: "512", fraisDeplacement: "6251" } as const;
+export const ACCOUNTS = { clients: "411", prestations: "706", tvaCollectee: "44571", banque: "512", fraisDeplacement: "6251", commissions: "622" } as const;
 
 /** Plan comptable par défaut (comptes usuels) — créé à la première écriture, à valider et compléter par l'expert-comptable. */
 export const DEFAULT_CHART = [
   { code: "411", label: "Clients", type: "asset" }, { code: "512", label: "Banque", type: "asset" },
   { code: "44571", label: "TVA collectée", type: "liability" }, { code: "706", label: "Prestations de services", type: "revenue" },
-  { code: "6251", label: "Voyages et déplacements", type: "expense" },
+  { code: "6251", label: "Voyages et déplacements", type: "expense" }, { code: "622", label: "Commissions et honoraires", type: "expense" },
 ];
 export async function ensureChart(tx: Tx, tenantId: string) {
-  if ((await tx.account.count()) === 0) await tx.account.createMany({ data: DEFAULT_CHART.map(a => ({ tenantId, ...a, system: true })), skipDuplicates: true });
+  if ((await tx.account.count({ where: { code: { in: DEFAULT_CHART.map(a => a.code) } } })) < DEFAULT_CHART.length) await tx.account.createMany({ data: DEFAULT_CHART.map(a => ({ tenantId, ...a, system: true })), skipDuplicates: true });
 }
 
 export interface PostInput { reason?: string; tenantId: string; key: string; label: string; valueDate: string; sourceType: string; sourceId: string; consultantId?: string; reversalOf?: string; lines: { account: string; debit?: string; credit?: string }[] }
