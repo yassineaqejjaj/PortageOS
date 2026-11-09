@@ -13,7 +13,8 @@ export class ErrorFilter implements ExceptionFilter {
     }
     const st = (e as { status?: number; type?: string }).status;
     if (st === 413 || (e as { type?: string }).type === "entity.too.large") return res.status(413).json({ error: { status: 413, message: "Requête trop volumineuse" } });
-    this.log.error(e instanceof Error ? e.stack : String(e));
-    return res.status(500).json({ error: { status: 500, message: "Erreur interne" } });
+    const reqId = (host.switchToHttp().getRequest() as { reqId?: string }).reqId;
+    this.log.error(JSON.stringify({ msg: "unhandled", reqId, stack: e instanceof Error ? e.stack : String(e) }));
+    return res.status(500).json({ error: { status: 500, message: "Erreur interne", ...(reqId ? { requestId: reqId } : {}) } });
   }
 }

@@ -8,6 +8,7 @@ import { RequestContext } from "./auth.guard";
 import { can } from "./permissions";
 import { detectMime, safeName } from "./file-type";
 import { ScanUnavailable, scanBuffer } from "./scanner";
+import { objectStore } from "./object-store";
 
 export const MAX_BYTES = 10 * 1024 * 1024;
 export const OWNER_TYPES = ["consultant", "expense_claim", "contract", "general"] as const;
@@ -67,7 +68,12 @@ export class DocumentsService {
       await this.authorize(tx, ctx, d.ownerType, d.ownerId, d.category, "write");
       const sha256 = createHash("sha256").update(file.buffer).digest("hex");
       const doc = await tx.document.create({ data: { tenantId: ctx.tenantId, ownerType: d.ownerType, ownerId: d.ownerId, category: d.category, name: safeName(file.originalname, mime), mime, size: file.buffer.length, sha256, scanStatus: scan.status, scanEngine: scan.engine, uploadedBy: ctx.userId } });
-      await tx.documentBlob.create({ data: { documentId: doc.id, tenantId: ctx.tenantId, data: new Uint8Array(file.buffer) } });
+      const store = objectStore();
+      if (store) {
+        const key = `${ctx.tenantId}/${doc.id}`;
+        try { await store.put(key, file.buffer, mime); } catch { throw new ServiceUnavailableException("Stockage indisponible : envoi refusé"); }
+        await tx.document.update({ where: { id: doc.id }, data: { storageDriver: "s3", storageKey: key } });
+      } else await tx.documentBlob.create({ data: { documentId: doc.id, tenantId: ctx.tenantId, data: new Uint8Array(file.buffer) } });
       await this.audit.record(tx, ctx, { action: "document.upload", entity: "Document", entityId: doc.id, after: { ownerType: d.ownerType, ownerId: d.ownerId, category: d.category, mime, size: doc.size, sha256, scanStatus: doc.scanStatus } });
       return this.view(doc);
     });
@@ -96,9 +102,9 @@ export class DocumentsService {
   async download(tx: Tx, ctx: RequestContext, id: string) {
     const d = await this.load(tx, ctx, id, "read");
     if (d.deletedAt || d.purgedAt) throw new NotFoundException();
-    const blob = await tx.documentBlob.findUnique({ where: { documentId: id } }); if (!blob) throw new NotFoundException();
+    const data = await this.content(tx, d); if (!data) throw new NotFoundException();
     await this.audit.record(tx, ctx, { action: "document.download", entity: "Document", entityId: id, after: { category: d.category, via: "authenticated" } }); // journal d'accès
-    return { doc: d, data: Buffer.from(blob.data) };
+    return { doc: d, data };
   }
 
   async createLink(tx: Tx, ctx: RequestContext, id: string, minutes: number) {
@@ -119,9 +125,9 @@ export class DocumentsService {
     return this.prisma.forTenant(c.tid, async tx => {
       const d = await tx.document.findUnique({ where: { id: c.sub } });
       if (!d || d.deletedAt || d.purgedAt || SENSITIVE.includes(d.category)) throw new GoneException("Document indisponible");
-      const blob = await tx.documentBlob.findUnique({ where: { documentId: d.id } }); if (!blob) throw new GoneException("Document indisponible");
+      const data = await this.content(tx, d); if (!data) throw new GoneException("Document indisponible");
       await this.audit.record(tx, { tenantId: c.tid, userId: c.by }, { action: "document.shared_access", entity: "Document", entityId: d.id, after: { category: d.category, via: "temporary_link" } });
-      return { doc: d, data: Buffer.from(blob.data) };
+      return { doc: d, data };
     });
   }
 
@@ -133,11 +139,23 @@ export class DocumentsService {
   }
 
   /** Purge physique du contenu (droit à l'effacement) : possible seulement après suppression logique ; les métadonnées et l'audit sont conservés. */
+  /** Contenu d'un document, quel que soit le pilote de stockage ; vérifie l'empreinte (intégrité) avant de le servir. */
+  private async content(tx: Tx, d: { id: string; sha256: string; storageDriver: string; storageKey: string | null }): Promise<Buffer | null> {
+    let data: Buffer;
+    if (d.storageDriver === "s3") {
+      const store = objectStore(); if (!store || !d.storageKey) throw new ServiceUnavailableException("Stockage objet non configuré");
+      try { data = await store.get(d.storageKey); } catch { throw new ServiceUnavailableException("Stockage indisponible"); }
+    } else { const blob = await tx.documentBlob.findUnique({ where: { documentId: d.id } }); if (!blob) return null; data = Buffer.from(blob.data); }
+    if (createHash("sha256").update(data).digest("hex") !== d.sha256) throw new ServiceUnavailableException("Intégrité du document non vérifiée : contenu refusé");
+    return data;
+  }
+
   async purge(tx: Tx, ctx: RequestContext, id: string, reason: string) {
     const d = await this.load(tx, ctx, id, "delete");
     if (!d.deletedAt) throw new ConflictException("Supprimez d'abord le document (suppression logique)");
     if (d.purgedAt) throw new ConflictException("Contenu déjà purgé");
-    await tx.documentBlob.delete({ where: { documentId: id } });
+    if (d.storageDriver === "s3") { const store = objectStore(); if (!store || !d.storageKey) throw new ServiceUnavailableException("Stockage objet non configuré"); try { await store.delete(d.storageKey); } catch { throw new ServiceUnavailableException("Stockage indisponible : purge reportée"); } }
+    else await tx.documentBlob.delete({ where: { documentId: id } });
     await tx.document.update({ where: { id }, data: { purgedAt: new Date() } });
     await this.audit.record(tx, ctx, { action: "document.purge", entity: "Document", entityId: id, after: { reason, sha256: d.sha256 } });
   }

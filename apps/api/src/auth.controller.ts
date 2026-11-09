@@ -1,5 +1,7 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Headers, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post, Query, Req, Res } from "@nestjs/common";
 import { z } from "zod";
+import type { Response } from "express";
+import { renderMetrics } from "./observability";
 import { PrismaService } from "./prisma.service";
 import { MfaExempt, Public, RequestContext } from "./auth.guard";
 import { AuthService } from "./auth.service";
@@ -15,6 +17,7 @@ const Refresh = z.object({ refreshToken: z.string().min(20).max(200) });
 const Pwd = z.object({ currentPassword: z.string().min(1).max(200), newPassword: z.string().min(1).max(200) });
 const Code = z.object({ code: z.string().regex(/^\d{6}$/, "Code à 6 chiffres") });
 const MfaOff = z.object({ password: z.string().min(1).max(200), code: z.string().regex(/^\d{6}$/, "Code à 6 chiffres") });
+const Forgot = z.object({ email: z.string().email().max(254), tenantSlug: z.string().min(1).max(100) });
 const Accept = z.object({ token: z.string().min(20).max(200), password: z.string().min(1).max(200), currentPassword: z.string().max(200).optional() });
 type R = { ctx: RequestContext; headers: Record<string, string | undefined> };
 const meta = (req: R) => ({ userAgent: req.headers["user-agent"] });
@@ -48,6 +51,17 @@ export class AuthController {
   }
 
   @Public() @Get("health") health() { return { status: "ok" }; }
+  /** Disponibilité réelle (base joignable) ; aucun détail interne exposé. */
+  @Public() @Get("health/ready") async ready(@Res({ passthrough: true }) res: Response) {
+    const t0 = Date.now(); let db = false; try { await this.prisma.$queryRaw`SELECT 1`; db = true; } catch { /* indisponible */ }
+    if (!db) res.status(503);
+    return { status: db ? "ready" : "unavailable", checks: { database: db ? "ok" : "down" }, dbLatencyMs: Date.now() - t0, version: (process.env.RAILWAY_GIT_COMMIT_SHA ?? process.env.APP_VERSION ?? "dev").slice(0, 12) };
+  }
+  /** Métriques au format Prometheus : désactivées sans METRICS_TOKEN, jamais publiques. */
+  @Public() @Get("metrics") metricsEndpoint(@Headers("authorization") auth: string | undefined, @Res({ passthrough: true }) res: Response) {
+    const t = process.env.METRICS_TOKEN; if (!t || auth !== `Bearer ${t}`) { res.status(t ? 401 : 404); return { error: { message: t ? "Non autorisé" : "Introuvable" } }; }
+    res.type("text/plain"); return renderMetrics();
+  }
 
   // ----- sessions et mot de passe -----
   @MfaExempt() @Get("auth/sessions")
@@ -71,6 +85,9 @@ export class AuthController {
 
   @Post("auth/mfa/disable") @HttpCode(200)
   async disable(@Req() { ctx }: R, @Body() body: unknown) { const d = parseZod(MfaOff, body); await this.auth.mfaDisable(ctx, d.password, d.code); return { ok: true }; }
+
+  @Public() @Post("auth/password/forgot") @HttpCode(202)
+  forgot(@Body() body: unknown) { const d = parseZod(Forgot, body); return this.auth.forgotPassword(d.email, d.tenantSlug); }
 
   // ----- invitations : aperçu et acceptation (publics, jeton à usage unique) -----
   @Public() @Get("auth/invitations/preview")

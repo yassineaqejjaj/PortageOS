@@ -2,6 +2,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -56,6 +57,7 @@ export default function LoginPage() {
           {f("tenantSlug", "Société", { autoComplete: "organization" })}
           {f("email", "Adresse email", { type: "email", autoComplete: "username" })}
           {f("password", "Mot de passe", { type: "password", autoComplete: "current-password" })}
+          <Link href="/forgot-password" className="small">Mot de passe oublié ?</Link>
           {error && <div className="alert a-danger" role="alert"><span>{error}</span></div>}
           <button type="submit" className={`btn btn-primary btn-lg${isSubmitting ? " is-loading" : ""}`} disabled={isSubmitting}>{isSubmitting ? "Connexion en cours…" : "Se connecter"}</button>
         </div>

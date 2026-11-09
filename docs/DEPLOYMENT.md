@@ -38,3 +38,14 @@ railway run --service api -- sh -c 'BOOTSTRAP_TENANT_SLUG=ma-societe BOOTSTRAP_T
 - Pas de déploiement automatique depuis GitHub (déploiements manuels par CLI à ce jour).
 - Pas de MFA, pas de refresh de token : ne pas y mettre de données réelles.
 - Hébergement UE : Railway et Vercel ne garantissent pas la résidence UE par défaut. Avant toute donnée RH/paie réelle : hébergement UE contractualisé (ex. Scaleway ou OVHcloud avec PostgreSQL managé et le même Dockerfile), DPA signé.
+
+## Variables optionnelles (séance 16)
+| Variable | Effet |
+|---|---|
+| `SMTP_URL`, `MAIL_FROM`, `WEB_BASE_URL` | active l'envoi d'e-mails (invitation, mot de passe oublié) ; sans eux : `not_connected` au journal, rien n'est envoyé |
+| `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE=1` | contenu des nouveaux documents dans un stockage objet ; `node apps/api/dist/migrate-blobs.js --dry-run` puis sans option pour migrer l'existant |
+| `METRICS_TOKEN` | active `GET /metrics` (jeton porteur) ; absent = 404 |
+| `/health/ready` | sonde de disponibilité (base interrogée) ; `/health` reste la sonde légère |
+
+## Société de démonstration en ligne
+`ALLOW_ONLINE_DEMO=1 DEMO_ONLINE_PASSWORD=<14+ car.> node apps/api/dist/demo-tenant.js` (via `railway ssh`, depuis `/repo`) crée le tenant `demo-en-ligne` et 10 comptes fictifs. Le slug doit commencer par `demo` ; jamais pour une société réelle.

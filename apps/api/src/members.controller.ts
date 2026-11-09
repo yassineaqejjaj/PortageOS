@@ -3,6 +3,7 @@ import { z } from "zod";
 import { PrismaService } from "./prisma.service";
 import { AuditService } from "./audit.service";
 import { RequestContext, RequirePermission } from "./auth.guard";
+import { MailService } from "./mail.service";
 import { AuthService } from "./auth.service";
 import { ROLES } from "./permissions";
 import { parseZod } from "./workflow";
@@ -14,7 +15,7 @@ type R = { ctx: RequestContext };
 
 @Controller()
 export class MembersController {
-  constructor(private prisma: PrismaService, private audit: AuditService, private auth: AuthService) {}
+  constructor(private prisma: PrismaService, private audit: AuditService, private auth: AuthService, private mail: MailService) {}
 
   private async otherAdmins(tenantId: string, exceptUserId: string) {
     return this.prisma.membership.count({ where: { tenantId, roles: { has: "tenant_admin" }, userId: { not: exceptUserId }, user: { disabledAt: null } } });
@@ -63,7 +64,9 @@ export class MembersController {
   async invite(@Req() { ctx }: R, @Body() body: unknown) {
     const d = parseZod(Invite, body);
     const r = await this.auth.invite(ctx, d);
-    return { id: r.id, expiresAt: r.expiresAt, link: `/invite?token=${r.token}`, note: "Lien affiché une seule fois. Aucun e-mail n'est envoyé (fournisseur non connecté) : transmettez-le par un canal sûr." };
+    const tenant = await this.prisma.tenant.findUnique({ where: { id: ctx.tenantId } });
+    const emailStatus = await this.mail.send({ to: d.email, template: "invitation", link: `/invite?token=${r.token}`, tenantId: ctx.tenantId, tenantName: tenant?.name, expiresInText: "7 jours" });
+    return { id: r.id, expiresAt: r.expiresAt, link: `/invite?token=${r.token}`, emailStatus, note: emailStatus === "sent" ? "Invitation envoyée par e-mail. Le lien reste affiché une seule fois ici." : "Aucun e-mail envoyé (fournisseur non connecté ou en échec) : transmettez ce lien par un canal sûr, il n'est affiché qu'une fois." };
   }
 
   @Get("invitations") @RequirePermission("member.manage")

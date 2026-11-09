@@ -8,12 +8,12 @@ Mis à jour le 2026-11-08. Chaque ligne est un prérequis **externe** : compte, 
 | Facturation électronique | Immatriculation / contrat avec une plateforme agréée (PA), annuaire, e-reporting | Vous / la PA choisie | Factures numérotées, `einvoiceStatus = not_connected` |
 | Signature électronique qualifiée | Contrat avec un prestataire de confiance | Vous | Déclaration de signature interne tracée (non qualifiée) |
 | Banque | Agrégateur/open banking agréé ou import de relevés fournis | Vous | Encaissements saisis à la main |
-| E-mail | Fournisseur transactionnel + domaine (SPF/DKIM) | Vous | Notifications in-app |
+| E-mail | Fournisseur transactionnel + domaine (SPF/DKIM) ; variables `SMTP_URL`, `MAIL_FROM`, `WEB_BASE_URL` | Vous | Notifications in-app ; **adaptateur SMTP et mot de passe oublié prêts, jamais testés contre un vrai serveur** |
 | Modèle de langage | Clé fournisseur LLM, analyse d'impact RGPD, validation juridique | Vous | Agents à playbooks déterministes, approbations humaines |
 | Sirene / identifiants entreprises | Jeton API INSEE | Vous | Saisie manuelle du SIREN (9 chiffres) |
 | Abonnement SaaS | Compte du fournisseur de paiement (webhooks vérifiés) | Vous | — |
 | Règles légales (portage salarial, IDCC 3219, minima, cotisations) | **Saisie depuis les sources officielles et approbation par un juriste/paie** | Un professionnel habilité | Catalogue de paramètres datés, sourcés, approuvés à quatre yeux ; **aucune valeur légale livrée** |
-| Stockage objet et antivirus | Un stockage S3-compatible (bucket) et un démon ClamAV (service dédié) | Vous | Contenu en PostgreSQL (≤ 10 Mo), adaptateur ClamAV fail-closed prêt (`CLAMAV_HOST`) ; **aucune analyse antivirus réelle n'est active en production** |
+| Stockage objet et antivirus | Un stockage S3-compatible (bucket) et un démon ClamAV (service dédié) | Vous | Contenu en PostgreSQL (≤ 10 Mo) par défaut ; adaptateur S3 prêt (`STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_ENDPOINT`…, **jamais testé contre un vrai bucket**) ; adaptateur ClamAV fail-closed prêt (`CLAMAV_HOST`) ; **aucune analyse antivirus réelle n'est active en production** |
 | Hébergement | Hébergement UE contractualisé, DPA, sauvegardes testées | Vous | Dockerfile portable, config Railway/Vercel de test |
 | Validation juridique et métier | Revue par juristes, DPO, expert-comptable, spécialiste paie | Eux | Documentation des règles et des limites |
 | Sécurité | Test d'intrusion externe, analyse d'impact RGPD | Prestataire / DPO | Tests d'isolation, RLS, audit append-only |

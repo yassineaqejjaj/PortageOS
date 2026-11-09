@@ -78,3 +78,10 @@ test("les cookies de session sont httpOnly et la déconnexion révoque la sessio
   const r = await page.request.post("/api/proxy/me", { headers: { origin: "http://localhost:4310", cookie: `portage_refresh=${refresh}` } }); // POST non autorisé sur /me, simple sonde d'accès
   expect([401, 404, 405]).toContain(r.status());
 });
+
+test("mot de passe oublié : réponse identique pour un compte inconnu, sans fuite d'information", async ({ page }) => {
+  await page.goto("/login"); await page.getByRole("link", { name: "Mot de passe oublié ?" }).click(); await page.waitForURL("**/forgot-password"); await page.waitForLoadState("networkidle"); // hydratation avant saisie
+  await page.getByLabel("Société").fill("demo"); await page.getByLabel("Adresse email").fill(`inconnu-${Date.now().toString(36)}@example.test`);
+  await page.getByRole("button", { name: "Envoyer le lien" }).click();
+  await expect(page.getByRole("status")).toContainText(/Si un compte correspond/);
+});

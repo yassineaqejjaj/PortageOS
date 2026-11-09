@@ -78,3 +78,8 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - **Import CSV** : 1 Mo / 2 000 lignes, aperçu sans écriture, adresses validées, doublons écartés, validation à usage unique (revendication atomique), annulation logique tracée ; corps JSON limité à 1,5 Mo, au-delà 413.
 - **Commissions** : droits distincts (lecture, approbation, paiement), quatre yeux entre générateur et approbateur, règle et montants figés par triggers, unicité par source (idempotence), écriture comptable avec clé idempotente.
 - **Journaux** : interactions et simulations append-only (triggers).
+
+## Séance 16
+- **Mot de passe oublié** : pas d'énumération (réponse identique), limite par adresse, lien haché en base, 1 h, usage unique ; le journal d'e-mails (`EmailOutbox`, append-only) ne contient ni corps, ni lien, ni adresse en clair.
+- **Stockage objet** : empreinte vérifiée à chaque lecture (altération → 503), chiffrement côté serveur demandé, pilote mémoire interdit en production.
+- **Observabilité** : journaux sans corps ni requête ni identifiants dans les routes ; `/metrics` désactivé sans jeton.

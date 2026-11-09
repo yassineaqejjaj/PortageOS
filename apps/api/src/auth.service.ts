@@ -10,6 +10,7 @@ import { newSecret, otpauthUri, verifyTotp } from "./totp";
 import { newToken, open, seal, sha256 } from "./secretbox";
 import { checkLimit, clearLimit, recordFailure } from "./limiter";
 import { ROLES } from "./permissions";
+import { MailService } from "./mail.service";
 
 const REFRESH_GRACE_MS = 15_000; // requêtes parallèles du navigateur portant l'ancien jeton juste après une rotation
 const SESSION_ABSOLUTE_MS = 30 * 86400_000, SESSION_IDLE_MS = 7 * 86400_000, INVITE_TTL_MS = 7 * 86400_000;
@@ -18,7 +19,7 @@ export interface Meta { userAgent?: string }
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private audit: AuditService) {}
+  constructor(private prisma: PrismaService, private audit: AuditService, private mail: MailService) {}
 
   passwordIssues(pw: string, email?: string) { return checkPassword(pw, { email }); }
   private assertPassword(pw: string, email?: string) { const i = this.passwordIssues(pw, email); if (i.length) throw new BadRequestException(`Mot de passe refusé : ${i.join(", ")}`); }
@@ -160,6 +161,28 @@ export class AuthService {
     clearLimit(key);
     await this.prisma.user.update({ where: { id: u.id }, data: { mfaSecretEnc: null, mfaPendingEnc: null, mfaEnabledAt: null, mfaLastStep: null, recoveryHashes: [] } });
     await this.prisma.forTenant(ctx.tenantId, tx => this.audit.record(tx, ctx, { action: "auth.mfa_disabled", entity: "User", entityId: u.id }));
+  }
+
+  /**
+   * Mot de passe oublié en libre-service. Réponse IDENTIQUE que le compte existe ou non (pas d'énumération), limitée par adresse ;
+   * le lien (usage unique, 1 h) n'est jamais renvoyé : il part par e-mail, sinon il est perdu (« not_connected » au journal) et
+   * l'administrateur reste le recours.
+   */
+  async forgotPassword(email: string, tenantSlug: string) {
+    const e = email.toLowerCase(); checkLimit(`forgot|${e}`, 3); recordFailure(`forgot|${e}`, 15 * 60_000);
+    const tenant = await this.prisma.tenant.findUnique({ where: { slug: tenantSlug } });
+    const user = tenant ? await this.prisma.user.findUnique({ where: { email: e } }) : null;
+    const m = tenant && user ? await this.prisma.membership.findUnique({ where: { userId_tenantId: { userId: user.id, tenantId: tenant.id } } }) : null;
+    if (tenant && user && m) {
+      const token = newToken();
+      await this.prisma.forTenant(tenant.id, async tx => {
+        await tx.invitation.updateMany({ where: { tenantId: tenant.id, email: e, kind: "reset", acceptedAt: null, revokedAt: null }, data: { revokedAt: new Date() } });
+        const inv = await tx.invitation.create({ data: { tenantId: tenant.id, kind: "reset", email: e, roles: m.roles, tokenHash: sha256(token), expiresAt: new Date(Date.now() + 3600_000), createdBy: user.id } });
+        await this.audit.record(tx, { tenantId: tenant.id, userId: user.id }, { action: "auth.password_forgot", entity: "Invitation", entityId: inv.id, after: { email: e } });
+      });
+      void this.mail.send({ to: e, template: "password_reset", link: `/invite?token=${token}`, tenantId: tenant.id, tenantName: tenant.name, expiresInText: "1 heure" });
+    } else await new Promise(r => setTimeout(r, 40)); // lisse le temps de réponse
+    return { accepted: true, message: "Si un compte correspond, un e-mail de réinitialisation vient d'être envoyé (s'il est configuré). Sinon, contactez l'administrateur de votre société." };
   }
 
   // ---------- invitations ----------

@@ -654,6 +654,9 @@ model Document {
   deletedBy    String?
   deleteReason String?
   purgedAt     DateTime?
+  /// db (contenu dans DocumentBlob) | s3 (stockage objet, clé storageKey)
+  storageDriver String       @default("db")
+  storageKey   String?
   blob         DocumentBlob?
 
   @@index([tenantId, ownerType, ownerId])
@@ -880,4 +883,18 @@ model PurchaseOrder {
 
   @@unique([tenantId, companyId, reference])
   @@index([tenantId, companyId])
+}
+
+/// Journal de livraison des e-mails : AUCUN contenu ni jeton n'est conservé (les liens de réinitialisation ne doivent pas être relisibles).
+model EmailOutbox {
+  id        String   @id @default(uuid())
+  tenantId  String?
+  toHash    String
+  template  String
+  /// sent | failed | not_connected
+  status    String
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
 }
