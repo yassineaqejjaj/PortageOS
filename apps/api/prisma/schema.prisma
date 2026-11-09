@@ -155,11 +155,14 @@ model Mission {
   timeUnit        String      @default("day")
   /// Plafond annuel de jours du forfait, SAISI par l'administrateur (aucune valeur légale n'est présumée) : informatif, non bloquant.
   annualDaysCap   Int?
+  /// Budget HT de la mission (saisi par avenant) : suivi informatif, non bloquant.
+  budgetAmount    Decimal?    @db.Decimal(14, 2)
   status          String      @default("active")
   createdAt       DateTime    @default(now())
   consultant      Consultant  @relation(fields: [consultantId], references: [id])
   company         Company     @relation(fields: [companyId], references: [id])
   timesheets      Timesheet[]
+  amendments      MissionAmendment[]
 
   @@index([tenantId, status])
 }
@@ -991,4 +994,22 @@ model TimesheetReminder {
 
   @@unique([missionId, period, day])
   @@index([tenantId, period])
+}
+
+/// Avenant de mission, append-only : rate | extend | early_end | budget. Les anciennes valeurs restent consultables.
+model MissionAmendment {
+  id            String   @id @default(uuid())
+  tenantId      String
+  missionId     String
+  kind          String
+  /// Mois d'effet (AAAA-MM) pour un tarif ; date d'effet (AAAA-MM-JJ) pour une fin ou une prolongation.
+  effective     String
+  before        Json
+  after         Json
+  reason        String
+  createdBy     String
+  createdAt     DateTime @default(now())
+  mission       Mission  @relation(fields: [missionId], references: [id])
+
+  @@index([tenantId, missionId])
 }

@@ -7,7 +7,7 @@ const ALLOWED = [
   /^me$/, new RegExp(`^companies(/${U})?$`), /^audit$/, /^members$/,
   new RegExp(`^prospects(/${U}(/transition)?)?$`),
   new RegExp(`^consultants(/${U}(/activate|/tasks/[a-z_]+)?)?$`),
-  new RegExp(`^missions(/${U})?$`),
+  new RegExp(`^missions(/${U}(/amendments)?)?$`),
   new RegExp(`^timesheets(/${U}(/transition)?|/missions/${U}/\\d{4}-\\d{2}(/import)?)?$`), /^timesheets\/(reminders|export\.csv)$/,
   /^me\/(missions|timesheets)$/, new RegExp(`^me/timesheets/missions/${U}/\\d{4}-\\d{2}(/import)?$`), new RegExp(`^me/timesheets/${U}/transition$`),
   new RegExp(`^client/timesheets(/${U}/transition)?$`),

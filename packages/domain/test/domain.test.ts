@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Money, invoiceTotals, ParameterCatalog, StateMachine, Ledger, InvoiceNumbering, parseAmount, parseBankDate, parseBankCsv, suggestMatches, isValidQuantity, parseTimesheetCsv } from "../src/index";
+import { Money, invoiceTotals, ParameterCatalog, StateMachine, Ledger, InvoiceNumbering, parseAmount, parseBankDate, parseBankCsv, suggestMatches, isValidQuantity, parseTimesheetCsv, rateForPeriod } from "../src/index";
 
 describe("Money", () => {
   it("évite les erreurs flottantes", () => {
@@ -340,5 +340,13 @@ describe("unités du CRA (heures, forfait jours)", () => {
     expect(bad.errors.length).toBe(5);
     expect(parseTimesheetCsv("﻿2031-06-02,1", "day", "2031-06").lines.length).toBe(1);
     expect(parseTimesheetCsv(Array(401).fill("2031-06-02;1").join("\n"), "day", "2031-06").errors[0]).toMatch(/trop long/);
+  });
+});
+
+describe("tarif par période (avenants)", () => {
+  it("dernier avenant dont le mois d'effet est ≤ période, sinon tarif initial", () => {
+    const a = [{ effectiveMonth: "2032-03", newRate: "600" }, { effectiveMonth: "2032-06", newRate: "650" }, { effectiveMonth: "2032-04", newRate: "620" }];
+    expect(rateForPeriod("500", a, "2032-02")).toBe("500"); expect(rateForPeriod("500", a, "2032-03")).toBe("600");
+    expect(rateForPeriod("500", a, "2032-05")).toBe("620"); expect(rateForPeriod("500", a, "2033-01")).toBe("650"); expect(rateForPeriod("500", [], "2032-03")).toBe("500");
   });
 });

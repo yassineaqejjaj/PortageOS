@@ -71,6 +71,17 @@ export class CompanyDetailsController {
       return c;
     });
   }
+  @Patch(":id/contacts/:contactId") @RequirePermission("company.write")
+  editContact(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string, @Param("contactId", ParseUUIDPipe) contactId: string, @Body() body: unknown) {
+    const d = parseZod(Contact, body);
+    return this.prisma.forTenant(ctx.tenantId, async tx => {
+      const c = await tx.companyContact.findFirst({ where: { id: contactId, companyId: id } }); if (!c) throw new NotFoundException();
+      if (d.isPrimary) await tx.companyContact.updateMany({ where: { companyId: id, role: d.role, isPrimary: true, id: { not: contactId } }, data: { isPrimary: false } });
+      const u = await tx.companyContact.update({ where: { id: contactId }, data: { name: d.name, email: d.email ?? null, phone: d.phone ?? null, role: d.role, isPrimary: d.isPrimary } });
+      await this.audit.record(tx, ctx, { action: "company.contact_updated", entity: "CompanyContact", entityId: contactId, before: { role: c.role, isPrimary: c.isPrimary }, after: { role: d.role, isPrimary: d.isPrimary } });
+      return u;
+    });
+  }
   @Delete(":id/contacts/:contactId") @RequirePermission("company.write")
   removeContact(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string, @Param("contactId", ParseUUIDPipe) contactId: string) {
     return this.prisma.forTenant(ctx.tenantId, async tx => {
@@ -90,6 +101,17 @@ export class CompanyDetailsController {
       const s = await tx.companySite.create({ data: { tenantId: ctx.tenantId, companyId: id, ...d, createdBy: ctx.userId } });
       await this.audit.record(tx, ctx, { action: "company.site_added", entity: "CompanySite", entityId: s.id, after: { companyId: id, label: d.label } });
       return s;
+    });
+  }
+  @Patch(":id/sites/:siteId") @RequirePermission("company.write")
+  editSite(@Req() { ctx }: R, @Param("id", ParseUUIDPipe) id: string, @Param("siteId", ParseUUIDPipe) siteId: string, @Body() body: unknown) {
+    const d = parseZod(Site, body);
+    return this.prisma.forTenant(ctx.tenantId, async tx => {
+      const s = await tx.companySite.findFirst({ where: { id: siteId, companyId: id, archivedAt: null } }); if (!s) throw new NotFoundException();
+      if (await tx.companySite.findFirst({ where: { companyId: id, archivedAt: null, id: { not: siteId }, label: { equals: d.label, mode: "insensitive" } } })) throw new ConflictException("Un site porte déjà ce libellé");
+      const u = await tx.companySite.update({ where: { id: siteId }, data: d });
+      await this.audit.record(tx, ctx, { action: "company.site_updated", entity: "CompanySite", entityId: siteId, before: { label: s.label, city: s.city }, after: { label: d.label, city: d.city } });
+      return u;
     });
   }
   @Delete(":id/sites/:siteId") @RequirePermission("company.write")

@@ -94,3 +94,12 @@ export function parseTimesheetCsv(text: string, unit: TimeUnit, period: string):
   });
   return { lines, errors };
 }
+
+// ---------- Avenants de mission ----------
+export const AMENDMENT_KINDS = ["rate", "extend", "early_end", "budget"] as const;
+export type AmendmentKind = (typeof AMENDMENT_KINDS)[number];
+/** Tarif applicable à une période : dernier avenant de tarif dont le mois d'effet est ≤ période, sinon tarif initial. */
+export function rateForPeriod(baseRate: string, amendments: { effectiveMonth: string; newRate: string }[], period: string): string {
+  const applicable = amendments.filter(a => a.effectiveMonth <= period).sort((a, b) => a.effectiveMonth.localeCompare(b.effectiveMonth));
+  return applicable.length ? applicable[applicable.length - 1]!.newRate : baseRate;
+}

@@ -22,10 +22,11 @@ export default function CompanyPage({ params }: { params: Promise<{ id: string }
   const [terms, setTerms] = useState("");
   const saveTerms = useMutation({ mutationFn: () => api(`companies/${id}/terms`, { method: "PATCH", body: { paymentTermsDays: terms === "" ? null : Number(terms) } }), onSuccess: refresh });
   const [c, setC] = useState({ name: "", email: "", phone: "", role: "billing", isPrimary: false });
-  const addC = useMutation({ mutationFn: () => api(`companies/${id}/contacts`, { method: "POST", body: { name: c.name, role: c.role, isPrimary: c.isPrimary, ...(c.email ? { email: c.email } : {}), ...(c.phone ? { phone: c.phone } : {}) } }), onSuccess: () => { setC({ ...c, name: "", email: "", phone: "", isPrimary: false }); refresh(); } });
+  const [editC, setEditC] = useState<string | null>(null); const [editS, setEditS] = useState<string | null>(null);
+  const addC = useMutation({ mutationFn: () => api(`companies/${id}/contacts${editC ? `/${editC}` : ""}`, { method: editC ? "PATCH" : "POST", body: { name: c.name, role: c.role, isPrimary: c.isPrimary, ...(c.email ? { email: c.email } : {}), ...(c.phone ? { phone: c.phone } : {}) } }), onSuccess: () => { setC({ ...c, name: "", email: "", phone: "", isPrimary: false }); setEditC(null); refresh(); } });
   const delC = useMutation({ mutationFn: (cid: string) => api(`companies/${id}/contacts/${cid}`, { method: "DELETE" }), onSuccess: refresh });
   const [s, setS] = useState({ label: "", address: "", postalCode: "", city: "" });
-  const addS = useMutation({ mutationFn: () => api(`companies/${id}/sites`, { method: "POST", body: s }), onSuccess: () => { setS({ label: "", address: "", postalCode: "", city: "" }); refresh(); } });
+  const addS = useMutation({ mutationFn: () => api(`companies/${id}/sites${editS ? `/${editS}` : ""}`, { method: editS ? "PATCH" : "POST", body: s }), onSuccess: () => { setS({ label: "", address: "", postalCode: "", city: "" }); setEditS(null); refresh(); } });
   const delS = useMutation({ mutationFn: (sid: string) => api(`companies/${id}/sites/${sid}`, { method: "DELETE" }), onSuccess: refresh });
   const [p, setP] = useState({ reference: "", amount: "", startDate: "", endDate: "" });
   const addP = useMutation({ mutationFn: () => api(`companies/${id}/purchase-orders`, { method: "POST", body: p }), onSuccess: () => { setP({ reference: "", amount: "", startDate: "", endDate: "" }); refresh(); } });
@@ -52,10 +53,10 @@ export default function CompanyPage({ params }: { params: Promise<{ id: string }
         <section className="card" aria-labelledby="sit">
           <div className="card-h"><h2 id="sit">Sites</h2></div>
           <div className="card-b stack" style={{ gap: 8 }}>
-            {x.sites.length === 0 ? <span className="muted">Aucun site.</span> : <ul className="stack" style={{ gap: 6, margin: 0, padding: 0, listStyle: "none" }}>{x.sites.map(t => <li key={t.id} className="row" style={{ justifyContent: "space-between" }}><span><b>{t.label}</b> · {t.address}, {t.postalCode} {t.city}</span>{canWrite && <button className="btn btn-ghost btn-sm" onClick={() => delS.mutate(t.id)} aria-label={`Archiver le site ${t.label}`}>Archiver</button>}</li>)}</ul>}
+            {x.sites.length === 0 ? <span className="muted">Aucun site.</span> : <ul className="stack" style={{ gap: 6, margin: 0, padding: 0, listStyle: "none" }}>{x.sites.map(t => <li key={t.id} className="row" style={{ justifyContent: "space-between" }}><span><b>{t.label}</b> · {t.address}, {t.postalCode} {t.city}</span>{canWrite && <span className="row" style={{ gap: 4 }}><button className="btn btn-ghost btn-sm" onClick={() => { setEditS(t.id); setS({ label: t.label, address: t.address, postalCode: t.postalCode, city: t.city }); }} aria-label={`Modifier le site ${t.label}`}>Modifier</button><button className="btn btn-ghost btn-sm" onClick={() => delS.mutate(t.id)} aria-label={`Archiver le site ${t.label}`}>Archiver</button></span>}</li>)}</ul>}
             {canWrite && <form className="row" style={{ gap: 6, flexWrap: "wrap" }} onSubmit={e => { e.preventDefault(); addS.mutate(); }}>
               {([["label", "Libellé du site"], ["address", "Adresse"], ["postalCode", "Code postal"], ["city", "Ville"]] as const).map(([k, l]) => <div key={k}><label className="label" htmlFor={`s-${k}`} style={{ position: "absolute", left: -999 }}>{l}</label><input id={`s-${k}`} className="input" style={{ width: k === "postalCode" ? 100 : 150 }} placeholder={l} value={s[k]} onChange={e => setS({ ...s, [k]: e.target.value })} required /></div>)}
-              <button className="btn btn-secondary btn-sm" type="submit" disabled={addS.isPending}>Ajouter le site</button></form>}
+              <button className="btn btn-secondary btn-sm" type="submit" disabled={addS.isPending}>{editS ? "Enregistrer le site" : "Ajouter le site"}</button>{editS && <button className="btn btn-ghost btn-sm" type="button" onClick={() => { setEditS(null); setS({ label: "", address: "", postalCode: "", city: "" }); }}>Annuler</button>}</form>}
           </div>
         </section>
       </div>
@@ -63,14 +64,14 @@ export default function CompanyPage({ params }: { params: Promise<{ id: string }
         <div className="card-h"><h2 id="ctc">Contacts</h2></div>
         {x.contacts.length === 0 ? <div className="card-b muted">Aucun contact.</div> : <div className="tbl-wrap"><table className="tbl compact"><thead><tr><th scope="col">Nom</th><th scope="col">Rôle</th><th scope="col">Coordonnées</th><th scope="col">Actions</th></tr></thead>
           <tbody>{x.contacts.map(k => <tr key={k.id}><td><b>{k.name}</b></td><td>{ROLE[k.role]}{k.isPrimary && <> <span className="badge b-info">Référent</span></>}</td><td className="small">{k.email ?? ""} {k.phone ?? ""}</td>
-            <td>{canWrite && <button className="btn btn-ghost btn-sm" disabled={delC.isPending} onClick={() => delC.mutate(k.id)} aria-label={`Retirer ${k.name}`}>Retirer</button>}</td></tr>)}</tbody></table></div>}
+            <td>{canWrite && <span className="row" style={{ gap: 4 }}><button className="btn btn-ghost btn-sm" onClick={() => { setEditC(k.id); setC({ name: k.name, email: k.email ?? "", phone: k.phone ?? "", role: k.role, isPrimary: k.isPrimary }); }} aria-label={`Modifier ${k.name}`}>Modifier</button><button className="btn btn-ghost btn-sm" disabled={delC.isPending} onClick={() => delC.mutate(k.id)} aria-label={`Retirer ${k.name}`}>Retirer</button></span>}</td></tr>)}</tbody></table></div>}
         {canWrite && <form className="card-b row" style={{ gap: 6, flexWrap: "wrap", alignItems: "flex-end" }} onSubmit={e => { e.preventDefault(); addC.mutate(); }}>
           <div><label className="label" htmlFor="c-name">Nom du contact</label><input id="c-name" className="input" value={c.name} onChange={e => setC({ ...c, name: e.target.value })} required minLength={2} /></div>
           <div><label className="label" htmlFor="c-email">Email</label><input id="c-email" type="email" className="input" value={c.email} onChange={e => setC({ ...c, email: e.target.value })} /></div>
           <div><label className="label" htmlFor="c-phone">Téléphone</label><input id="c-phone" className="input" value={c.phone} onChange={e => setC({ ...c, phone: e.target.value })} /></div>
           <div><label className="label" htmlFor="c-role">Rôle</label><select id="c-role" className="input" value={c.role} onChange={e => setC({ ...c, role: e.target.value })}>{Object.entries(ROLE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
           <label className="row" style={{ gap: 6 }}><input type="checkbox" checked={c.isPrimary} onChange={e => setC({ ...c, isPrimary: e.target.checked })} /> Référent pour ce rôle</label>
-          <button className="btn btn-secondary btn-sm" type="submit" disabled={addC.isPending}>Ajouter le contact</button></form>}
+          <button className="btn btn-secondary btn-sm" type="submit" disabled={addC.isPending}>{editC ? "Enregistrer le contact" : "Ajouter le contact"}</button>{editC && <button className="btn btn-ghost btn-sm" type="button" onClick={() => { setEditC(null); setC({ name: "", email: "", phone: "", role: "billing", isPrimary: false }); }}>Annuler</button>}</form>}
       </section>
       <section className="card" aria-labelledby="bc" style={{ marginTop: 16 }}>
         <div className="card-h"><h2 id="bc">Bons de commande</h2></div>
