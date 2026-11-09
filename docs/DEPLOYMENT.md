@@ -49,3 +49,10 @@ railway run --service api -- sh -c 'BOOTSTRAP_TENANT_SLUG=ma-societe BOOTSTRAP_T
 
 ## Société de démonstration en ligne
 `ALLOW_ONLINE_DEMO=1 DEMO_ONLINE_PASSWORD=<14+ car.> node apps/api/dist/demo-tenant.js` (via `railway ssh`, depuis `/repo`) crée le tenant `demo-en-ligne` et 10 comptes fictifs. Le slug doit commencer par `demo` ; jamais pour une société réelle.
+
+## Console plateforme (exploitant)
+Créer UNE fois le tenant d'exploitation (MFA obligatoire, impossible d'en créer un second) :
+```
+BOOTSTRAP_PLATFORM=1 BOOTSTRAP_TENANT_SLUG=exploitation BOOTSTRAP_TENANT_NAME="Exploitation" BOOTSTRAP_ADMIN_EMAIL=<email> BOOTSTRAP_ADMIN_PASSWORD="<14+ caractères>" node apps/api/dist/bootstrap-tenant.js
+```
+Se connecter avec la société `exploitation`, activer le MFA (obligatoire), puis ouvrir `/operator`. Les sociétés se créent ensuite depuis la console.

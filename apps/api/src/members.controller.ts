@@ -63,8 +63,12 @@ export class MembersController {
   @Post("invitations") @RequirePermission("member.manage")
   async invite(@Req() { ctx }: R, @Body() body: unknown) {
     const d = parseZod(Invite, body);
-    const r = await this.auth.invite(ctx, d);
     const tenant = await this.prisma.tenant.findUnique({ where: { id: ctx.tenantId } });
+    if (tenant?.maxMembers != null) {
+      const [members, pending] = await Promise.all([this.prisma.membership.count({ where: { tenantId: ctx.tenantId } }), this.prisma.invitation.count({ where: { tenantId: ctx.tenantId, kind: "invite", acceptedAt: null, revokedAt: null, expiresAt: { gt: new Date() } } })]);
+      if (members + pending >= tenant.maxMembers) throw new ConflictException(`Quota de membres atteint (${tenant.maxMembers}) : contactez l'exploitant de la plateforme`);
+    }
+    const r = await this.auth.invite(ctx, d);
     const emailStatus = await this.mail.send({ to: d.email, template: "invitation", link: `/invite?token=${r.token}`, tenantId: ctx.tenantId, tenantName: tenant?.name, expiresInText: "7 jours" });
     return { id: r.id, expiresAt: r.expiresAt, link: `/invite?token=${r.token}`, emailStatus, note: emailStatus === "sent" ? "Invitation envoyée par e-mail. Le lien reste affiché une seule fois ici." : "Aucun e-mail envoyé (fournisseur non connecté ou en échec) : transmettez ce lien par un canal sûr, il n'est affiché qu'une fois." };
   }

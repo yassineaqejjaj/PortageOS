@@ -29,6 +29,16 @@ async function main() {
     const user = await db.user.upsert({ where: { email }, update: {}, create: { email, passwordHash: await hashPassword(pw) } });
     await db.membership.upsert({ where: { userId_tenantId: { userId: user.id, tenantId } }, update: { roles, ...link }, create: { userId: user.id, tenantId, roles, ...link } });
   }
+  // Démo : tenant d'exploitation de la plateforme + un exploitant fictif (MFA non imposé ICI uniquement pour les tests E2E ; en production, le tenant plateforme est créé par bootstrap avec MFA obligatoire).
+  if (!(await db.tenant.findFirst({ where: { isPlatform: true } }))) {
+    // isPlatform est immuable (trigger) : on ne peut le poser qu'à la création.
+    if (!(await db.tenant.findUnique({ where: { slug: "plateforme-demo" } }))) await db.tenant.create({ data: { slug: "plateforme-demo", name: "Exploitation plateforme (démo)", isPlatform: true } });
+  }
+  const platT = await db.tenant.findFirst({ where: { isPlatform: true } });
+  if (platT) {
+    const op = await db.user.upsert({ where: { email: "operator@demo.test" }, update: { passwordHash: await hashPassword(pw) }, create: { email: "operator@demo.test", passwordHash: await hashPassword(pw) } });
+    await db.membership.upsert({ where: { userId_tenantId: { userId: op.id, tenantId: platT.id } }, update: { roles: ["tenant_admin"] }, create: { userId: op.id, tenantId: platT.id, roles: ["tenant_admin"] } });
+  }
   // Démo : budget quotidien d'exécutions relevé pour permettre les tests répétés (valeur par défaut en production : 20).
   for (const agentKey of ["onboarding", "contract", "operations", "finance", "consultant"]) await db.agentConfig.upsert({ where: { tenantId_agentKey: { tenantId, agentKey } }, update: { maxRunsPerDay: 500 }, create: { tenantId, agentKey, maxRunsPerDay: 500 } });
   await db.$disconnect();

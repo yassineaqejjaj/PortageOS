@@ -42,12 +42,12 @@ export class AuthController {
   async me(@Req() { ctx }: R) {
     const [user, tenant] = await Promise.all([
       this.prisma.user.findUnique({ where: { id: ctx.userId }, select: { email: true, mfaEnabledAt: true } }),
-      this.prisma.tenant.findUnique({ where: { id: ctx.tenantId }, select: { slug: true, name: true, mfaRequired: true } }),
+      this.prisma.tenant.findUnique({ where: { id: ctx.tenantId }, select: { slug: true, name: true, mfaRequired: true, isPlatform: true } }),
     ]);
     const all = [...new Set(Object.values(ROLE_PERMISSIONS).flat())] as Permission[];
     const mfaEnabled = !!user?.mfaEnabledAt;
     return { userId: ctx.userId, tenantId: ctx.tenantId, roles: ctx.roles, consultantId: ctx.consultantId, companyId: ctx.companyId, email: user?.email, tenant: tenant ? { slug: tenant.slug, name: tenant.name } : undefined,
-      mfaEnabled, mfaEnrollmentRequired: !!tenant?.mfaRequired && !mfaEnabled, permissions: [...all.filter(p => can(ctx.roles, p)), "support.create", "notification.read"] };
+      mfaEnabled, mfaEnrollmentRequired: !!tenant?.mfaRequired && !mfaEnabled, permissions: [...all.filter(p => can(ctx.roles, p)), "support.create", "notification.read", ...(tenant?.isPlatform && ctx.roles.includes("tenant_admin") ? ["platform.manage"] : [])] };
   }
 
   @Public() @Get("health") health() { return { status: "ok" }; }

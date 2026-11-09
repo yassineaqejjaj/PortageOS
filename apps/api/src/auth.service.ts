@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "node:crypto";
 import { checkPassword } from "@portage/domain";
@@ -37,6 +37,7 @@ export class AuthService {
       throw new UnauthorizedException("Identifiants invalides");
     }
     clearLimit(key);
+    if (tenant.status === "suspended") throw new ForbiddenException("Cette société est suspendue : contactez l'exploitant de la plateforme.");
     if (user.mfaEnabledAt) {
       const mfaToken = jwt.sign({ sub: user.id, tid: tenant.id, purpose: "mfa" }, loadConfig().jwtSecret, { algorithm: "HS256", expiresIn: 300 });
       return { mfaRequired: true as const, mfaToken };

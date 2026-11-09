@@ -36,10 +36,10 @@ jobs:
       - run: pnpm typecheck
       - name: Build
         run: pnpm build
-      - name: Tests unitaires et d'intégration
-        run: pnpm test
       - name: Seed démo (test uniquement)
         run: pnpm seed
+      - name: Tests unitaires et d'intégration
+        run: pnpm test
       - name: E2E Playwright
         run: |
           pnpm -F @portage/web exec playwright install --with-deps chromium

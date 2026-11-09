@@ -48,6 +48,7 @@ export const PORTALS: Record<Portal, { label: string; groups: NavGroup[] }> = {
       L("timesheets", "Activité / CRA", "/timesheets", "cal", "timesheet.read"), L("expenses", "Notes de frais", "/expenses", "rec", "expense.read"), L("leaves", "Absences et congés", "/leaves", "cal", "leave.read"), L("invoices", "Facturation", "/invoices", "eur", "invoice.read"),
       { key: "treasury", label: "Trésorerie", icon: "bank", children: [L("bank", "Rapprochement bancaire", "/bank", "bank", "payment.write"), L("ledger", "Registre financier", "/ledger", "led", "ledger.read")] },
       L("accounts", "Comptes d’activité", "/accounts", "led", "account.read")] },
+    { label: "Exploitation", entries: [L("operator", "Console plateforme", "/operator", "sh", "platform.manage")] },
     { label: "Gouvernance", entries: [
       L("rules", "Conformité", "/rules", "sh", "rules.read"), L("accounting", "Comptabilité", "/accounting", "book", "accounting.read"), L("support", "Support", "/support", "chat", "support.create"),
       { key: "config", label: "Configuration", icon: "gear", children: [L("members", "Membres et accès", "/members", "users", "member.manage"), L("company-profile", "Identité de la société", "/settings/company", "bld", "member.manage"), L("audit", "Journal d’audit", "/audit", "sh", "audit.read")] }] },

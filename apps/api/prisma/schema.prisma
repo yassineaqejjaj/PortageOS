@@ -13,6 +13,16 @@ model Tenant {
   name        String
   createdAt   DateTime     @default(now())
   mfaRequired Boolean      @default(false)
+  /// active | suspended (suspendu : connexions et sessions refusées, données conservées).
+  status          String    @default("active")
+  suspendedAt     DateTime?
+  suspendedReason String?
+  /// Libellé libre de l'offre (aucune grille tarifaire ni facturation SaaS n'existe).
+  plan            String?
+  /// Quota de membres (invitations en attente comprises) ; null = illimité.
+  maxMembers      Int?
+  /// Tenant d'exploitation de la plateforme (console opérateur). Posé uniquement par le script de bootstrap : aucune écriture applicative.
+  isPlatform      Boolean   @default(false)
   memberships Membership[]
   companies   Company[]
   prospects   Prospect[]

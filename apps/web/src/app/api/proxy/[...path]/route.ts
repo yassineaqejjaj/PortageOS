@@ -4,7 +4,7 @@ import { API_URL, COOKIE, REFRESH, clearSessionCookies, setSessionCookies } from
 // Liste blanche: le front ne peut atteindre que ces routes de l'API.
 const U = "[0-9a-f-]{36}";
 const ALLOWED = [
-  /^me$/, new RegExp(`^companies(/${U})?$`), /^audit$/, /^members$/,
+  /^me$/, /^operator\/tenants$/, new RegExp(`^operator/tenants/${U}(/(suspend|reactivate|admin-invitation))?$`), new RegExp(`^companies(/${U})?$`), /^audit$/, /^members$/,
   new RegExp(`^prospects(/${U}(/transition)?)?$`),
   new RegExp(`^consultants(/${U}(/activate|/tasks/[a-z_]+)?)?$`),
   new RegExp(`^missions(/${U}(/amendments)?)?$`),
