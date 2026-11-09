@@ -1,7 +1,7 @@
 /* Compléments applicatifs. Les tokens et composants viennent de @portage/design-system. */
-:root, .po { --type-ui: var(--font-inter), 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --type-display: var(--font-jakarta), 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-  --type-mono: var(--font-mono), 'JetBrains Mono', ui-monospace, Menlo, monospace; }
+:root, .po { --type-ui: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --type-display: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --type-mono: 'JetBrains Mono', 'JetBrains Mono', ui-monospace, Menlo, monospace; }
 html, body { margin: 0; }
 body { min-height: 100vh; background: var(--color-bg-canvas); color: var(--color-text-primary); font-family: var(--type-ui); }
 .nav-shell { background: var(--color-bg-nav); color: var(--color-text-nav); display: flex; flex-direction: column; min-height: 100%; }

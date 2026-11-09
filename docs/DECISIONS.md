@@ -5,3 +5,4 @@
 - D-004 Hébergement : Vercel/Railway par défaut ; alternative UE (ex. Scaleway/OVH) à documenter avant données réelles RH/paie.
 - D-005 Git local sur `main`, pas de remote.
 - D-006 (2026-11-08) Design importé depuis l'artifact Claude Design (portage.css). Navigation limitée aux routes réelles ; pas d'écran du design branché sur des données fictives. Polices via next/font (RGPD).
+- D-007 (2026-11-09) Polices auto-hébergées via @fontsource (et non next/font/google) : `next/font/google` télécharge les polices pendant le build et a fait échouer des builds (CI et Vercel) de façon intermittente ; fontsource est déterministe, hors ligne et sans appel à Google.

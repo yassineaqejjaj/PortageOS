@@ -1,12 +1,12 @@
 import "@portage/design-system/portage.css";
 import "./app.css";
-import { Inter, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
 import { Providers } from "./providers";
 
-// Polices auto-hébergées au build (aucun appel à Google à l'exécution : RGPD).
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
-const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap", weight: ["600", "700", "800"] });
+// Polices OFL auto-hébergées via des paquets npm (aucun téléchargement au build ni appel à Google à l'exécution : RGPD et builds reproductibles).
 
 export const metadata = { title: "PORTAGE OS" };
 
@@ -15,7 +15,7 @@ const themeScript = `try{var t=localStorage.getItem('theme');if(!t)t=matchMedia(
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning className={`po ${inter.variable} ${mono.variable} ${jakarta.variable}`}>
+    <html lang="fr" suppressHydrationWarning className="po">
       <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
       <body><Providers>{children}</Providers></body>
     </html>
