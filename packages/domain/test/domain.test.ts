@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Money, invoiceTotals, ParameterCatalog, StateMachine, Ledger, InvoiceNumbering, parseAmount, parseBankDate, parseBankCsv, suggestMatches } from "../src/index";
+import { Money, invoiceTotals, ParameterCatalog, StateMachine, Ledger, InvoiceNumbering, parseAmount, parseBankDate, parseBankCsv, suggestMatches, isValidQuantity, parseTimesheetCsv } from "../src/index";
 
 describe("Money", () => {
   it("évite les erreurs flottantes", () => {
@@ -323,5 +323,22 @@ describe("relevés bancaires", () => {
     expect(suggestMatches({ amount: "800.00", label: "VIR DIVERS" }, inv)).toEqual([]); // deux factures de même solde : ambigu
     expect(suggestMatches({ amount: "1200.00", label: "VIR DIVERS" }, inv)[0]).toMatchObject({ invoiceId: "a", confidence: "amount" });
     expect(suggestMatches({ amount: "-1200.00", label: "FA-2026-0001" }, inv)).toEqual([]);
+  });
+});
+
+describe("unités du CRA (heures, forfait jours)", () => {
+  it("validité des quantités par unité", () => {
+    expect(isValidQuantity("day", "0.5")).toBe(true); expect(isValidQuantity("day", "1")).toBe(true);
+    expect(isValidQuantity("day", "7.5")).toBe(false); expect(isValidQuantity("forfait_jours", "0.25")).toBe(false);
+    expect(isValidQuantity("hour", "7.25")).toBe(true); expect(isValidQuantity("hour", "24")).toBe(true);
+    for (const b of ["0", "-1", "24.25", "7.3", "abc", "", "Infinity"]) expect(isValidQuantity("hour", b), b).toBe(false);
+  });
+  it("import CSV : séparateurs, virgule décimale, en-tête, erreurs ligne par ligne, tout contrôlé", () => {
+    const ok = parseTimesheetCsv("date;quantite\r\n2031-06-02;7,5\r\n2031-06-03;4", "hour", "2031-06");
+    expect(ok.errors).toEqual([]); expect(ok.lines).toEqual([{ date: "2031-06-02", quantity: "7.5" }, { date: "2031-06-03", quantity: "4" }]);
+    const bad = parseTimesheetCsv("2031-06-02;1\n2031-07-01;1\n2031-06-03;3\n2031-06-02;0.5\nfoo\n2031-06-04;1;extra", "day", "2031-06");
+    expect(bad.errors.length).toBe(5);
+    expect(parseTimesheetCsv("﻿2031-06-02,1", "day", "2031-06").lines.length).toBe(1);
+    expect(parseTimesheetCsv(Array(401).fill("2031-06-02;1").join("\n"), "day", "2031-06").errors[0]).toMatch(/trop long/);
   });
 });

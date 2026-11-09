@@ -26,7 +26,7 @@ export class InvoicesService {
     if (await tx.invoice.findUnique({ where: { timesheetId } })) throw new ConflictException("Ce CRA est déjà facturé");
     const inv = await tx.invoice.create({ data: { tenantId: ctx.tenantId, companyId: ts.mission.companyId, missionId: ts.missionId, timesheetId,
       days: days.toString(), unitPrice: ts.mission.dailyRate, vatRate: ts.mission.vatRate, net: t.net.amount.toFixed(2), vat: t.vat.amount.toFixed(2), gross: t.gross.amount.toFixed(2) } });
-    await tx.invoiceLine.create({ data: { tenantId: ctx.tenantId, invoiceId: inv.id, position: 1, kind: "activity", description: ts.mission.title, unit: "jour", quantity: days.toString(), unitPrice: ts.mission.dailyRate, vatRate: ts.mission.vatRate, net: t.net.amount.toFixed(2), vat: t.vat.amount.toFixed(2), gross: t.gross.amount.toFixed(2) } });
+    await tx.invoiceLine.create({ data: { tenantId: ctx.tenantId, invoiceId: inv.id, position: 1, kind: "activity", description: ts.mission.title, unit: ts.mission.timeUnit === "hour" ? "heure" : "jour", quantity: days.toString(), unitPrice: ts.mission.dailyRate, vatRate: ts.mission.vatRate, net: t.net.amount.toFixed(2), vat: t.vat.amount.toFixed(2), gross: t.gross.amount.toFixed(2) } });
     const next = applyAsAnyRole(timesheetWorkflow, ts.status as TimesheetState, "mark_invoiced", ctx.userId, ctx.roles, { totalDays: days.toString(), invoiceId: inv.id });
     const r = await tx.timesheet.updateMany({ where: { id: timesheetId, status: "validated" }, data: { status: next } });
     if (r.count !== 1) throw new ConflictException("CRA modifié entre-temps");

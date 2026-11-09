@@ -7,6 +7,7 @@ export const NOTIFICATION_TYPES: Record<string, string> = {
   "timesheet.client_approved": "CRA approuvé par le client (validation interne)",
   "timesheet.client_rejected": "CRA refusé par le client",
   "timesheet.validated": "CRA validé",
+  "timesheet.reminder": "Relance de CRA",
   "expense.submitted": "Note de frais à approuver",
   "expense.decided": "Décision sur ma note de frais",
   "leave.submitted": "Demande d'absence à traiter",

@@ -224,7 +224,7 @@ describe("registre financier : garanties en base", () => {
   });
   it("contraintes : quantité de jour, solde facture", async () => {
     const ts = await admin.timesheet.findFirst({ where: { tenantId: t1 } });
-    await expect(admin.timesheetLine.create({ data: { tenantId: t1, timesheetId: ts!.id, date: new Date("2026-12-30"), quantity: "2" } })).rejects.toThrow();
+    await expect(admin.timesheetLine.create({ data: { tenantId: t1, timesheetId: ts!.id, date: new Date("2026-12-30"), quantity: "7.3" } })).rejects.toThrow();
     const inv = await admin.invoice.findFirst({ where: { tenantId: t1 } });
     await expect(admin.invoice.update({ where: { id: inv!.id }, data: { paid: "99999999" } })).rejects.toThrow();
   });

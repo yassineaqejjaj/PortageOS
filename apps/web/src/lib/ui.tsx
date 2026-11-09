@@ -2,7 +2,8 @@
 import { ApiError } from "./api";
 
 export const nf = (v: string | number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(Number(v));
-export const dayFmt = (v: string | number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(Number(v));
+export const dayFmt = (v: string | number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(Number(v));
+export const UNIT_LABEL: Record<string, { one: string; many: string; short: string }> = { day: { one: "jour", many: "jour(s)", short: "j" }, forfait_jours: { one: "jour", many: "jour(s)", short: "j" }, hour: { one: "heure", many: "heure(s)", short: "h" } };
 
 export function Forbidden({ what }: { what: string }) {
   return <div className="alert a-warning" role="alert"><span>Accès refusé : votre rôle ne permet pas de consulter {what}.</span></div>;

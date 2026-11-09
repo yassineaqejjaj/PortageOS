@@ -59,3 +59,38 @@ export function applyPayment(state: InvoiceState, gross: string, alreadyPaid: st
 /** Numéro de période YYYY-MM: validation stricte. */
 export function isValidPeriod(p: string): boolean { return /^\d{4}-(0[1-9]|1[0-2])$/.test(p); }
 export function dateInPeriod(isoDate: string, period: string): boolean { return isoDate.slice(0, 7) === period; }
+
+// ---------- Unités de saisie du CRA ----------
+export const TIME_UNITS = ["day", "hour", "forfait_jours"] as const;
+export type TimeUnit = (typeof TIME_UNITS)[number];
+export const TIME_UNIT_LABEL: Record<TimeUnit, string> = { day: "jours", hour: "heures", forfait_jours: "forfait jours" };
+
+/** Jour et forfait jours : demi-journée ou journée. Heures : multiples de 0,25 h, 24 h au plus (borne physique, pas une règle légale). */
+export function isValidQuantity(unit: TimeUnit, q: string | number): boolean {
+  let d: Decimal;
+  try { d = new Decimal(q); } catch { return false; }
+  if (!d.isFinite()) return false;
+  if (unit === "hour") return d.gt(0) && d.lte(24) && d.times(4).isInteger();
+  return d.eq(0.5) || d.eq(1);
+}
+
+export interface CsvLines { lines: { date: string; quantity: string }[]; errors: string[] }
+/** Import « date;quantité » (ou virgule), une ligne par jour ; en-tête facultatif ; virgule décimale acceptée avec le séparateur « ; ». */
+export function parseTimesheetCsv(text: string, unit: TimeUnit, period: string): CsvLines {
+  const lines: { date: string; quantity: string }[] = [], errors: string[] = [], seen = new Set<string>();
+  const rows = text.replace(/^﻿/, "").split(/\r?\n/).map(r => r.trim()).filter(Boolean);
+  if (rows.length > 400) return { lines, errors: ["Fichier trop long (400 lignes au plus)."] };
+  rows.forEach((row, i) => {
+    const sep = row.includes(";") ? ";" : ",";
+    const [d, q, ...rest] = row.split(sep).map(c => c.trim().replace(/^"|"$/g, ""));
+    if (i === 0 && !/^\d/.test(d ?? "")) return; // en-tête
+    const n = i + 1;
+    if (rest.length || d === undefined || q === undefined) { errors.push(`Ligne ${n} : deux colonnes attendues (date, quantité).`); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !dateInPeriod(d, period)) { errors.push(`Ligne ${n} : date « ${d.slice(0, 20)} » absente de la période ${period} (format AAAA-MM-JJ).`); return; }
+    const qty = sep === ";" ? q.replace(",", ".") : q;
+    if (!isValidQuantity(unit, qty)) { errors.push(`Ligne ${n} : quantité « ${q.slice(0, 12)} » invalide pour l'unité ${TIME_UNIT_LABEL[unit]}.`); return; }
+    if (seen.has(d)) { errors.push(`Ligne ${n} : date en double ${d}.`); return; }
+    seen.add(d); lines.push({ date: d, quantity: new Decimal(qty).toString() });
+  });
+  return { lines, errors };
+}

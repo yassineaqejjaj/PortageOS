@@ -89,7 +89,7 @@ describe("notifications", () => {
   });
   it("préférences : un type désactivé n'est plus reçu; canal e-mail déclaré non connecté", async () => {
     const p = (await srv().get("/notification-preferences").set(H("clientA"))).body;
-    expect(p.email.status).toBe("not_connected"); expect(p.types.length).toBe(11);
+    expect(p.email.status).toBe("not_connected"); expect(p.types.length).toBe(12);
     expect((await srv().put("/notification-preferences").set(H("clientA")).send({ type: "inconnu", enabled: false })).status).toBe(400);
     await srv().put("/notification-preferences").set(H("clientA")).send({ type: "timesheet.submitted", enabled: false });
     const n0 = (await notifs("clientA")).length;

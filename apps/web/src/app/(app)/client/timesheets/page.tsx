@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { ErrorBox, TS_STATUS, Badge, dayFmt } from "@/lib/ui";
+import { ErrorBox, TS_STATUS, Badge, UNIT_LABEL, dayFmt } from "@/lib/ui";
 
-type T = { id: string; period: string; status: string; missionTitle: string; consultantName: string; totalDays: string; lines: { date: string; quantity: string }[] };
+type T = { id: string; period: string; status: string; missionTitle: string; unit: string; consultantName: string; totalDays: string; lines: { date: string; quantity: string }[] };
 
 export default function ClientTimesheetsPage() {
   const qc = useQueryClient();
@@ -23,7 +23,7 @@ export default function ClientTimesheetsPage() {
       {q.data?.map(t => (
         <section key={t.id} className="card" aria-label={`CRA ${t.period}`}>
           <div className="card-h"><h2>{t.consultantName} — {t.period}</h2><Badge map={TS_STATUS} value={t.status} /></div>
-          <div className="card-b stack"><p>{t.missionTitle} · <b>{dayFmt(t.totalDays)} jour(s)</b></p>
+          <div className="card-b stack"><p>{t.missionTitle} · <b>{dayFmt(t.totalDays)} {(UNIT_LABEL[t.unit] ?? UNIT_LABEL.day!).many}</b></p>
             <p className="small muted">{t.lines.map(l => `${l.date.slice(8)}${l.quantity === "0.5" ? "½" : ""}`).join(" · ")}</p>
             {rejecting === t.id && (
               <div className="field"><label className="label" htmlFor={`r-${t.id}`}>Motif du refus (obligatoire)</label><input id={`r-${t.id}`} className="input" value={reason} onChange={e => setReason(e.target.value)} /></div>)}
@@ -33,7 +33,7 @@ export default function ClientTimesheetsPage() {
               <button className="btn btn-ghost" onClick={() => setRejecting(null)}>Annuler</button>
               <button className="btn btn-danger" disabled={act.isPending || reason.trim().length < 3} onClick={() => act.mutate({ id: t.id, event: "reject", rejectReason: reason })}>Confirmer le refus</button></> : <>
               <button className="btn btn-secondary" onClick={() => { setRejecting(t.id); setReason(""); }}>Refuser</button>
-              <button className="btn btn-primary" disabled={act.isPending} onClick={() => act.mutate({ id: t.id, event: "approve" })}>Valider {dayFmt(t.totalDays)} jour(s)</button></>}
+              <button className="btn btn-primary" disabled={act.isPending} onClick={() => act.mutate({ id: t.id, event: "approve" })}>Valider {dayFmt(t.totalDays)} {(UNIT_LABEL[t.unit] ?? UNIT_LABEL.day!).many}</button></>}
           </div>
         </section>))}
     </>
