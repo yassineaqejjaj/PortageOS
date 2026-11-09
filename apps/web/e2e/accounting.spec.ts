@@ -5,7 +5,7 @@ import { login } from "./helpers";
 const as = async (browser: import("@playwright/test").Browser, email: string) => { const ctx = await browser.newContext(); const page = await ctx.newPage(); await login(page, email); return { ctx, page }; };
 
 test("écriture d'ajustement → clôture → période close refusée → export FEC par l'expert-comptable → réouverture réservée à l'administrateur", async ({ browser }) => {
-  const period = `${2001 + Math.floor(Math.random() * 19)}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, "0")}`; // période ancienne : aucune autre écriture ni facture ne la concerne
+  const period = `${1100 + Math.floor(Math.random() * 900)}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, "0")}`; // période très ancienne et aléatoire (900 × 12 combinaisons) : aucune autre écriture ni facture ne la concerne et une collision avec une exécution précédente est négligeable
   const label = `Ajustement E2E ${period}`;
 
   const f = await as(browser, "finance@demo.test");

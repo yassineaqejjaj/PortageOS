@@ -13,6 +13,7 @@ Mis à jour le 2026-11-08. Chaque ligne est un prérequis **externe** : compte, 
 | Sirene / identifiants entreprises | Jeton API INSEE | Vous | Saisie manuelle du SIREN (9 chiffres) |
 | Abonnement SaaS | Compte du fournisseur de paiement (webhooks vérifiés) | Vous | — |
 | Règles légales (portage salarial, IDCC 3219, minima, cotisations) | **Saisie depuis les sources officielles et approbation par un juriste/paie** | Un professionnel habilité | Catalogue de paramètres datés, sourcés, approuvés à quatre yeux ; **aucune valeur légale livrée** |
+| Stockage objet et antivirus | Un stockage S3-compatible (bucket) et un démon ClamAV (service dédié) | Vous | Contenu en PostgreSQL (≤ 10 Mo), adaptateur ClamAV fail-closed prêt (`CLAMAV_HOST`) ; **aucune analyse antivirus réelle n'est active en production** |
 | Hébergement | Hébergement UE contractualisé, DPA, sauvegardes testées | Vous | Dockerfile portable, config Railway/Vercel de test |
 | Validation juridique et métier | Revue par juristes, DPO, expert-comptable, spécialiste paie | Eux | Documentation des règles et des limites |
 | Sécurité | Test d'intrusion externe, analyse d'impact RGPD | Prestataire / DPO | Tests d'isolation, RLS, audit append-only |

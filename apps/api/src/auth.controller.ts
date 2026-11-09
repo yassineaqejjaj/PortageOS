@@ -43,7 +43,7 @@ export class AuthController {
     ]);
     const all = [...new Set(Object.values(ROLE_PERMISSIONS).flat())] as Permission[];
     const mfaEnabled = !!user?.mfaEnabledAt;
-    return { userId: ctx.userId, tenantId: ctx.tenantId, roles: ctx.roles, email: user?.email, tenant: tenant ? { slug: tenant.slug, name: tenant.name } : undefined,
+    return { userId: ctx.userId, tenantId: ctx.tenantId, roles: ctx.roles, consultantId: ctx.consultantId, companyId: ctx.companyId, email: user?.email, tenant: tenant ? { slug: tenant.slug, name: tenant.name } : undefined,
       mfaEnabled, mfaEnrollmentRequired: !!tenant?.mfaRequired && !mfaEnabled, permissions: [...all.filter(p => can(ctx.roles, p)), "support.create", "notification.read"] };
   }
 

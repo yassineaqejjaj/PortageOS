@@ -27,6 +27,7 @@ const ALLOWED = [
   /^members$/, new RegExp(`^members/${U}(/reset-link)?$`), /^invitations$/, new RegExp(`^invitations/${U}$`), /^tenant\/security$/,
   /^accounting\/(accounts|periods|balance|vat|third-parties|entries|dossier|export\/fec|export\/balance\.csv)$/, /^accounting\/accounts\/\d{3,8}$/,
   /^accounting\/periods\/\d{4}-\d{2}\/(checks|close|reopen)$/, new RegExp(`^accounting/entries/${U}/reverse$`),
+  /^documents\/policy$/, /^documents$/, new RegExp(`^documents/${U}(/link|/purge)?$`),
   /^notifications$/, /^notifications\/(unread-count|read-all)$/, new RegExp(`^notifications/${U}/read$`), /^notification-preferences$/,
   /^support\/tickets$/, new RegExp(`^support/tickets/${U}(/messages|/transition|/assign)?$`), /^support\/(staff|templates)$/,
 ];

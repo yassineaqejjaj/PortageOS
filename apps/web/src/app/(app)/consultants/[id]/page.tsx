@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { ErrorBox } from "@/lib/ui";
+import { DocumentsPanel } from "@/lib/documents";
 
 type Task = { id: string; key: string; label: string; required: boolean; doneAt: string | null };
 type C = { id: string; firstName: string; lastName: string; email: string | null; status: string; tasks: Task[] };
@@ -15,6 +16,8 @@ export default function ConsultantPage({ params }: { params: Promise<{ id: strin
   const refresh = () => { qc.invalidateQueries({ queryKey: ["consultant", id] }); qc.invalidateQueries({ queryKey: ["consultants"] }); };
   const toggle = useMutation({ mutationFn: (a: { key: string; done: boolean }) => api(`consultants/${id}/tasks/${a.key}`, { method: "POST", body: { done: a.done } }), onSuccess: refresh });
   const activate = useMutation({ mutationFn: () => api(`consultants/${id}/activate`, { method: "POST" }), onSuccess: refresh });
+  const me = useQuery({ queryKey: ["me"], queryFn: () => api<{ permissions: string[] }>("me") });
+  const perms = me.data?.permissions ?? [];
   const c = q.data;
   return (
     <>
@@ -36,6 +39,7 @@ export default function ConsultantPage({ params }: { params: Promise<{ id: strin
           {c.status === "onboarding" && <div className="card-f"><button className="btn btn-primary" onClick={() => activate.mutate()} disabled={activate.isPending}>Activer le consultant</button></div>}
         </section>
       )}
+      {c && perms.includes("document.read") && <DocumentsPanel ownerType="consultant" ownerId={c.id} categories={["identity_document", "bank_details", "rc_pro", "contract_copy", "other"]} canUpload={perms.includes("document.write")} canDelete={perms.includes("document.delete")} canShare={perms.includes("document.share")} title="Documents du dossier" />}
     </>
   );
 }

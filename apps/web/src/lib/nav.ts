@@ -44,6 +44,7 @@ export const NAV: NavItem[] = [
   { key: "me", label: "Mes CRA", href: "/me/timesheets", icon: "cal", permission: "portal.self", group: "Mon espace" },
   { key: "support", label: "Support", href: "/support", icon: "chat", permission: "support.create", group: "Support" },
   { key: "security", label: "Sécurité du compte", href: "/security", icon: "key", permission: "notification.read", group: "Mon compte" },
+  { key: "mydocs", label: "Mes documents", href: "/me/documents", icon: "doc", permission: "portal.self", group: "Mon espace" },
   { key: "myagent", label: "Mon assistant", href: "/me/assistant", icon: "ai", permission: "portal.self", group: "Mon espace" },
   { key: "myleaves", label: "Mes absences", href: "/me/leaves", icon: "cal", permission: "portal.self", group: "Mon espace" },
   { key: "myexpenses", label: "Mes notes de frais", href: "/me/expenses", icon: "rec", permission: "portal.self", group: "Mon espace" },

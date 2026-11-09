@@ -6,3 +6,12 @@ export async function download(path: string, filename: string): Promise<string |
   const url = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = url; a.download = cd; a.click(); URL.revokeObjectURL(url);
   return null;
 }
+
+/** Télécharge un fichier servi par une route BFF binaire (ex. /api/documents/:id/download). */
+export async function downloadFile(url: string, fallbackName: string): Promise<string | null> {
+  const r = await fetch(url);
+  if (!r.ok) return ((await r.json().catch(() => null))?.error?.message as string | undefined) ?? "Téléchargement impossible";
+  const name = r.headers.get("content-disposition")?.match(/filename="([^"]+)"/)?.[1] ?? fallbackName;
+  const u = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = u; a.download = name; a.click(); URL.revokeObjectURL(u);
+  return null;
+}

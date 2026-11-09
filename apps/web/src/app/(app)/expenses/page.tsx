@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { ErrorBox, Forbidden, isForbidden, nf, EXP_STATUS, type Claim } from "@/lib/ui";
+import { downloadFile } from "@/lib/download";
 
 const CAT: Record<string, string> = { meal: "Repas", transport: "Transport", hotel: "Hôtel", mileage: "Kilométrage", other: "Autre" };
 
@@ -25,7 +26,7 @@ export default function ExpensesPage() {
         <section key={c.id} className="card" aria-label={c.title}>
           <div className="card-h"><h2>{c.title} — {nf(c.total)}</h2><span className={`badge ${EXP_STATUS[c.status]?.cls}`}>{EXP_STATUS[c.status]?.label}</span></div>
           <div className="tbl-wrap"><table className="tbl compact"><thead><tr><th scope="col">Date</th><th scope="col">Nature</th><th scope="col">Description</th><th scope="col">Justificatif</th><th scope="col" className="r">Montant</th></tr></thead>
-            <tbody>{c.lines.map(l => <tr key={l.id}><td className="num">{fmtDate(l.date)}</td><td>{CAT[l.category]}{l.km && <span className="muted small"> ({l.km} km)</span>}</td><td>{l.description}{l.policyFlag && <div className="small" style={{ color: "var(--color-status-warning)" }}>⚠ {l.policyFlag}</div>}</td><td className="mono">{l.receiptRef ?? "—"}</td><td className="r num">{nf(l.amount)}</td></tr>)}</tbody></table></div>
+            <tbody>{c.lines.map(l => <tr key={l.id}><td className="num">{fmtDate(l.date)}</td><td>{CAT[l.category]}{l.km && <span className="muted small"> ({l.km} km)</span>}</td><td>{l.description}{l.policyFlag && <div className="small" style={{ color: "var(--color-status-warning)" }}>⚠ {l.policyFlag}</div>}</td><td className="mono">{l.receiptRef?.startsWith("doc:") ? <button className="btn btn-ghost btn-sm" onClick={() => downloadFile(`/api/documents/${l.receiptRef!.slice(4)}/download`, "justificatif")}>Télécharger</button> : (l.receiptRef ?? "—")}</td><td className="r num">{nf(l.amount)}</td></tr>)}</tbody></table></div>
           {c.rejectReason && <div className="card-b"><div className="alert a-danger"><span>Refusée : {c.rejectReason}</span></div></div>}
           {rejecting === c.id && <div className="card-b field"><label className="label" htmlFor={`r-${c.id}`}>Motif du refus (obligatoire)</label><input id={`r-${c.id}`} className="input" value={reason} onChange={e => setReason(e.target.value)} /></div>}
           <div className="card-f">
