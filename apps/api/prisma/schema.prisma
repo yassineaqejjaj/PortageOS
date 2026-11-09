@@ -12,6 +12,7 @@ model Tenant {
   slug        String       @unique
   name        String
   createdAt   DateTime     @default(now())
+  mfaRequired Boolean      @default(false)
   memberships Membership[]
   companies   Company[]
   prospects   Prospect[]
@@ -19,12 +20,20 @@ model Tenant {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
-  passwordHash String
-  createdAt    DateTime     @default(now())
-  disabledAt   DateTime?
-  memberships  Membership[]
+  id                String       @id @default(uuid())
+  email             String       @unique
+  passwordHash      String
+  createdAt         DateTime     @default(now())
+  disabledAt        DateTime?
+  passwordChangedAt DateTime?
+  /// TOTP : secret chiffré (AES-256-GCM, clé MFA_ENCRYPTION_KEY), jamais en clair.
+  mfaSecretEnc      String?
+  mfaPendingEnc     String?
+  mfaEnabledAt      DateTime?
+  mfaLastStep       Int?
+  recoveryHashes    String[]
+  sessions          Session[]
+  memberships       Membership[]
 }
 
 /// Un utilisateur peut avoir plusieurs sociétés (tenants) avec des rôles distincts.
@@ -547,4 +556,42 @@ model MessageTemplate {
   createdAt DateTime @default(now())
 
   @@unique([tenantId, name])
+}
+
+/// Session = jeton de rafraîchissement opaque (haché) avec rotation et détection de rejeu.
+model Session {
+  id              String    @id @default(uuid())
+  userId          String
+  tenantId        String
+  refreshHash     String    @unique
+  prevRefreshHash String?
+  userAgent       String?
+  mfaVerified     Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  lastUsedAt      DateTime  @default(now())
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  revokedReason   String?
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, tenantId])
+}
+
+/// Invitation (ou lien de réinitialisation) à usage unique : seul le HACHÉ du jeton est stocké.
+model Invitation {
+  id           String    @id @default(uuid())
+  tenantId     String
+  kind         String    @default("invite")
+  email        String
+  roles        String[]
+  companyId    String?
+  consultantId String?
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  revokedAt    DateTime?
+  createdBy    String
+  createdAt    DateTime  @default(now())
+
+  @@index([tenantId, email])
 }

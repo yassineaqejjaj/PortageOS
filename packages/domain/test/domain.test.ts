@@ -229,3 +229,17 @@ describe("pilotage", () => {
     expect(toCsv([["mois", "ca"], ["2026-01", 1000]])).toBe("mois;ca\r\n2026-01;1000\r\n");
   });
 });
+
+import { checkPassword } from "../src/index";
+describe("politique de mot de passe", () => {
+  it("accepte une phrase longue ou un mot de passe varié, refuse l'évident", () => {
+    expect(checkPassword("Cheval-Agrafe-Lune-42")).toEqual([]);
+    expect(checkPassword("Xk9#mQ2vLp7!")).toEqual([]);
+    expect(checkPassword("court1A!")).toContain("12 caractères minimum");
+    expect(checkPassword("camille.moreau-2026!", { email: "camille.moreau@x.test" })).toContain("ne doit pas contenir votre identifiant email");
+    expect(checkPassword("MonPassword12345!")).toContain("contient un mot ou une suite trop courants");
+    expect(checkPassword("aaaaaaaaaaaaaaaa")).toContain("caractère répété");
+    expect(checkPassword("abcdefghijkl")).toContain("mélangez au moins 3 types de caractères (ou allongez à 16)");
+    expect(checkPassword("phrase de passe très longue et unique")).toEqual([]);
+  });
+});

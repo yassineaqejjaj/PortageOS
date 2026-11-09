@@ -113,20 +113,30 @@ describe("autorisations (RBAC)", () => {
     const m = (await login(`comm1-${run}@a.test`, slug("alpha"))).token;
     expect((await request(app.getHttpServer()).post("/companies").set("Authorization", `Bearer ${m}`).send({ name: "Z" })).status).toBe(201);
     expect((await request(app.getHttpServer()).get("/audit").set("Authorization", `Bearer ${m}`)).status).toBe(403);
-    const esc = await request(app.getHttpServer()).post("/members").set("Authorization", `Bearer ${m}`).send({ email: `evil-${run}@a.test`, password: "long-enough-pass", roles: ["tenant_admin"] });
+    const esc = await request(app.getHttpServer()).post("/invitations").set("Authorization", `Bearer ${m}`).send({ email: `evil-${run}@a.test`, roles: ["tenant_admin"] });
     expect(esc.status).toBe(403);
   });
-  it("admin: ajout de membre, rôle invalide refusé, doublon refusé, mot de passe non modifié pour un utilisateur existant", async () => {
+  it("admin : invitation (rôle invalide refusé, mot de passe faible refusé, jeton à usage unique), compte existant protégé", async () => {
+    const api = () => request(app.getHttpServer());
+    const H = (t: string) => ({ Authorization: `Bearer ${t}` });
     const tok = (await login(`admin1-${run}@a.test`, slug("alpha"))).token;
-    const ok = await request(app.getHttpServer()).post("/members").set("Authorization", `Bearer ${tok}`).send({ email: `new-${run}@a.test`, password: "long-enough-pass", roles: ["finance"] });
-    expect(ok.status).toBe(201); expect(JSON.stringify(ok.body)).not.toMatch(/hash|password/i);
-    expect((await request(app.getHttpServer()).post("/members").set("Authorization", `Bearer ${tok}`).send({ email: `n2-${run}@a.test`, password: "long-enough-pass", roles: ["superadmin"] })).status).toBe(400);
-    expect((await request(app.getHttpServer()).post("/members").set("Authorization", `Bearer ${tok}`).send({ email: `new-${run}@a.test`, password: "long-enough-pass", roles: ["finance"] })).status).toBe(409);
-    // admin du tenant 2 ajoute un utilisateur existant du tenant 1: son mot de passe ne change pas
+    expect((await api().post("/invitations").set(H(tok)).send({ email: `n2-${run}@a.test`, roles: ["superadmin"] })).status).toBe(400);
+    const inv = await api().post("/invitations").set(H(tok)).send({ email: `new-${run}@a.test`, roles: ["finance"] });
+    expect(inv.status).toBe(201); expect(inv.body.link).toMatch(/^\/invite\?token=/);
+    const token = inv.body.link.split("token=")[1];
+    expect((await api().post("/auth/invitations/accept").send({ token, password: "court" })).status).toBe(400);
+    expect((await api().post("/auth/invitations/accept").send({ token, password: "Cheval-Agrafe-Lune-42" })).status).toBe(200);
+    expect((await api().post("/auth/invitations/accept").send({ token, password: "Cheval-Agrafe-Lune-42" })).status).toBe(404); // usage unique
+    expect((await api().post("/auth/login").send({ email: `new-${run}@a.test`, password: "Cheval-Agrafe-Lune-42", tenantSlug: slug("alpha") })).status).toBe(200);
+    // un compte existant d'un autre tenant : son mot de passe n'est jamais modifié, et il doit le prouver
     const tok2 = (await login(`admin2-${run}@b.test`, slug("beta"))).token;
-    const before = await admin.user.findUnique({ where: { email: `new-${run}@a.test` } });
-    await request(app.getHttpServer()).post("/members").set("Authorization", `Bearer ${tok2}`).send({ email: `new-${run}@a.test`, password: "attacker-chosen-pw", roles: ["finance"] });
-    const after = await admin.user.findUnique({ where: { email: `new-${run}@a.test` } });
+    void tok2;
+    const inv2 = await api().post("/invitations").set(H(tok)).send({ email: `admin2-${run}@b.test`, roles: ["finance"] });
+    const t2 = inv2.body.link.split("token=")[1];
+    const before = await admin.user.findUnique({ where: { email: `admin2-${run}@b.test` } });
+    expect((await api().post("/auth/invitations/accept").send({ token: t2, password: "Attaquant-Choisit-Ceci-99" })).status).toBe(401);
+    expect((await api().post("/auth/invitations/accept").send({ token: t2, password: "x", currentPassword: "mauvais" })).status).toBe(401);
+    const after = await admin.user.findUnique({ where: { email: `admin2-${run}@b.test` } });
     expect(after!.passwordHash).toBe(before!.passwordHash);
   });
 });
