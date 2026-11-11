@@ -42,7 +42,7 @@ export const PORTALS: Record<Portal, { label: string; groups: NavGroup[] }> = {
     { label: "Relation", entries: [
       { key: "crm", label: "CRM", icon: "crm", children: [
         L("prospects", "Prospects", "/crm/prospects", "crm", "prospect.read"), L("crm-tasks", "Tâches commerciales", "/crm/tasks", "cal", "prospect.read"), L("crm-campaigns", "Campagnes", "/crm/campaigns", "chart", "prospect.read"),
-        L("crm-referrers", "Apporteurs et commissions", "/crm/referrers", "users", "commission.read"), L("crm-agreements", "Accords-cadres", "/crm/agreements", "doc", "prospect.read"), L("crm-imports", "Imports de prospects", "/crm/imports", "rec", "prospect.write")] },
+        L("crm-simulations", "Simulations de salaire", "/crm/simulations", "chart", "prospect.write"), L("crm-referrers", "Apporteurs et commissions", "/crm/referrers", "users", "commission.read"), L("crm-agreements", "Accords-cadres", "/crm/agreements", "doc", "prospect.read"), L("crm-imports", "Imports de prospects", "/crm/imports", "rec", "prospect.write")] },
       L("companies", "Clients", "/companies", "bld", "company.read"), L("consultants", "Consultants", "/consultants", "users", "consultant.read"), L("contracts", "Contrats", "/contracts", "doc", "contract.read"), L("missions", "Missions", "/missions", "bag", "mission.read"), L("whatsapp", "WhatsApp", "/whatsapp", "chat", "whatsapp.read")] },
     { label: "Opérations", entries: [
       L("timesheets", "Activité / CRA", "/timesheets", "cal", "timesheet.read"), L("expenses", "Notes de frais", "/expenses", "rec", "expense.read"), L("leaves", "Absences et congés", "/leaves", "cal", "leave.read"), L("invoices", "Facturation", "/invoices", "eur", "invoice.read"),

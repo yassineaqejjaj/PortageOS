@@ -3,12 +3,15 @@
  * Le produit n'affirme « vérifié » qu'après un appel réel réussi à Meta (check) ; sans identifiants, aucun envoi n'est tenté.
  */
 export interface WaCreds { phoneNumberId: string; accessToken: string }
-export interface WaTemplateCall { name: string; language: string; params: string[] }
+export interface WaTemplateCall { name: string; language: string; params: string[]; headerDocument?: { mediaId: string; filename: string } }
 export interface WaProvider {
   readonly name: "meta" | "fake";
   sendText(c: WaCreds, to: string, text: string): Promise<{ id: string }>;
   sendTemplate(c: WaCreds, to: string, t: WaTemplateCall): Promise<{ id: string }>;
   check(c: WaCreds): Promise<{ displayPhone?: string; verifiedName?: string }>;
+  /** Pièces jointes : téléversement du média chez le fournisseur, puis envoi d'un document (fenêtre de 24 h) ou d'un modèle à en-tête document. */
+  uploadMedia(c: WaCreds, bytes: Buffer, mime: string, filename: string): Promise<{ id: string }>;
+  sendDocument(c: WaCreds, to: string, d: { mediaId: string; filename: string; caption?: string }): Promise<{ id: string }>;
 }
 export class WaProviderError extends Error {}
 type Fetch = typeof fetch;
@@ -33,8 +36,23 @@ export class MetaCloudProvider implements WaProvider {
   }
   async sendTemplate(c: WaCreds, to: string, t: WaTemplateCall) {
     const body = { messaging_product: "whatsapp", to: this.digits(to), type: "template",
-      template: { name: t.name, language: { code: t.language }, ...(t.params.length ? { components: [{ type: "body", parameters: t.params.map(text => ({ type: "text", text })) }] } : {}) } };
+      template: { name: t.name, language: { code: t.language }, ...(t.params.length || t.headerDocument ? { components: [
+        ...(t.headerDocument ? [{ type: "header", parameters: [{ type: "document", document: { id: t.headerDocument.mediaId, filename: t.headerDocument.filename } }] }] : []),
+        ...(t.params.length ? [{ type: "body", parameters: t.params.map(text => ({ type: "text", text })) }] : [])] } : {}) } };
     const j = await this.call(c, `${c.phoneNumberId}/messages`, { method: "POST", body });
+    const id = j.messages?.[0]?.id; if (!id) throw new WaProviderError("Réponse Meta sans identifiant de message"); return { id };
+  }
+  async uploadMedia(c: WaCreds, bytes: Buffer, mime: string, filename: string) {
+    const form = new FormData(); form.append("messaging_product", "whatsapp"); form.append("type", mime); form.append("file", new Blob([new Uint8Array(bytes)], { type: mime }), filename);
+    let res: Response;
+    try { res = await this.f(`${this.base}/${this.version}/${c.phoneNumberId}/media`, { method: "POST", headers: { Authorization: `Bearer ${c.accessToken}` }, body: form, signal: AbortSignal.timeout(20_000) }); }
+    catch (e) { throw new WaProviderError(`Meta injoignable : ${(e as Error).name === "TimeoutError" ? "délai dépassé" : "erreur réseau"}`); }
+    const j = (await res.json().catch(() => ({}))) as { id?: string; error?: { message?: string; code?: number } };
+    if (!res.ok || !j.id) throw new WaProviderError(`Meta ${res.status}${j.error?.code ? ` (code ${j.error.code})` : ""} : ${(j.error?.message ?? "téléversement refusé").slice(0, 160)}`);
+    return { id: j.id };
+  }
+  async sendDocument(c: WaCreds, to: string, d: { mediaId: string; filename: string; caption?: string }) {
+    const j = await this.call(c, `${c.phoneNumberId}/messages`, { method: "POST", body: { messaging_product: "whatsapp", to: this.digits(to), type: "document", document: { id: d.mediaId, filename: d.filename, ...(d.caption ? { caption: d.caption } : {}) } } });
     const id = j.messages?.[0]?.id; if (!id) throw new WaProviderError("Réponse Meta sans identifiant de message"); return { id };
   }
   async check(c: WaCreds) {
@@ -50,4 +68,6 @@ export class FakeProvider implements WaProvider {
   async sendText(_c: WaCreds, to: string, text: string) { FakeProvider.sent.push({ to, kind: "text", payload: text }); return { id: `fake-${FakeProvider.sent.length}-${Date.now()}` }; }
   async sendTemplate(_c: WaCreds, to: string, t: WaTemplateCall) { FakeProvider.sent.push({ to, kind: "template", payload: t }); return { id: `fake-${FakeProvider.sent.length}-${Date.now()}` }; }
   async check() { return { displayPhone: "+0 (simulé)" }; }
+  async uploadMedia(_c: WaCreds, bytes: Buffer, mime: string, filename: string) { FakeProvider.sent.push({ to: "(média)", kind: "media", payload: { mime, filename, bytes: bytes.length } }); return { id: `fake-media-${FakeProvider.sent.length}` }; }
+  async sendDocument(_c: WaCreds, to: string, d: { mediaId: string; filename: string; caption?: string }) { FakeProvider.sent.push({ to, kind: "document", payload: d }); return { id: `fake-${FakeProvider.sent.length}-${Date.now()}` }; }
 }

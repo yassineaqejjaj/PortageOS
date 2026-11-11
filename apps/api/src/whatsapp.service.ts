@@ -20,6 +20,8 @@ export class WhatsappService {
     if (process.env.WHATSAPP_PROVIDER === "fake" && process.env.NODE_ENV !== "production") return new FakeProvider();
     return new MetaCloudProvider();
   }
+  /** Régénère la pièce jointe (PDF) d'une simulation au moment de l'envoi : aucun fichier n'est stocké dans la file. Enregistré par SalarySimulationsService. */
+  attachmentResolver?: (tenantId: string, simulationId: string) => Promise<Buffer>;
   get webhookConfigured() { return !!process.env.WHATSAPP_APP_SECRET && !!process.env.WHATSAPP_VERIFY_TOKEN; }
 
   async creds(tx: Tx, tenantId: string): Promise<WaCreds | null> {
@@ -92,6 +94,7 @@ export class WhatsappService {
 
   async subjectName(tx: Tx, type: WhatsappSubjectType, id: string): Promise<string> {
     if (type === "consultant") { const c = await tx.consultant.findUnique({ where: { id } }); if (!c) throw new NotFoundException("Consultant introuvable"); return `${c.firstName} ${c.lastName}`; }
+    if (type === "prospect") { const pr = await tx.prospect.findUnique({ where: { id } }); if (!pr) throw new NotFoundException("Prospect introuvable"); return pr.name; }
     const c = await tx.companyContact.findUnique({ where: { id } }); if (!c) throw new NotFoundException("Contact introuvable"); return c.name;
   }
 
@@ -110,6 +113,7 @@ export class WhatsappService {
   /** Crée un message sortant « en file ». Retourne la raison si l'envoi est refusé (consentement, modèle non déclaré/activé). */
   async queueTemplate(tx: Tx, ctx: RequestContext, d: { subjectType: WhatsappSubjectType; subjectId: string; key: string; params: string[]; automatic: boolean }) {
     if (!isTemplateKey(d.key)) throw new BadRequestException("Modèle inconnu");
+    if ("header" in WHATSAPP_TEMPLATES[d.key]) throw new BadRequestException("Ce modèle porte une pièce jointe : il s'envoie depuis la simulation de salaire");
     if (d.params.length !== WHATSAPP_TEMPLATES[d.key].params.length) throw new BadRequestException(`Paramètres attendus : ${WHATSAPP_TEMPLATES[d.key].params.join(", ")}`);
     const consent = await tx.whatsappConsent.findUnique({ where: { tenantId_subjectType_subjectId: { tenantId: ctx.tenantId, subjectType: d.subjectType, subjectId: d.subjectId } } });
     if (!consent || consent.status !== "opted_in") return { queued: false as const, reason: "no_consent" as const };
@@ -118,6 +122,28 @@ export class WhatsappService {
     const conv = await this.ensureConversation(tx, ctx.tenantId, consent.phone, { type: d.subjectType, id: d.subjectId });
     const m = await tx.whatsappMessage.create({ data: { tenantId: ctx.tenantId, conversationId: conv.id, direction: "out", kind: "template", templateKey: d.key, templateParams: d.params, body: renderTemplatePreview(d.key, d.params), status: "queued", sentBy: ctx.userId === SYSTEM ? null : ctx.userId } });
     await tx.whatsappConversation.update({ where: { id: conv.id }, data: { lastMessageAt: new Date() } });
+    return { queued: true as const, messageId: m.id };
+  }
+
+  /**
+   * Envoi d'une simulation (PDF) à un prospect. Consentement obligatoire. Dans la fenêtre de 24 h : document libre ; sinon : modèle approuvé
+   * à en-tête document (refusé s'il n'est pas déclaré/activé).
+   */
+  async queueSimulation(tx: Tx, ctx: RequestContext, d: { prospectId: string; simulationId: string; filename: string; firstName: string; brand: string }) {
+    const consent = await tx.whatsappConsent.findUnique({ where: { tenantId_subjectType_subjectId: { tenantId: ctx.tenantId, subjectType: "prospect", subjectId: d.prospectId } } });
+    if (!consent || consent.status !== "opted_in") return { queued: false as const, reason: "no_consent" as const };
+    const conv = await this.ensureConversation(tx, ctx.tenantId, consent.phone, { type: "prospect", id: d.prospectId });
+    const params = [d.firstName, d.brand];
+    let data: Record<string, unknown>;
+    if (isWithinServiceWindow(conv.lastInboundAt)) data = { kind: "document", body: `[Document] ${d.filename}` };
+    else {
+      const tpl = await tx.whatsappTemplate.findUnique({ where: { tenantId_key: { tenantId: ctx.tenantId, key: "salary_simulation" } } });
+      if (!tpl || !tpl.enabled) return { queued: false as const, reason: "template_not_enabled" as const };
+      data = { kind: "template", templateKey: "salary_simulation", templateParams: params, body: renderTemplatePreview("salary_simulation", params) };
+    }
+    const m = await tx.whatsappMessage.create({ data: { tenantId: ctx.tenantId, conversationId: conv.id, direction: "out", status: "queued", sentBy: ctx.userId, simulationId: d.simulationId, attachmentName: d.filename, ...data } as never });
+    await tx.whatsappConversation.update({ where: { id: conv.id }, data: { lastMessageAt: new Date() } });
+    await this.audit.record(tx, ctx, { action: "whatsapp.simulation_queued", entity: "WhatsappMessage", entityId: m.id, after: { prospectId: d.prospectId, simulationId: d.simulationId, via: data.kind } });
     return { queued: true as const, messageId: m.id };
   }
 
@@ -151,7 +177,15 @@ export class WhatsappService {
       if (!creds) { status = "not_connected"; error = "Canal WhatsApp non configuré"; out.notConnected++; }
       else {
         try {
-          const r = m.kind === "text" ? await p.sendText(creds, m.conversation.phone, m.body) : await this.sendTpl(tenantId, p, creds, m.conversation.phone, m.templateKey!, m.templateParams);
+          let doc: { mediaId: string; filename: string } | undefined;
+          if (m.simulationId) {
+            if (!this.attachmentResolver) throw new Error("Pièce jointe indisponible");
+            const media = await p.uploadMedia(creds, await this.attachmentResolver(tenantId, m.simulationId), "application/pdf", m.attachmentName ?? "simulation.pdf");
+            doc = { mediaId: media.id, filename: m.attachmentName ?? "simulation.pdf" };
+          }
+          const r = m.kind === "text" ? await p.sendText(creds, m.conversation.phone, m.body)
+            : m.kind === "document" ? await p.sendDocument(creds, m.conversation.phone, doc!)
+            : await this.sendTpl(tenantId, p, creds, m.conversation.phone, m.templateKey!, m.templateParams, doc);
           providerMessageId = r.id; status = p.name === "fake" ? "simulated" : "sent"; out.sent++;
         } catch (e) { status = "failed"; error = (e as Error).message.slice(0, 200); out.failed++; this.log.error(`envoi échoué (${m.kind}): ${error}`); }
       }
@@ -159,10 +193,10 @@ export class WhatsappService {
     }
     return out;
   }
-  private async sendTpl(tenantId: string, p: WaProvider, c: WaCreds, to: string, key: string, params: string[]) {
+  private async sendTpl(tenantId: string, p: WaProvider, c: WaCreds, to: string, key: string, params: string[], headerDocument?: { mediaId: string; filename: string }) {
     const tpl = await this.prisma.forTenant(tenantId, tx => tx.whatsappTemplate.findUnique({ where: { tenantId_key: { tenantId, key } } }));
     if (!tpl) throw new Error("Modèle non déclaré");
-    return p.sendTemplate(c, to, { name: tpl.metaName, language: tpl.language, params });
+    return p.sendTemplate(c, to, { name: tpl.metaName, language: tpl.language, params, headerDocument });
   }
 
   // ---------- Webhook entrant ----------

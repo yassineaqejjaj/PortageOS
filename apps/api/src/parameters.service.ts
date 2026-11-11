@@ -15,4 +15,12 @@ export class ParametersService {
       return { id: r.id, key: r.key, value: r.value, unit: r.unit, source: r.source, validFrom: hit.validFrom };
     } catch { return null; }
   }
+
+  /** Tous les paramètres approuvés dont la clé commence par `prefix`, en vigueur à `date` (clé → ligne). */
+  async atPrefix(tx: Tx, prefix: string, date: string) {
+    const keys = [...new Set((await tx.ruleParameter.findMany({ where: { key: { startsWith: prefix }, status: "approved" }, select: { key: true } })).map(r => r.key))];
+    const out = new Map<string, { id: string; key: string; value: string; unit: string; source: string; validFrom: string }>();
+    for (const k of keys) { const p = await this.at(tx, k, date); if (p) out.set(k, p); }
+    return out;
+  }
 }

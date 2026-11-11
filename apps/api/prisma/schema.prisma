@@ -1100,6 +1100,8 @@ model WhatsappMessage {
   kind              String
   templateKey       String?
   templateParams    String[]             @default([])
+  simulationId      String?
+  attachmentName    String?
   body              String
   status            String
   providerMessageId String?
