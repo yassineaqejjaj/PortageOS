@@ -11,6 +11,7 @@
  *   Net après PAS                     = net avant PAS × (1 − taux PAS)
  *   Net perçu / mois                  = net après PAS + frais professionnels + mutuelle
  *   Jour de congé non pris            = brut annuel ÷ diviseur (salaire) + frais journaliers (frais)
+ *   Taux de rentabilité (INTERNE)     = (CA − brut×(1+charges patronales) − frais×12 − mutuelle×12) ÷ CA, CA = TJM × jours/an
  */
 import Decimal from "decimal.js";
 
@@ -18,6 +19,8 @@ export interface PasBracket { upTo: string; ratePercent: string }
 export interface SalaryParams {
   workingDaysPerYear: string; managementFeePercent: string; netToGrossPercent: string;
   paidLeaveDays: string; leaveDayDivisor: string; pasGrid: PasBracket[]; pasTopRatePercent: string;
+  /** Charges patronales (% du brut) : absent = rentabilité non calculée (jamais de valeur par défaut). */
+  employerChargesPercent?: string;
 }
 export interface SalaryInput { tjm: string; daysPerMonth: string; dailyExpenses: string; mutualMonthly: string; grossAnnual: string }
 
@@ -51,6 +54,8 @@ export function simulateSalary(i: SalaryInput, p: SalaryParams) {
   const totalPerLeaveDay = salaryPerLeaveDay.plus(exp);
   const annualCommitted = gross.plus(professionalExpenses.mul(12)).plus(mut.mul(12));
   if (annualCommitted.gt(envelope)) throw new Error("Brut annuel + frais + mutuelle dépassent la rémunération (enveloppe) annuelle : scénario impossible");
+  const revenue = tjm.mul(p.workingDaysPerYear);
+  const margin = p.employerChargesPercent === undefined ? null : revenue.minus(gross.mul(D("100").plus(p.employerChargesPercent)).div(100)).minus(professionalExpenses.mul(12)).minus(mut.mul(12));
   return {
     variables: { tjm: r2(tjm), daysPerMonth: dpm.toString(), dailyExpenses: r2(exp), mutualMonthly: r2(mut), daysPerYear: String(p.workingDaysPerYear), feePercent: fee.toString() },
     envelope: r2(envelope), professionalExpenses: r2(professionalExpenses), grossAnnual: r2(gross), grossMonthly: r2(grossMonthly),
@@ -59,6 +64,9 @@ export function simulateSalary(i: SalaryInput, p: SalaryParams) {
     extraForUntakenLeave: r2(totalPerLeaveDay.mul(p.paidLeaveDays)),
     /** Indicateur interne (jamais transmis au destinataire) : enveloppe restante après brut, frais et mutuelle annuels. */
     internalRemainingEnvelope: r2(envelope.minus(annualCommitted)),
+    /** Rentabilité de la société (INTERNE, jamais transmise) : marge annuelle après charges patronales et son taux sur le CA. null si le paramètre de charges est absent. */
+    internalMargin: margin ? r2(margin) : null,
+    internalProfitabilityPercent: margin ? r2(margin.div(revenue).mul(100)) : null,
   };
 }
 export type SalarySimulation = ReturnType<typeof simulateSalary>;

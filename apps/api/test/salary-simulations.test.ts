@@ -28,7 +28,7 @@ const H = (k: string) => ({ Authorization: `Bearer ${tok[k]}` });
 async function mk(key: string, tenantId: string, roles: string[]) { const u = await admin.user.create({ data: { email: `${key}-${run}@x.test`, passwordHash: await hashPassword(PW) } }); await admin.membership.create({ data: { userId: u.id, tenantId, roles } }); }
 async function login(key: string, slug: string) { tok[key] = (await srv().post("/auth/login").send({ email: `${key}-${run}@x.test`, password: PW, tenantSlug: slug })).body.accessToken; }
 const PAS: [string, string][] = [["1759", "1.3"], ["3052", "7.5"], ["3476", "9.9"], ["3913", "11.9"], ["4566", "13.8"], ["5475", "15.8"], ["6851", "17.9"], ["8557", "20"], ["11877", "24"], ["16086", "28"], ["25251", "33"], ["54088", "38"]];
-const BASE: [string, string][] = [["management_fee_rate_percent", "10"], ["sim.working_days_per_year", "227"], ["sim.net_to_gross_percent", "75"], ["sim.paid_leave_days", "25"], ["sim.leave_day_divisor", "250"], ["sim.pas_rate.max", "43"], ...PAS.map(([t, r]) => [`sim.pas_rate.${t}`, r] as [string, string])];
+const BASE: [string, string][] = [["management_fee_rate_percent", "10"], ["sim.working_days_per_year", "227"], ["sim.net_to_gross_percent", "75"], ["sim.paid_leave_days", "25"], ["sim.leave_day_divisor", "250"], ["sim.pas_rate.max", "43"], ["sim.employer_charges_percent", "45"], ...PAS.map(([t, r]) => [`sim.pas_rate.${t}`, r] as [string, string])];
 const body = { tjm: "700", daysPerMonth: "20", mutualMonthly: "100", scenarios: [{ grossAnnual: "58000", dailyExpenses: "270" }, { grossAnnual: "65000", dailyExpenses: "230" }, { grossAnnual: "70000", dailyExpenses: "200" }] };
 
 beforeAll(async () => {
@@ -53,7 +53,10 @@ describe("simulation de salaire", () => {
     const r = await srv().post("/crm/salary-simulations").set(H("com")).send({ ...body, prospectId, contact: { name: "Conseiller", email: "c@example.test" } });
     expect(r.status).toBe(201); simId = r.body.id;
     expect(r.body.scenarios.map((s: { netPaidMonthly: string }) => s.netPaidMonthly)).toEqual(["8693.63", "8201.88", "7871.25"]);
-    expect(r.body.scenarios[0]).toMatchObject({ pasRatePercent: "11.90", extraForUntakenLeave: "12550.00" });
+    expect(r.body.scenarios[0]).toMatchObject({ pasRatePercent: "11.90", extraForUntakenLeave: "12550.00", internalMargin: "8800.00", internalProfitabilityPercent: "5.54" });
+    const pv = await srv().post("/crm/salary-simulations/preview").set(H("com")).send(body); // aperçu : même calcul, rien d'enregistré
+    expect(pv.status).toBe(201); expect(pv.body.scenarios[0].netPaidMonthly).toBe("8693.63"); expect(pv.body.id).toBeUndefined();
+    expect(await admin.simulation.count({ where: { tenantId: t1 } })).toBe(1);
     expect(r.body.parameters["sim.pas_rate.3913"].value).toBe("11.9"); // les taux utilisés sont tracés
     expect((await srv().post("/crm/salary-simulations").set(H("com")).send({ ...body, scenarios: [{ grossAnnual: "140000", dailyExpenses: "270" }] })).status).toBe(400); // hors enveloppe
     expect((await srv().get(`/crm/salary-simulations/${simId}/pdf`).set(H("com2"))).status).toBe(404); // autre société

@@ -21,6 +21,11 @@ describe("simulation de rémunération : cas de référence (feuilles B&G Partne
   it("grille PAS : seuil inclus, au-delà du dernier seuil taux maximal", () => {
     expect(pasRate("3913.00", P.pasGrid, "43")).toBe("11.9"); expect(pasRate("3913.01", P.pasGrid, "43")).toBe("13.8"); expect(pasRate("60000", P.pasGrid, "43")).toBe("43");
   });
+  it("rentabilité interne : (CA − brut×(1+45 %) − frais − mutuelle) ÷ CA ; absente sans paramètre de charges", () => {
+    const r = simulateSalary({ tjm: "700", daysPerMonth: "20", dailyExpenses: "270", mutualMonthly: "100", grossAnnual: "58000" }, { ...P, employerChargesPercent: "45" });
+    expect(r).toMatchObject({ internalMargin: "8800.00", internalProfitabilityPercent: "5.54" }); // CA 158 900 − 84 100 − 64 800 − 1 200
+    expect(run("700", "270", "58000")).toMatchObject({ internalMargin: null, internalProfitabilityPercent: null });
+  });
   it("refuse un scénario hors enveloppe, un TJM nul et des jours invalides", () => {
     expect(() => run("700", "270", "140000")).toThrow(/enveloppe/); expect(() => run("0", "270", "58000")).toThrow(/TJM/);
     expect(() => simulateSalary({ tjm: "700", daysPerMonth: "20.3", dailyExpenses: "1", mutualMonthly: "0", grossAnnual: "50000" }, P)).toThrow(/Jours/);

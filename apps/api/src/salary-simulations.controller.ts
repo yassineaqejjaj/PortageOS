@@ -41,7 +41,7 @@ export class SalarySimulationsController implements OnModuleInit {
     if (!grid.length) missing.push("sim.pas_rate.<seuil>" as never);
     if (missing.length) throw new UnprocessableEntityException(`Paramètres approuvés manquants : ${missing.join(", ")}. Saisissez-les puis faites-les approuver (Conformité > Règles).`);
     const g = (k: string) => sim.get(k)!.value;
-    const p: SalaryParams = { workingDaysPerYear: g(KEYS.days), managementFeePercent: g(KEYS.fee), netToGrossPercent: g(KEYS.net), paidLeaveDays: g(KEYS.leave), leaveDayDivisor: g(KEYS.div), pasTopRatePercent: g(KEYS.pasTop),
+    const p: SalaryParams = { workingDaysPerYear: g(KEYS.days), managementFeePercent: g(KEYS.fee), netToGrossPercent: g(KEYS.net), paidLeaveDays: g(KEYS.leave), leaveDayDivisor: g(KEYS.div), pasTopRatePercent: g(KEYS.pasTop), ...(sim.has("sim.employer_charges_percent") ? { employerChargesPercent: g("sim.employer_charges_percent") } : {}),
       pasGrid: grid.map(k => ({ upTo: k.slice("sim.pas_rate.".length), ratePercent: g(k) })) };
     return { p, used: Object.fromEntries([...sim].map(([k, v]) => [k, { value: v.value, source: v.source, validFrom: v.validFrom }])) };
   }
@@ -55,22 +55,35 @@ export class SalarySimulationsController implements OnModuleInit {
   }
   private filename = (st: Stored, date: string) => `simulation_${(st.recipient ?? "prospect").normalize("NFD").replace(/[^\w]+/g, "_").replace(/_+/g, "_").slice(0, 40)}_${st.scenarios[0]!.variables.tjm.split(".")[0]}_${date}.pdf`;
 
+  /** Calcul commun (aperçu et enregistrement). */
+  private async compute(tx: Tx, ctx: RequestContext, d: z.infer<typeof Create>) {
+    const prospect = d.prospectId ? await tx.prospect.findFirst({ where: { id: d.prospectId, archivedAt: null } }) : null;
+    if (d.prospectId && !prospect) throw new NotFoundException("Prospect introuvable");
+    const today = parisToday(); const { p, used } = await this.loadParams(tx, today);
+    let scenarios: SalarySimulation[];
+    try { scenarios = d.scenarios.map(sc => simulateSalary({ tjm: d.tjm, daysPerMonth: d.daysPerMonth, dailyExpenses: sc.dailyExpenses, mutualMonthly: d.mutualMonthly, grossAnnual: sc.grossAnnual }, p)); }
+    catch (e) { throw new BadRequestException((e as Error).message); }
+    const email = (await tx.user.findUnique({ where: { id: ctx.userId }, select: { email: true } }))?.email;
+    const contact = { name: d.contact?.name ?? (email ?? "Conseiller"), phone: d.contact?.phone ?? null, email: d.contact?.email ?? email ?? null };
+    const stored: Stored = { kind: "salary", recipient: prospect?.name ?? null, contact, scenarios, parameters: used,
+      disclaimer: "Simulation non contractuelle : estimation, ni bulletin de paie ni engagement. Taux issus des paramètres approuvés listés." };
+    return { stored, today };
+  }
+
+  /** Aperçu immédiat (rien n'est enregistré ni audité) : permet un résultat en direct pendant la saisie. */
+  @Post("preview") @RequirePermission("prospect.write")
+  preview(@Req() { ctx }: R, @Body() body: unknown) {
+    const d = parseZod(Create, body);
+    return this.prisma.forTenant(ctx.tenantId, async tx => (await this.compute(tx, ctx, d)).stored);
+  }
+
   @Post() @RequirePermission("prospect.write")
   create(@Req() { ctx }: R, @Body() body: unknown) {
     const d = parseZod(Create, body);
     return this.prisma.forTenant(ctx.tenantId, async tx => {
-      const prospect = d.prospectId ? await tx.prospect.findFirst({ where: { id: d.prospectId, archivedAt: null } }) : null;
-      if (d.prospectId && !prospect) throw new NotFoundException("Prospect introuvable");
-      const today = parisToday(); const { p, used } = await this.loadParams(tx, today);
-      let scenarios: SalarySimulation[];
-      try { scenarios = d.scenarios.map(sc => simulateSalary({ tjm: d.tjm, daysPerMonth: d.daysPerMonth, dailyExpenses: sc.dailyExpenses, mutualMonthly: d.mutualMonthly, grossAnnual: sc.grossAnnual }, p)); }
-      catch (e) { throw new BadRequestException((e as Error).message); }
-      const email = (await tx.user.findUnique({ where: { id: ctx.userId }, select: { email: true } }))?.email;
-      const contact = { name: d.contact?.name ?? (email ?? "Conseiller"), phone: d.contact?.phone ?? null, email: d.contact?.email ?? email ?? null };
-      const stored: Stored = { kind: "salary", recipient: prospect?.name ?? null, contact, scenarios, parameters: used,
-        disclaimer: "Simulation non contractuelle : estimation, ni bulletin de paie ni engagement. Taux issus des paramètres approuvés listés." };
+      const { stored, today } = await this.compute(tx, ctx, d);
       const row = await tx.simulation.create({ data: { tenantId: ctx.tenantId, prospectId: d.prospectId, inputs: { kind: "salary", ...d } as object, results: stored as unknown as object, createdBy: ctx.userId } });
-      await this.audit.record(tx, ctx, { action: "crm.salary_simulation", entity: "Simulation", entityId: row.id, after: { prospectId: d.prospectId, scenarios: scenarios.length, tjm: d.tjm } });
+      await this.audit.record(tx, ctx, { action: "crm.salary_simulation", entity: "Simulation", entityId: row.id, after: { prospectId: d.prospectId, scenarios: stored.scenarios.length, tjm: d.tjm } });
       return { id: row.id, createdAt: row.createdAt, ...stored, filename: this.filename(stored, today) };
     });
   }
