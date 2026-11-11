@@ -36,6 +36,7 @@ Connexion : champ « Société » = `demo-bgconsulting`, e-mail ci-dessous, mot 
 | Onboarding | 4 consultants activés ; **Sofia Nguyen** laissée à mi-checklist |
 | Contrats | Modèle CDI publié ; 3 signés, 1 envoyé (Thomas, à relancer), 1 brouillon (Sofia) |
 | Parrainage et cooptation | Modules *CRM > Apporteurs et commissions*. **Parrainage** : Léa Fontaine parraine Thomas Girard (3 % du net encaissé, 12 mois ; 2 commissions dues). **Cooptation** : Karim coopte Sofia (prime fixe 500 €, convertie → approuvée par la finance puis **payée**, écriture au registre) ; Léa coopte Yasmine (400 €) et Inès coopte Romain (500 €), candidats encore en cours → prime à venir. **Apporteur d'affaires** : Cabinet Alpha RH sur Inès (5 %, 12 mois ; 1 commission approuvée, 1 due). Règles figées à la création, approbation en quatre yeux |
+| Simulations de salaire | Paramètres de la feuille de référence saisis et **approuvés à quatre yeux** (admin → conformité) ; 2 simulations (3 scénarios chacune, PDF), envoi WhatsApp du PDF à Yasmine (consentement prospect tracé), Romain sans consentement → envoi refusé |
 | Missions | 4 missions (TJM 610–850 €) |
 | CRA → cash | Août–sept. : 8 CRA validés, facturés, encaissés (Thomas : encaissement partiel) · Oct. : 2 factures émises non réglées, 1 CRA validé **non facturé**, 1 CRA approuvé client **à valider** · Nov. : 1 soumis, 1 brouillon, 2 non démarrés |
 | Notes de frais | 1 remboursée, 1 approuvée, 1 soumise, 1 brouillon |
@@ -51,8 +52,29 @@ Connexion : champ « Société » = `demo-bgconsulting`, e-mail ci-dessous, mot 
 5. **Validation client** (`client.bm`) : approuver un CRA → `ops` valide.
 6. **Agents administratifs** (`ops`, `finance`) : *Operations Agent* propose la validation du CRA de Thomas ; *Finance Agent* propose la facture du CRA d'Inès ; **approuver** une proposition → facture brouillon → émission (`finance`) → encaissement.
 7. **Parrainage / cooptation** (`commerce`, puis `finance`) : CRM > Apporteurs et commissions → parrains et règles ; `finance` approuve une commission due (refusé à l'auteur du parrainage) puis la paie ; convertir Yasmine ou Romain (`commerce`) fait naître la prime de cooptation.
-8. **Pilotage / registre** (`direction`, `finance`) : CA, créances, journal équilibré.
+8. **Simulation de salaire** (`commerce`) : CRM > Simulations de salaire → TJM, jours, mutuelle et 1 à 3 scénarios (brut annuel + frais/jour) → résultat identique à la feuille de référence → *Télécharger le PDF* ou *Envoyer par WhatsApp* (consentement requis ; hors fenêtre de 24 h : modèle approuvé à en-tête document).
+9. **Pilotage / registre** (`direction`, `finance`) : CA, créances, journal équilibré.
 
 Repartir de zéro : supprimer le tenant (voir la note ci-dessous) ou utiliser un autre `DEMO_TENANT_SLUG`.
 
 > Le journal d'audit est append-only (triggers) : un tenant ne se supprime pas via l'API. En local, la remise à zéro se fait en base avec `session_replication_role = replica` (à ne jamais faire hors dev).
+
+## Simulation de salaire (format et taux de la feuille de référence)
+Calcul (`packages/domain/src/salary-simulation.ts`, testé sur 6 feuilles de référence au centime) :
+
+| Ligne | Formule |
+|---|---|
+| Rémunération (enveloppe annuelle) | TJM × jours/an × (1 − frais de gestion %) |
+| Frais professionnels (mensuel) | frais forfaitaires/jour × jours/mois |
+| Brut mensuel | brut annuel ÷ 12 |
+| Net avant PAS | brut mensuel × ratio net/brut |
+| Taux de PAS | taux de la **première tranche dont le seuil ≥ net avant PAS** (au-delà du dernier seuil : taux maximal) |
+| Net après PAS | net avant PAS × (1 − taux) |
+| **Net perçu / mois** | net après PAS + frais professionnels + mutuelle |
+| Jour de congé non pris | brut annuel ÷ 250 (salaire) + frais/jour ; × 25 jours = montant supplémentaire |
+
+Les taux ne sont **pas en dur** : ils viennent des paramètres approuvés (Conformité > Règles) `management_fee_rate_percent`, `sim.working_days_per_year`, `sim.net_to_gross_percent`, `sim.paid_leave_days`, `sim.leave_day_divisor`, `sim.pas_rate.<seuil>` (une clé par tranche) et `sim.pas_rate.max`. Un paramètre manquant refuse la simulation ; les taux utilisés sont tracés dans la simulation.
+
+**À valider avant tout usage réel** : les valeurs sont reprises telles quelles de la feuille de la société (ratio net/brut de 75 %, grille de PAS, 227 jours) et n'ont fait l'objet d'aucune validation juridique/paie. Le comportement sous le premier seuil (1 759) n'est pas défini par la feuille (le taux de la première tranche est appliqué). Le PDF est une estimation « non contractuelle » ; l'indicateur interne d'enveloppe restante n'y figure jamais.
+
+Envoi WhatsApp : le PDF est régénéré à l'envoi (rien n'est stocké dans la file), téléversé chez Meta puis envoyé en **document** (fenêtre de 24 h) ou via le modèle `salary_simulation` à **en-tête document** (à faire approuver par Meta et à déclarer dans WhatsApp > Paramètres). Le prospect doit avoir consenti (preuve conservée) ; `STOP` retire le consentement.

@@ -43,10 +43,11 @@ import { MailService } from "./mail.service";
 import { CrmController } from "./crm.controller";
 import { CompanyDetailsController } from "./company-details.controller";
 import { CrmService } from "./crm.service";
+import { SalarySimulationsController } from "./salary-simulations.controller";
 import { PrismaService } from "./prisma.service";
 
 @Module({
-  controllers: [AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController, LeavesController, AgentsController, NotificationsController, SupportController, PilotageController, AccountingController, DocumentsController, CrmController, CompanyDetailsController, BankController, TenantProfileController, OperatorController, WhatsappController, WhatsappWebhookController],
+  controllers: [SalarySimulationsController, AuthController, CompaniesController, MembersController, ProspectsController, ConsultantsController, MissionsController, TimesheetsController, SelfPortalController, ClientPortalController, InvoicesController, LedgerController, RulesController, ExpensesController, AccountsController, ContractsController, LeavesController, AgentsController, NotificationsController, SupportController, PilotageController, AccountingController, DocumentsController, CrmController, CompanyDetailsController, BankController, TenantProfileController, OperatorController, WhatsappController, WhatsappWebhookController],
   providers: [PrismaService, AuditService, WhatsappService, MailService, PaymentsService, ConsultantsService, TimesheetsService, LedgerService, ParametersService, LeavesService, InvoicesService, AgentsService, NotificationsService, PilotageService, AuthService, AccountingService, DocumentsService, CrmService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {}

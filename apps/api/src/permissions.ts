@@ -12,7 +12,7 @@ const ALL: Permission[] = ["company.read","company.write","audit.read","member.m
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   tenant_admin: ALL,
   direction: ["company.read","audit.read","prospect.read","consultant.read","mission.read","timesheet.read","invoice.read","ledger.read","rules.read","expense.read","contract.read","account.read","leave.read","agent.read","pilotage.read","accounting.read","commission.read"],
-  commerce: ["company.read","company.write","prospect.read","prospect.write","commission.read"],
+  commerce: ["company.read","company.write","prospect.read","prospect.write","commission.read","whatsapp.read","whatsapp.write"],
   operations: ["company.read","consultant.read","consultant.write","mission.read","mission.write","timesheet.read","timesheet.write","invoice.read","expense.read","expense.write","leave.read","leave.write","agent.read","agent.run","agent.approve","support.manage","document.read","document.write","whatsapp.read","whatsapp.write"],
   hr: ["consultant.read","consultant.write","contract.read","contract.write","contract.sign","leave.read","leave.write","leave.adjust","agent.read","agent.run","support.manage","document.read","document.write","document.sensitive","document.delete","document.share","whatsapp.read","whatsapp.write"],
   payroll: ["rules.read"],

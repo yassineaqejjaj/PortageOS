@@ -82,3 +82,4 @@ Légende : ✅ terminé · 🟡 partiel · ⬜ non démarré · 🔒 bloqué par
 | 22 | Console plateforme (sociétés, quotas, suspension) ; lot missions déployé | 42 · 172 · 42 |
 | 23 | WhatsApp (Meta Cloud API) : canal, consentement, boîte de réception, webhook signé, relance de CRA ; console plateforme déployée | 47 · 191 · 44 |
 | 24 | Environnement de démonstration pilote « BG Consulting » : seed rejoué via l'API (lead → contrat → CRA → facture → encaissement, frais, congés, relances WhatsApp simulées, agents), runbook `docs/DEMO_BG_CONSULTING.md`. Aucune nouvelle fonctionnalité produit ; 213 étapes jouées sans échec en local, non couvert par la CI | – |
+| 25 | Simulation de salaire (format B&G) : calcul au centime sur 6 feuilles de référence, paramètres approuvés, PDF, envoi WhatsApp en document/modèle à en-tête document, consentement prospect, page CRM | 55 · 196 · 44 (tests API : 5 nouveaux ; E2E non rejoué) |

@@ -14,3 +14,4 @@ export * from "./accounting.js";
 export * from "./crm.js";
 export * from "./bank";
 export * from "./whatsapp.js";
+export * from "./salary-simulation.js";

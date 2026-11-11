@@ -31,7 +31,7 @@ export function isStopKeyword(text: string): boolean {
   return STOP_WORDS.has(t);
 }
 
-export const WHATSAPP_SUBJECT_TYPES = ["consultant", "contact"] as const;
+export const WHATSAPP_SUBJECT_TYPES = ["consultant", "contact", "prospect"] as const;
 export type WhatsappSubjectType = (typeof WHATSAPP_SUBJECT_TYPES)[number];
 export const WHATSAPP_CONSENT_SOURCES = ["written_form", "in_app", "inbound_message", "stop_keyword", "other"] as const;
 
@@ -48,6 +48,9 @@ export function advanceStatus(current: string, incoming: string): string {
 export const WHATSAPP_TEMPLATES = {
   timesheet_reminder: { label: "Relance de CRA", params: ["prenom", "periode", "mission"], suggestedName: "portage_cra_relance",
     preview: "Bonjour {{1}}, votre compte rendu d'activité {{2}} (mission {{3}}) est à saisir et soumettre." },
+  /** Modèle avec EN-TÊTE DOCUMENT (PDF) : hors fenêtre de 24 h, seul un modèle approuvé par Meta peut porter une pièce jointe. */
+  salary_simulation: { label: "Envoi d'une simulation de salaire (PDF)", params: ["prenom", "societe"], suggestedName: "portage_simulation_salaire", header: "document",
+    preview: "Bonjour {{1}}, voici votre simulation de salaire {{2}} (document PDF joint). Simulation non contractuelle, réservée au destinataire." },
 } as const;
 export type WhatsappTemplateKey = keyof typeof WHATSAPP_TEMPLATES;
 export const isTemplateKey = (k: string): k is WhatsappTemplateKey => Object.prototype.hasOwnProperty.call(WHATSAPP_TEMPLATES, k);

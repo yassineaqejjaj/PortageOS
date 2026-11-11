@@ -30,7 +30,7 @@ const ALLOWED = [
   /^documents\/policy$/, /^documents$/, new RegExp(`^documents/${U}(/link|/purge)?$`),
   /^notifications$/, /^notifications\/(unread-count|read-all)$/, new RegExp(`^notifications/${U}/read$`), /^notification-preferences$/,
   new RegExp(`^companies/${U}/(overview|terms|contacts|sites|purchase-orders)$`), new RegExp(`^companies/${U}/(contacts|sites)/${U}$`), new RegExp(`^companies/${U}/purchase-orders/${U}/(close|cancel)$`),
-  /^crm\/(scoring|prospects|tasks|campaigns|referrers|referrals|commissions|agreements|imports|simulations)$/, new RegExp(`^crm/prospects/${U}(/interactions)?$`), new RegExp(`^crm/tasks/${U}/(done|cancel)$`),
+  /^crm\/(scoring|prospects|tasks|campaigns|referrers|referrals|commissions|agreements|imports|simulations|salary-simulations)$/, new RegExp(`^crm/salary-simulations/${U}/whatsapp$`), new RegExp(`^crm/prospects/${U}(/interactions)?$`), new RegExp(`^crm/tasks/${U}/(done|cancel)$`),
   new RegExp(`^crm/campaigns/${U}/(transition|prospects|stats)$`), new RegExp(`^crm/referrers/${U}$`), new RegExp(`^crm/commissions/${U}/transition$`), new RegExp(`^crm/agreements/${U}/transition$`),
   /^crm\/imports\/preview$/, new RegExp(`^crm/imports/${U}(/commit|/cancel|/rollback)?$`),
   /^bank\/(imports|transactions)$/, /^bank\/imports\/preview$/, new RegExp(`^bank/imports/${U}/(commit|cancel)$`), new RegExp(`^bank/transactions/${U}/(match|ignore)$`),
