@@ -35,6 +35,7 @@ Connexion : champ « Société » = `demo-bgconsulting`, e-mail ci-dessous, mot 
 | Conversion | 5 consultants et 3 sociétés clientes créés **par conversion de prospects**, accords-cadres actifs |
 | Onboarding | 4 consultants activés ; **Sofia Nguyen** laissée à mi-checklist |
 | Contrats | Modèle CDI publié ; 3 signés, 1 envoyé (Thomas, à relancer), 1 brouillon (Sofia) |
+| Parrainage et cooptation | Modules *CRM > Apporteurs et commissions*. **Parrainage** : Léa Fontaine parraine Thomas Girard (3 % du net encaissé, 12 mois ; 2 commissions dues). **Cooptation** : Karim coopte Sofia (prime fixe 500 €, convertie → approuvée par la finance puis **payée**, écriture au registre) ; Léa coopte Yasmine (400 €) et Inès coopte Romain (500 €), candidats encore en cours → prime à venir. **Apporteur d'affaires** : Cabinet Alpha RH sur Inès (5 %, 12 mois ; 1 commission approuvée, 1 due). Règles figées à la création, approbation en quatre yeux |
 | Missions | 4 missions (TJM 610–850 €) |
 | CRA → cash | Août–sept. : 8 CRA validés, facturés, encaissés (Thomas : encaissement partiel) · Oct. : 2 factures émises non réglées, 1 CRA validé **non facturé**, 1 CRA approuvé client **à valider** · Nov. : 1 soumis, 1 brouillon, 2 non démarrés |
 | Notes de frais | 1 remboursée, 1 approuvée, 1 soumise, 1 brouillon |
@@ -49,7 +50,8 @@ Connexion : champ « Société » = `demo-bgconsulting`, e-mail ci-dessous, mot 
 4. **Alertes CRA WhatsApp** (`ops`) : WhatsApp > Relancer la file → boîte de réception ; les réponses de Thomas et Inès sont entrantes ; envoyer `STOP` (webhook) retire le consentement. Sofia : relance refusée faute de consentement.
 5. **Validation client** (`client.bm`) : approuver un CRA → `ops` valide.
 6. **Agents administratifs** (`ops`, `finance`) : *Operations Agent* propose la validation du CRA de Thomas ; *Finance Agent* propose la facture du CRA d'Inès ; **approuver** une proposition → facture brouillon → émission (`finance`) → encaissement.
-7. **Pilotage / registre** (`direction`, `finance`) : CA, créances, journal équilibré.
+7. **Parrainage / cooptation** (`commerce`, puis `finance`) : CRM > Apporteurs et commissions → parrains et règles ; `finance` approuve une commission due (refusé à l'auteur du parrainage) puis la paie ; convertir Yasmine ou Romain (`commerce`) fait naître la prime de cooptation.
+8. **Pilotage / registre** (`direction`, `finance`) : CA, créances, journal équilibré.
 
 Repartir de zéro : supprimer le tenant (voir la note ci-dessous) ou utiliser un autre `DEMO_TENANT_SLUG`.
 

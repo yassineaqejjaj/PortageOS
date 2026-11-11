@@ -115,13 +115,28 @@ async function main() {
   await api("commerce", "POST", `/crm/prospects/${funnel[3].id}/interactions`, { type: "email", summary: "Envoi de la plaquette portage + simulation de rémunération." });
   const today = "2026-11-11";
   await step("tâches CRM", async () => { await api("commerce", "POST", "/crm/tasks", { prospectId: funnel[3].id, title: "Relancer Mutuelle Horizon après la plaquette", dueDate: "2026-11-09" }); await api("commerce", "POST", "/crm/tasks", { prospectId: funnel[2].id, title: "Planifier l'appel de qualification Romain Vidal", dueDate: "2026-11-13" }); });
-  const ref = await step("apporteur", () => api("commerce", "POST", "/crm/referrers", { kind: "introducer", name: "Cabinet Alpha RH (fictif)", email: `contact@alpha-rh.${DOMAIN}` }));
-  if (ref) await step("parrainage", () => api("commerce", "POST", "/crm/referrals", { prospectId: pc.ines.id, referrerId: ref.id, ruleType: "percent_of_collected_net", ruleValue: "5", durationMonths: 12 }));
+  const alpha = await step("apporteur d'affaires", () => api("commerce", "POST", "/crm/referrers", { kind: "introducer", name: "Cabinet Alpha RH (fictif)", email: `contact@alpha-rh.${DOMAIN}` }));
+  if (alpha) await step("apport d'affaires Alpha RH → Inès (5 % / 12 mois)", () => api("commerce", "POST", "/crm/referrals", { prospectId: pc.ines.id, referrerId: alpha.id, ruleType: "percent_of_collected_net", ruleValue: "5", durationMonths: 12 }));
   await step("simulation de rémunération", () => api("commerce", "POST", "/crm/simulations", { prospectId: pc.sofia.id, feeRatePercent: "8", scenarios: [{ label: "Base", dailyRate: "560", daysPerMonth: "20", vatRate: "20", monthlyExpenses: "150" }, { label: "Optimiste", dailyRate: "620", daysPerMonth: "21", vatRate: "20" }] }));
 
   // ===== 2. Qualification → conversion (crée dossiers consultants et sociétés clientes) =====
   log("2. Qualification et conversion");
-  for (const p of [...Object.values(pc), ...Object.values(pe)]) { await t(p.id, "qualify"); await t(p.id, "convert"); }
+  // Léa et Karim d'abord : ils deviennent parrains/coopteurs, les parrainages doivent précéder la conversion des filleuls.
+  for (const p of [pc.lea, pc.karim]) { await t(p.id, "qualify"); await t(p.id, "convert"); }
+  log("2b. Parrainage et cooptation (modules Apporteurs et commissions)");
+  const early: any[] = await api("ops", "GET", "/consultants");
+  const idOf = (first: string) => early.find(x => x.firstName === first)?.id as string | undefined;
+  const sponsor = async (first: string, last: string) => step(`parrain ${first}`, () => api("commerce", "POST", "/crm/referrers", { kind: "sponsor", name: `${first} ${last} (consultant parrain)`, consultantId: idOf(first), email: `${first.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()}.${last.toLowerCase()}@${DOMAIN}` }));
+  const sLea = await sponsor("Léa", "Fontaine"), sKarim = await sponsor("Karim", "Benali");
+  const ines = await step("parrain Inès", async () => { await t(pc.ines.id, "qualify"); await t(pc.ines.id, "convert"); const l: any[] = await api("ops", "GET", "/consultants"); early.splice(0, early.length, ...l); return sponsor("Inès", "Moreau"); });
+  const ref = (referrerId: string | undefined, prospectId: string, ruleType: string, ruleValue: string, durationMonths: number, label: string) =>
+    referrerId ? step(label, () => api("commerce", "POST", "/crm/referrals", { prospectId, referrerId, ruleType, ruleValue, durationMonths })) : undefined;
+  // PARRAINAGE = % du net encaissé du filleul pendant 12 mois ; COOPTATION = prime fixe versée à la conversion du candidat.
+  await ref(sLea?.id, pc.thomas.id, "percent_of_collected_net", "3", 12, "parrainage Léa → Thomas (3 % / 12 mois)");
+  await ref(sKarim?.id, pc.sofia.id, "fixed_per_conversion", "500", 0, "cooptation Karim → Sofia (500 €)");
+  await ref(sLea?.id, funnel[1].id, "fixed_per_conversion", "400", 0, "cooptation Léa → Yasmine (400 €, en cours)");
+  await ref(ines?.id, funnel[2].id, "fixed_per_conversion", "500", 0, "cooptation Inès → Romain (500 €, en cours)");
+  for (const p of [pc.thomas, pc.sofia, ...Object.values(pe)]) { await t(p.id, "qualify"); await t(p.id, "convert"); }
   const consList: any[] = await api("ops", "GET", "/consultants"); const consByKey: Record<string, any> = {};
   for (const c of CONSULTANTS) consByKey[c.key] = consList.find(x => x.firstName === c.first && x.lastName === c.last);
   const compList: any[] = await api("admin", "GET", "/companies"); const coByKey: Record<string, any> = {};
@@ -185,7 +200,7 @@ async function main() {
     const issued = await step("émission", () => api("finance", "POST", `/invoices/${inv.id}/issue`)); if (!issued || !pay) return;
     const gross = Number((await api("finance", "GET", `/invoices/${inv.id}`)).gross);
     const amount = pay === "full" ? gross.toFixed(2) : (gross / 2).toFixed(2);
-    if (amount) await step("encaissement", () => api("finance", "POST", `/invoices/${inv.id}/payments`, { amount: String(amount), receivedOn: "2026-11-05", reference: `VIR-${inv.id.slice(0, 6).toUpperCase()}` }));
+    if (amount) await step("encaissement", () => api("finance", "POST", `/invoices/${inv.id}/payments`, { amount: String(amount), receivedOn: today, reference: `VIR-${inv.id.slice(0, 6).toUpperCase()}` }));
   };
   for (const c of CONSULTANTS.filter(x => x.active)) {
     await invoice(await cra(c.key, "2026-08", "validated"), "full");
@@ -198,6 +213,15 @@ async function main() {
   await cra("lea", "2026-11", "submitted", { upTo: "2026-11-10" }); // en attente d'approbation client
   await cra("karim", "2026-11", "draft", { upTo: "2026-11-06" });  // brouillon partiel → relance WhatsApp
   // ines et thomas : aucun CRA de novembre → relance
+
+  // ===== 6b. Commissions de parrainage / cooptation =====
+  log("6b. Commissions : approbation (quatre yeux) et paiement");
+  const coms: any[] = await api("finance", "GET", "/crm/commissions");
+  console.log(`  ${coms.length} commissions nées (conversion ou encaissement)`);
+  const sofiaPrime = coms.find(c => c.sourceType === "conversion");
+  if (sofiaPrime) { await step("approbation prime cooptation", () => api("finance", "POST", `/crm/commissions/${sofiaPrime.id}/transition`, { event: "approve" })); await step("paiement prime cooptation", () => api("finance", "POST", `/crm/commissions/${sofiaPrime.id}/transition`, { event: "pay", reference: "VIR-COOPT-0001" })); }
+  const firstPct = coms.filter(c => c.sourceType === "payment").sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))[0];
+  if (firstPct) await step("approbation commission parrainage", () => api("finance", "POST", `/crm/commissions/${firstPct.id}/transition`, { event: "approve" })); // les suivantes restent « due »
 
   // ===== 7. Notes de frais =====
   log("7. Notes de frais");
