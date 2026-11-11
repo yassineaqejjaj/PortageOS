@@ -81,3 +81,4 @@ Légende : ✅ terminé · 🟡 partiel · ⬜ non démarré · 🔒 bloqué par
 | 21 | Avenants de mission (tarif par période, prolongation, fin anticipée, budget), bons de commande dans le formulaire, édition des contacts et sites clients ; lot CRA déployé | 42 · 164 · 41 |
 | 22 | Console plateforme (sociétés, quotas, suspension) ; lot missions déployé | 42 · 172 · 42 |
 | 23 | WhatsApp (Meta Cloud API) : canal, consentement, boîte de réception, webhook signé, relance de CRA ; console plateforme déployée | 47 · 191 · 44 |
+| 24 | Environnement de démonstration pilote « BG Consulting » : seed rejoué via l'API (lead → contrat → CRA → facture → encaissement, frais, congés, relances WhatsApp simulées, agents), runbook `docs/DEMO_BG_CONSULTING.md`. Aucune nouvelle fonctionnalité produit ; 213 étapes jouées sans échec en local, non couvert par la CI | – |
