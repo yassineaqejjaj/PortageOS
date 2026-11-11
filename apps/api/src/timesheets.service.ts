@@ -7,13 +7,14 @@ import { RequestContext } from "./auth.guard";
 import { applyAsAnyRole } from "./workflow";
 import { LeavesService } from "./leaves.service";
 import { NotificationsService } from "./notifications.service";
+import { WhatsappService } from "./whatsapp.service";
 
 export interface Scope { consultantId?: string; companyId?: string }
 export interface LineInput { date: string; quantity: string }
 
 @Injectable()
 export class TimesheetsService {
-  constructor(private audit: AuditService, private leaves: LeavesService, private notif: NotificationsService) {}
+  constructor(private audit: AuditService, private leaves: LeavesService, private notif: NotificationsService, private wa: WhatsappService) {}
 
   private visible(m: { consultantId: string; companyId: string }, scope: Scope) {
     return (!scope.consultantId || m.consultantId === scope.consultantId) && (!scope.companyId || m.companyId === scope.companyId);
@@ -130,17 +131,19 @@ export class TimesheetsService {
   async remind(tx: Tx, ctx: RequestContext, period: string) {
     if (!isValidPeriod(period)) throw new BadRequestException("Période invalide (AAAA-MM)");
     const first = `${period}-01`, last = new Date(Date.UTC(Number(period.slice(0, 4)), Number(period.slice(5, 7)), 0)).toISOString().slice(0, 10);
-    const missions = await tx.mission.findMany({ where: { status: "active", startDate: { lte: new Date(last) }, OR: [{ endDate: null }, { endDate: { gte: new Date(first) } }] }, include: { timesheets: { where: { period }, select: { status: true } } } });
+    const missions = await tx.mission.findMany({ where: { status: "active", startDate: { lte: new Date(last) }, OR: [{ endDate: null }, { endDate: { gte: new Date(first) } }] }, include: { timesheets: { where: { period }, select: { status: true } }, consultant: { select: { firstName: true } } } });
     const todo = missions.filter(m => m.timesheets.length === 0 || m.timesheets[0]!.status === "draft");
     const day = new Date().toISOString().slice(0, 10);
-    let sent = 0, skipped = 0;
+    let sent = 0, skipped = 0; const whatsapp = { queued: 0, noConsent: 0, templateNotEnabled: 0 };
     for (const m of todo) {
       const r = await tx.timesheetReminder.createMany({ data: [{ tenantId: ctx.tenantId, missionId: m.id, period, day }], skipDuplicates: true });
       if (r.count === 0) { skipped++; continue; }
       await this.notif.notify(tx, ctx.tenantId, await this.notif.consultantUsers(tx, ctx.tenantId, m.consultantId), { type: "timesheet.reminder", title: `CRA ${period} à saisir et soumettre : ${m.title}`, link: "/me/timesheets" }, ctx.userId);
+      const w = await this.wa.queueTemplate(tx, ctx, { subjectType: "consultant", subjectId: m.consultantId, key: "timesheet_reminder", params: [m.consultant.firstName, period, m.title], automatic: true });
+      if (w.queued) whatsapp.queued++; else if (w.reason === "no_consent") whatsapp.noConsent++; else whatsapp.templateNotEnabled++;
       sent++;
     }
-    await this.audit.record(tx, ctx, { action: "timesheet.reminders_sent", entity: "Timesheet", entityId: period, after: { period, sent, skipped } });
-    return { period, concerned: todo.length, sent, alreadyRemindedToday: skipped, channel: "notification interne (e-mail non utilisé pour les relances)" };
+    await this.audit.record(tx, ctx, { action: "timesheet.reminders_sent", entity: "Timesheet", entityId: period, after: { period, sent, skipped, whatsapp } });
+    return { period, concerned: todo.length, sent, alreadyRemindedToday: skipped, whatsapp, channel: "notification interne ; WhatsApp seulement avec consentement et modèle activé (e-mail non utilisé)" };
   }
 }

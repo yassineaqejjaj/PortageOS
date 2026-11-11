@@ -83,3 +83,10 @@ Statut actuel : seul le principe d'isolation tenant du journal est testé (domai
 - **Mot de passe oublié** : pas d'énumération (réponse identique), limite par adresse, lien haché en base, 1 h, usage unique ; le journal d'e-mails (`EmailOutbox`, append-only) ne contient ni corps, ni lien, ni adresse en clair.
 - **Stockage objet** : empreinte vérifiée à chaque lecture (altération → 503), chiffrement côté serveur demandé, pilote mémoire interdit en production.
 - **Observabilité** : journaux sans corps ni requête ni identifiants dans les routes ; `/metrics` désactivé sans jeton.
+
+## Séance 23 : WhatsApp
+- **Webhook public** (`/webhooks/whatsapp`) : refusé (403) sans `WHATSAPP_APP_SECRET`/`WHATSAPP_VERIFY_TOKEN` ; sinon signature HMAC-SHA256 du **corps brut** vérifiée à temps constant avant tout traitement (401 si absente, erronée ou corps modifié). Rejeu inoffensif (identifiant fournisseur unique par tenant).
+- **Isolation** : toutes les tables WhatsApp sont sous RLS, sauf `WhatsappRoute` (phone_number_id → tenant, aucun secret) nécessaire pour router un webhook avant de connaître le tenant ; un numéro ne peut appartenir qu'à une société.
+- **Secrets** : jeton d'accès chiffré AES-256-GCM (clé du MFA), jamais renvoyé ni journalisé ; messages d'erreur du fournisseur tronqués et sans jeton ; suppression du jeton et du routage à la désactivation.
+- **Consentement** : aucun envoi sans consentement enregistré (preuve, origine, audit) ; STOP le retire automatiquement ; rétablissement humain tracé.
+- **Limites** : les corps de messages sont conservés sans purge automatique ; pas de secret d'application par société ; un message « sending » interrompu par un arrêt du serveur n'est pas repris automatiquement.

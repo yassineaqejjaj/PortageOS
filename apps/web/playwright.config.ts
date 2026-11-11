@@ -4,6 +4,7 @@ const API_ENV = {
   JWT_SECRET: process.env.JWT_SECRET ?? "e2e-secret-e2e-secret-e2e-secret-0123456789",
   APP_DATABASE_URL: process.env.APP_DATABASE_URL ?? "postgresql://portage_app:portage_app_dev@localhost:5432/portage",
   PORT: "4311",
+  WHATSAPP_PROVIDER: "fake", WHATSAPP_APP_SECRET: "e2e-whatsapp-secret-e2e-whatsapp", WHATSAPP_VERIFY_TOKEN: "e2e-verify", // faux fournisseur : jamais en production
   MFA_ENCRYPTION_KEY: process.env.MFA_ENCRYPTION_KEY ?? Buffer.from("e2e-mfa-key-e2e-mfa-key-e2e-mfa!").toString("base64"), // clé de test uniquement
 };
 

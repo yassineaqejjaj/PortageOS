@@ -4,6 +4,7 @@ import { TIMESHEET_STATES } from "@portage/domain";
 import { PrismaService } from "./prisma.service";
 import { RequestContext, RequirePermission } from "./auth.guard";
 import { TimesheetsService } from "./timesheets.service";
+import { WhatsappService } from "./whatsapp.service";
 import { parseZod } from "./workflow";
 
 const Lines = z.object({ lines: z.array(z.object({ date: z.string(), quantity: z.string() })).max(31) });
@@ -23,7 +24,7 @@ function statusFilter(s?: string) {
 /** Gestion interne (opérations, direction, finance en lecture). */
 @Controller("timesheets")
 export class TimesheetsController {
-  constructor(private prisma: PrismaService, private svc: TimesheetsService) {}
+  constructor(private prisma: PrismaService, private svc: TimesheetsService, private wa: WhatsappService) {}
 
   @Get() @RequirePermission("timesheet.read")
   list(@Req() { ctx }: R, @Query("status") status?: string) {
@@ -40,9 +41,11 @@ export class TimesheetsController {
   }
 
   @Post("reminders") @RequirePermission("timesheet.write")
-  remind(@Req() { ctx }: R, @Body() body: unknown) {
+  async remind(@Req() { ctx }: R, @Body() body: unknown) {
     const d = parseZod(Remind, body);
-    return this.prisma.forTenant(ctx.tenantId, tx => this.svc.remind(tx, ctx, d.period));
+    const r = await this.prisma.forTenant(ctx.tenantId, tx => this.svc.remind(tx, ctx, d.period));
+    if (r.whatsapp.queued) await this.wa.flush(ctx.tenantId).catch(() => undefined); // après validation de la transaction ; un échec reste visible dans la boîte (statut failed)
+    return r;
   }
 
   @Get(":id") @RequirePermission("timesheet.read")

@@ -7,7 +7,7 @@ import { loadConfig } from "./config";
 import { ErrorFilter } from "./error.filter";
 
 export async function createApp() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ["error", "warn"] });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ["error", "warn"], rawBody: true });
   app.useBodyParser("json", { limit: "1.5mb" }); // imports CSV : 1 Mo de fichier + enveloppe JSON
   app.use(requestLogger);
   app.useGlobalFilters(new ErrorFilter());

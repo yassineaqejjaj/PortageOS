@@ -43,7 +43,7 @@ export const PORTALS: Record<Portal, { label: string; groups: NavGroup[] }> = {
       { key: "crm", label: "CRM", icon: "crm", children: [
         L("prospects", "Prospects", "/crm/prospects", "crm", "prospect.read"), L("crm-tasks", "Tâches commerciales", "/crm/tasks", "cal", "prospect.read"), L("crm-campaigns", "Campagnes", "/crm/campaigns", "chart", "prospect.read"),
         L("crm-referrers", "Apporteurs et commissions", "/crm/referrers", "users", "commission.read"), L("crm-agreements", "Accords-cadres", "/crm/agreements", "doc", "prospect.read"), L("crm-imports", "Imports de prospects", "/crm/imports", "rec", "prospect.write")] },
-      L("companies", "Clients", "/companies", "bld", "company.read"), L("consultants", "Consultants", "/consultants", "users", "consultant.read"), L("contracts", "Contrats", "/contracts", "doc", "contract.read"), L("missions", "Missions", "/missions", "bag", "mission.read")] },
+      L("companies", "Clients", "/companies", "bld", "company.read"), L("consultants", "Consultants", "/consultants", "users", "consultant.read"), L("contracts", "Contrats", "/contracts", "doc", "contract.read"), L("missions", "Missions", "/missions", "bag", "mission.read"), L("whatsapp", "WhatsApp", "/whatsapp", "chat", "whatsapp.read")] },
     { label: "Opérations", entries: [
       L("timesheets", "Activité / CRA", "/timesheets", "cal", "timesheet.read"), L("expenses", "Notes de frais", "/expenses", "rec", "expense.read"), L("leaves", "Absences et congés", "/leaves", "cal", "leave.read"), L("invoices", "Facturation", "/invoices", "eur", "invoice.read"),
       { key: "treasury", label: "Trésorerie", icon: "bank", children: [L("bank", "Rapprochement bancaire", "/bank", "bank", "payment.write"), L("ledger", "Registre financier", "/ledger", "led", "ledger.read")] },
@@ -51,7 +51,7 @@ export const PORTALS: Record<Portal, { label: string; groups: NavGroup[] }> = {
     { label: "Exploitation", entries: [L("operator", "Console plateforme", "/operator", "sh", "platform.manage")] },
     { label: "Gouvernance", entries: [
       L("rules", "Conformité", "/rules", "sh", "rules.read"), L("accounting", "Comptabilité", "/accounting", "book", "accounting.read"), L("support", "Support", "/support", "chat", "support.create"),
-      { key: "config", label: "Configuration", icon: "gear", children: [L("members", "Membres et accès", "/members", "users", "member.manage"), L("company-profile", "Identité de la société", "/settings/company", "bld", "member.manage"), L("audit", "Journal d’audit", "/audit", "sh", "audit.read")] }] },
+      { key: "config", label: "Configuration", icon: "gear", children: [L("members", "Membres et accès", "/members", "users", "member.manage"), L("company-profile", "Identité de la société", "/settings/company", "bld", "member.manage"), L("whatsapp-settings", "Canal WhatsApp", "/settings/whatsapp", "chat", "whatsapp.admin"), L("audit", "Journal d’audit", "/audit", "sh", "audit.read")] }] },
   ] },
   consultant: { label: "Consultant", groups: [{ entries: [
     { key: "cra", label: "CRA et absences", icon: "cal", children: [L("me-ts", "Mes CRA", "/me/timesheets", "cal", "portal.self"), L("me-leaves", "Mes absences", "/me/leaves", "cal", "portal.self")] },

@@ -11,3 +11,6 @@ Toutes **non connectées** (aucun credential). Chaque adapter : config chiffrée
 | Email | transactionnel | non démarré |
 | Paiement SaaS | à choisir | non démarré |
 Faux fournisseurs : local uniquement.
+
+## WhatsApp (Meta WhatsApp Cloud API) — non connecté
+Adaptateur `whatsapp.provider.ts` (Graph API) prêt, **jamais appelé contre le vrai service** : requêtes vérifiées seulement avec un fetch factice. Prérequis et variables : docs/BLOCKERS.md, docs/DEPLOYMENT.md. Le statut « vérifié » n'est posé qu'après un appel réel réussi (`POST /whatsapp/channel/verify`).

@@ -1023,3 +1023,92 @@ model MissionAmendment {
 
   @@index([tenantId, missionId])
 }
+
+/// Canal WhatsApp d'une société (Meta WhatsApp Cloud API). Le jeton d'accès est chiffré (AES-256-GCM) et n'est jamais renvoyé par l'API.
+/// status : configured (identifiants saisis, non vérifiés) | verified (appel réel à Meta réussi) | error | disabled.
+model WhatsappChannel {
+  tenantId          String   @id
+  phoneNumberId     String
+  wabaId            String?
+  displayPhone      String?
+  accessTokenSealed String?
+  status            String   @default("configured")
+  lastCheckedAt     DateTime?
+  lastError         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+/// Routage des webhooks entrants (le tenant n'est pas connu avant la lecture) : phone_number_id -> tenant. Aucun secret ici, donc pas de RLS.
+model WhatsappRoute {
+  phoneNumberId String @id
+  tenantId      String @unique
+}
+
+/// Modèle de message déclaré par la société (nom approuvé côté Meta : non vérifiable par le produit). enabled = envoi automatique autorisé.
+model WhatsappTemplate {
+  tenantId String
+  key      String
+  metaName String
+  language String  @default("fr")
+  enabled  Boolean @default(false)
+
+  @@id([tenantId, key])
+}
+
+/// Consentement courant d'une personne (consultant ou contact client) pour un numéro ; les changements sont tracés dans le journal d'audit.
+model WhatsappConsent {
+  id          String   @id @default(uuid())
+  tenantId    String
+  subjectType String
+  subjectId   String
+  phone       String
+  status      String
+  source      String
+  evidence    String?
+  recordedBy  String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@unique([tenantId, subjectType, subjectId])
+  @@index([tenantId, phone])
+}
+
+model WhatsappConversation {
+  id            String    @id @default(uuid())
+  tenantId      String
+  phone         String
+  subjectType   String?
+  subjectId     String?
+  displayName   String?
+  lastInboundAt DateTime?
+  lastMessageAt DateTime  @default(now())
+  unreadCount   Int       @default(0)
+  createdAt     DateTime  @default(now())
+  messages      WhatsappMessage[]
+
+  @@unique([tenantId, phone])
+  @@index([tenantId, lastMessageAt])
+}
+
+/// direction in|out ; kind text|template ; status : queued|sending|sent|delivered|read|failed|received|not_connected|simulated.
+model WhatsappMessage {
+  id                String               @id @default(uuid())
+  tenantId          String
+  conversationId    String
+  direction         String
+  kind              String
+  templateKey       String?
+  templateParams    String[]             @default([])
+  body              String
+  status            String
+  providerMessageId String?
+  error             String?
+  sentBy            String?
+  createdAt         DateTime             @default(now())
+  conversation      WhatsappConversation @relation(fields: [conversationId], references: [id])
+
+  @@unique([tenantId, providerMessageId])
+  @@index([conversationId, createdAt])
+  @@index([tenantId, status])
+}

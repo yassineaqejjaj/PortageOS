@@ -35,6 +35,7 @@ const ALLOWED = [
   /^crm\/imports\/preview$/, new RegExp(`^crm/imports/${U}(/commit|/cancel|/rollback)?$`),
   /^bank\/(imports|transactions)$/, /^bank\/imports\/preview$/, new RegExp(`^bank/imports/${U}/(commit|cancel)$`), new RegExp(`^bank/transactions/${U}/(match|ignore)$`),
   new RegExp(`^invoices/${U}/lines$`), new RegExp(`^invoices/${U}/lines/${U}$`), /^tenant\/profile$/,
+  /^whatsapp\/(channel|channel\/verify|templates|consents|conversations|send-template|flush|catalog)$/, new RegExp(`^whatsapp/conversations/${U}/messages$`),
   /^support\/tickets$/, new RegExp(`^support/tickets/${U}(/messages|/transition|/assign)?$`), /^support\/(staff|templates)$/,
 ];
 

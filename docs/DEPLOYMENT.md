@@ -44,6 +44,7 @@ railway run --service api -- sh -c 'BOOTSTRAP_TENANT_SLUG=ma-societe BOOTSTRAP_T
 |---|---|
 | `SMTP_URL`, `MAIL_FROM`, `WEB_BASE_URL` | active l'envoi d'e-mails (invitation, mot de passe oublié) ; sans eux : `not_connected` au journal, rien n'est envoyé |
 | `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE=1` | contenu des nouveaux documents dans un stockage objet ; `node apps/api/dist/migrate-blobs.js --dry-run` puis sans option pour migrer l'existant |
+| `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | active la réception WhatsApp (webhook `POST/GET /webhooks/whatsapp`, à déclarer dans l'application Meta) ; sans eux : le webhook refuse tout (403) et les envois restent possibles. `WHATSAPP_GRAPH_VERSION` (défaut `v21.0`, à contrôler face à la version supportée par Meta). `WHATSAPP_PROVIDER=fake` = local uniquement, ignoré en production |
 | `METRICS_TOKEN` | active `GET /metrics` (jeton porteur) ; absent = 404 |
 | `/health/ready` | sonde de disponibilité (base interrogée) ; `/health` reste la sonde légère |
 

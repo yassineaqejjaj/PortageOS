@@ -9,6 +9,7 @@ Mis à jour le 2026-11-08. Chaque ligne est un prérequis **externe** : compte, 
 | Signature électronique qualifiée | Contrat avec un prestataire de confiance | Vous | Déclaration de signature interne tracée (non qualifiée) |
 | Banque | Agrégateur/open banking agréé ou import de relevés fournis | Vous | Encaissements saisis à la main |
 | E-mail | Fournisseur transactionnel + domaine (SPF/DKIM) ; variables `SMTP_URL`, `MAIL_FROM`, `WEB_BASE_URL` | Vous | Notifications in-app ; **adaptateur SMTP et mot de passe oublié prêts, jamais testés contre un vrai serveur** |
+| WhatsApp | Compte Meta Business vérifié, numéro WhatsApp Business, application Meta (secret + jeton de vérification du webhook), jeton d'accès système, **modèles de messages approuvés par Meta**, URL publique HTTPS du webhook (`/webhooks/whatsapp`), base juridique et information des personnes (RGPD) | Vous | Canal, consentement, boîte de réception, webhook signé, relance de CRA ; **requêtes Graph API jamais testées contre le vrai service** (fetch factice) |
 | Modèle de langage | Clé fournisseur LLM, analyse d'impact RGPD, validation juridique | Vous | Agents à playbooks déterministes, approbations humaines |
 | Sirene / identifiants entreprises | Jeton API INSEE | Vous | Saisie manuelle du SIREN (9 chiffres) |
 | Abonnement SaaS | Compte du fournisseur de paiement (webhooks vérifiés) | Vous | — |
